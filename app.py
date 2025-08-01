@@ -31,11 +31,12 @@ with st.form("form_identificacao"):
             ]
         )
         bico = st.selectbox(
-            "Formato do bico",
+            "Tipo de bico",
             [
-                "Fino", "Largo", "Achatado",
-                "Longo", "Curto", "Médio"
-                "Reto", "Curvo"
+                'generalista', 'sondador', 'filtrador', 'frugivoro',
+                'granivoro', 'insetivoro', 'nectarivoro', 'insetos em troncos',
+                'limicola', 'pescador', 'carniceiro', 'raptorial'
+                # "Rede de Pesca", "pato mergulhador", "pescador de superficie"
             ]
         )
 
@@ -60,7 +61,7 @@ with st.form("form_identificacao"):
         )
         horario = st.selectbox(
             "Horário da observação",
-            ["", "Dia", "Noite", "Crepusculo"]
+            ["", "Diurna", "Noturna", "Crepuscular"]
         )
 
     descricao = st.text_area("🗣️ Descrição livre (opcional)")
@@ -113,4 +114,5 @@ if submitted:
             st.markdown(f"### {i+1}. *{especie['nome_cientifico']}* - {especie['nome_popular']}")
             st.image(especie['imagem_url'], width=300)
             st.markdown(f"**Descrição**: {especie['descricao']}")
+            st.markdown(f"**Fonte**: {especie['fonte']}")
             st.markdown("---")
