@@ -13,7 +13,7 @@ class GroqAPI:
                 "Content-Type": "application/json"
             },
             json={
-                "model": "",
+                "model": "llama-3.1-8b-instant",
                 "messages": [{"role": "user", "content": prompt}]
             }
         )
