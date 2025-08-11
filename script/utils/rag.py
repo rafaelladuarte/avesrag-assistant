@@ -5,9 +5,9 @@ import streamlit as st
 def search_docs(query, filter, index):
     boost = {
         "resumo_llm": 0.8,
-        "cores": 1.0,
+        "cores": 2.0,
         "dieta_principal": 0.5,
-        "tipo_bico": 0.8
+        "tipo_bico": 0.5
     }
 
     results = index.search(
@@ -109,8 +109,8 @@ def get_result(index,  llm, query, filter, groq=None):
             if isinstance(result, str):
                 result = json.loads(result)
         else:
-            result = search_docs(index=index, query=query, filter=filter)
-        return result
+            result = search_docs(index=index, query='', filter=filter)
+        return result[:3]
     except Exception as e:
         st.error(f"Erro ao processar a busca: {str(e)}")
         return []
