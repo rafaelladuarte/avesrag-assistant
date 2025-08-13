@@ -4,10 +4,9 @@ import streamlit as st
 
 def search_docs(query, filter, index):
     boost = {
-        "resumo_llm": 0.8,
         "cores": 2.0,
         "dieta_principal": 0.5,
-        "tipo_bico": 0.5
+        "tipo_bico": 0.8
     }
 
     results = index.search(
