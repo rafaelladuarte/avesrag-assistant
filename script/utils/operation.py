@@ -2,8 +2,8 @@ import unicodedata
 
 
 def normalize_text(text):
-    if not text:
-        return ''
+    if not text or text.strip() == "":
+        return None
     text = text.lower()
     text = unicodedata.normalize('NFKD', text)
     text = ''.join([c for c in text if not unicodedata.combining(c)])

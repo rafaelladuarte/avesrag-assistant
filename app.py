@@ -78,7 +78,7 @@ with st.form("form_identificacao"):
         cor_principal = st.multiselect(
             "Cor(es) principal(is)",
             [
-                "", "Branco", "Preto", "Marrom", "Amarelo",
+                "Branco", "Preto", "Marrom", "Amarelo",
                 "Azul", "Verde", "Vermelho", "Cinza", "Laranja", "Roxo"
             ]
         )
@@ -95,7 +95,7 @@ with st.form("form_identificacao"):
         habitat = st.multiselect(
             "Habitat observado",
             [
-                "", "Floresta", "Campo", "Urbano", "Mata Ciliar", "Plantação",
+                "Floresta", "Campo", "Urbano", "Mata Ciliar", "Plantação",
                 "Brejo", "Mata seca", "Cerrado", "Caatinga", "Buriti",
                 "Mangue", "Rio", "Lago"
             ]
@@ -103,7 +103,7 @@ with st.form("form_identificacao"):
         dieta = st.multiselect(
             "Dieta observada",
             [
-                "", "Insetos", "Frutas", "Sementes",
+                "Insetos", "Frutas", "Sementes",
                 "Artrópodes", "Peixes", "Aves",
                 "Invertebrados", "Néctar", "Anfíbios",
                 "Aranhas", "Largatos", "Reptéis",
@@ -141,26 +141,6 @@ if submitted:
     else:
         llm = bool(api_key and gq)
 
-        query = ""
-        if descricao:
-            query += descricao
-        else:
-            query = "Ave avistada com "
-
-            if tamanho:
-                query += f"tamanho {tamanho} "
-            if cor_principal:
-                query += f"com cores {cor_principal} "
-            if bico:
-                query += f"bico do tipo {bico} "
-            if habitat:
-                query += f"localizado em {habitat} "
-            if dieta:
-                query += f"se alimentando de {dieta} "
-            if horario:
-                query += f"visto em atividade no turno {horario} "
-            query = query.strip()
-
         filter = {
             k: v
             for k, v in {
@@ -174,13 +154,5 @@ if submitted:
             if v
         }
         st.markdown("## 🐦 Espécies sugeridas:")
-        result = get_result(index, llm, query, filter, gq)
+        result = get_result(index, llm, descricao, filter, gq)
         show_result(result)
-
-
-# if __name__ == "__main__":
-#     try:
-#         import os
-#         os.system(f"streamlit run {__file__} --server.port 8501")
-#     except Exception as e:
-#         st.error(f"Erro ao executar a aplicação: {str(e)}")

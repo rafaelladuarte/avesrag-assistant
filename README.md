@@ -70,9 +70,9 @@ A base de dados utilizada foi criada a partir de:
 
 ## ✨ Funcionalidades
 
-✅ Entrada de dados via formulário com validação
-✅ Busca otimizada com MinSearch
-✅ Retorno de **até 3 espécies candidatas**
+✅ Entrada de dados via formulário com validação \
+✅ Busca otimizada com MinSearch \
+✅ Retorno de **até 3 espécies candidatas** \
 ✅ Resumo automático das espécies encontradas com imagens
 
 ---
