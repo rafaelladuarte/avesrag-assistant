@@ -16,11 +16,15 @@
 ![preview](docs/interface-preview.png)
 
 ---
+## 📌 Problema 
+
+Os aplicativos de identificação de aves existentes funcionam, em geral, com fotos ou sons. No entanto, nem sempre o observador consegue registrar uma imagem ou gravação no momento do avistamento.
+Nessas situações, a única referência disponível é a descrição visual da ave, como por exemplo: cor, tamanho, formato do bico ou comportamento.
+O AvesRAG foi criado para atender exatamente esse cenário, permitindo a identificação de aves a partir de descrições em texto.
 
 ## 📌 Sobre o Projeto
 
-O **Bird ID Assistant** é um assistente inteligente capaz de **identificar aves** com base em descrições fornecidas pelo usuário.
-Utilizando a técnica de **RAG (Retrieval-Augmented Generation)**, ele busca informações em uma base de dados personalizada e retorna **até 3 espécies candidatas** com descrições resumidas.
+O **AvesRAG Assistant** é um assistente inteligente interativo busca resolver esse problema, ele capaz de **identificar aves** com base em descrições fornecidas pelo usuário. Utilizando a técnica de **RAG (Retrieval-Augmented Generation)**, ele busca informações em uma base de dados personalizada e retorna **até 3 espécies candidatas** com descrições resumidas.
 
 ---
 
@@ -29,7 +33,7 @@ Utilizando a técnica de **RAG (Retrieval-Augmented Generation)**, ele busca inf
 * Criar uma ferramenta interativa para identificação de aves.
 * Utilizar RAG para combinar **busca estruturada** e **geração de texto por LLM**.
 * Garantir que o backend e o pipeline sejam modulares e fáceis de adaptar.
-
+* Coletar feedback dos usuários para melhorar continuamente os resultados (Em desenvolvimento).
 ---
 
 ## 📊 Base de Dados
@@ -45,6 +49,59 @@ A base de dados utilizada foi criada a partir de:
 
 ---
 
+## 🧩 Arquitetura do Sistema
+
+```mermaid
+flowchart LR
+    A[Usuário] -->|Descrição da ave| B[Streamlit UI]
+    B --> C[RAG Pipeline]
+    C --> D[MinSearch - Vetores/Textos]
+    D --> C
+    C --> E[LLM - Groq API]
+    E --> B
+    B --> F[Feedback & Monitoramento - Em desenvolvimento]
+```
+
+---
+## ✨ Funcionalidades
+
+✅ Entrada de dados via formulário com validação . \
+✅ Busca otimizada com MinSearch (semântica + textual). \
+✅ Retorno de **até 3 espécies candidatas**. \
+✅ Resumo automático das espécies com imagens.\
+🔄 Coleta de feedback do usuário (“Essa resposta foi útil?”)
+
+---
+## 🔬 Avaliação
+
+### 🔎 Retrieval
+
+* **Testes realizados**:
+
+  * BM25 (textual)
+  * Vetorial (embeddings)
+  * Busca híbrida (melhor resultado)
+* **Resultado**: busca híbrida apresentou maior recall e precisão para descrições curtas.
+
+### 🧠 LLM
+
+* Avaliados diferentes modelos (`llama`, `gemma`, `deepseek`).
+* Testados prompts *zero-shot* vs *few-shot*.
+* **Resultado**: `llama-3.1-8b-instant` com *few-shot* teve melhor equilíbrio entre custo e precisão.
+
+---
+## 📊 Monitoramento (em desenvolvimento)
+
+* Coleta de feedback de usuários (sim/não sobre utilidade da resposta).
+* Armazenamento em JSON/SQLite.
+* Dashboard no Streamlit com métricas:
+
+  * Nº de consultas
+  * Espécies mais buscadas
+  * Taxa de respostas aceitas
+  * Tempo médio de resposta
+
+---
 ## 🛠 Tecnologias Utilizadas
 
 | Categoria                | Ferramentas                                                                                                             |
@@ -66,14 +123,51 @@ A base de dados utilizada foi criada a partir de:
 📦 avesrag-assistant
 (desenvolvimento)
 ```
+---
+## ⚙️ Instalação e Execução
 
+### 1. Clone o repositório
 
-## ✨ Funcionalidades
+```bash
+git clone https://github.com/usuario/avesrag-assistant.git
+cd avesrag-assistant
+```
 
-✅ Entrada de dados via formulário com validação \
-✅ Busca otimizada com MinSearch \
-✅ Retorno de **até 3 espécies candidatas** \
-✅ Resumo automático das espécies encontradas com imagens
+### 2. Crie o ambiente virtual e instale dependências
+
+```bash
+python -m venv venv
+source venv/bin/activate   # Linux/Mac
+venv\Scripts\activate      # Windows
+pip install -r requirements.txt
+```
+
+### 3. Configure variáveis de ambiente
+
+Crie um arquivo `.env` com:
+
+```
+GROQ_API_KEY=suachaveaqui
+```
+
+### 4. Execute a aplicação
+
+```bash
+streamlit run app.py
+```
+---
+
+## 📈 Critérios de Avaliação Atendidos
+
+* [x] Problema descrito claramente
+* [x] Knowledge base + LLM no fluxo
+* [x] Avaliação de múltiplos retrieval flows
+* [x] Avaliação de diferentes prompts/modelos
+* [x] Interface em Streamlit
+* [ ] Ingestão automatizada via scripts Python
+* [ ] Monitoramento com feedback + dashboard
+* [ ] Containerização com Docker
+* [x] Reprodutibilidade (instruções + requirements)
 
 ---
 
