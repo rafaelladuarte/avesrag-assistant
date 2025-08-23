@@ -131,6 +131,16 @@ class Index:
         if partial_score:
             final_score = np.sum(partial_score, axis=0)
 
+            # top_50_indices = np.argsort(-final_score)[:50]
+            # score_frequency = self.keyword_df[
+            # "frequencia_normalizada"].values
+            # final_score[top_50_indices] = (
+            # 0.8 * final_score[top_50_indices]) + (
+            # 0.2 * score_frequency[top_50_indices])
+            # score_frequency = self.keyword_df[
+            # "frequencia_normalizada"].values
+            # final_score = (0.6 * final_score) + (0.4 * score_frequency)
+
         # Get number of non-zero scores
         non_zero_mask = final_score > 0
         non_zero_count = np.sum(non_zero_mask)
@@ -157,7 +167,7 @@ class Index:
             return [{**self.docs[i], '_id': int(i)} for i in top_indices]
         return [self.docs[i] for i in top_indices]
 
-    def __similarity_score_list(self, row_list, filter_list, threshold=90):
+    def __similarity_score_list(self, row_list, filter_list, threshold=70):
         if not row_list or not filter_list:
             return 0.0
 

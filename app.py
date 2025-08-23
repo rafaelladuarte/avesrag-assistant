@@ -1,6 +1,9 @@
 import streamlit as st
+import pandas as pd
+import os
 
 from script.api.groq import GroqAPI
+from script.infra.security import get_secret_value
 from script.utils.ingest import load_index
 from script.utils.operation import normalize_text
 from script.utils.rag import get_result
@@ -21,7 +24,40 @@ st.set_page_config(
 )
 
 
-def show_result(result):
+def feedback(feedback, especie, user_input):
+    feedback_data = {
+        "especie": especie['taxonomia'],
+        "nome_comum": especie['nome_pt'],
+        "info_corretas": feedback["info_corretas"],
+        "especie_correta": feedback["especie_correta"],
+        "observacao": feedback["observacao"].strip() if feedback.get("observacao") else "Nenhuma observação fornecida",
+        "user_input": {
+            "tamanho": user_input.get("tamanho", ""),
+            "cor_principal": user_input.get("cor_principal", []),
+            "tipo_bico": user_input.get("bico", ""),
+            "habitat": user_input.get("habitat", []),
+            "dieta": user_input.get("dieta", []),
+            "horario": user_input.get("horario", []),
+            "descricao": user_input.get("descricao", "")
+        }
+    }
+    st.success("Feedback enviado com sucesso. Muito obrigada!")
+    # st.json(feedback_data)
+
+    df = pd.DataFrame([{
+        **{k: v for k, v in feedback_data.items() if k != "user_input"},
+        "user_input": str(feedback_data["user_input"])
+    }])
+    file_path = "feedback_aves.csv"
+    if os.path.exists(file_path):
+        df.to_csv(file_path, mode='a', header=False, index=False)
+    else:
+        df.to_csv(file_path, index=False)
+
+    return feedback_data
+
+
+def show_result(result, user_input=None):
     if not result:
         st.info("Nenhuma espécie encontrada com os critérios fornecidos.")
         return
@@ -46,7 +82,43 @@ def show_result(result):
                 f"- **Tamanho**: {especie['tamanho']}\n"
                 f"- **Tipo de Bico**: {especie['tipo_bico']}\n"
                 f"- **Alimentação**: {especie['dieta_principal']}\n"
+                f"- **Habitat**: {especie['habitat']}\n"
             )
+
+            with st.expander("Feedback sobre a identificação"):
+                st.markdown("*Preencha o formulário abaixo apenas se desejar fornecer feedback sobre esta identificação.*")
+                with st.form(f"validacao_form_{i}"):
+                    info_corretas = st.radio(
+                        "As informações fornecidas sobre a espécie estão corretas?",
+                        ["Sim", "Não"],
+                        key=f"info_corretas_{i}"
+                    )
+                    especie_correta = st.radio(
+                        "Essa é a espécie que você estava buscando?",
+                        ["Sim", "Não"],
+                        key=f"especie_correta_{i}"
+                    )
+                    observacao = st.text_area(
+                        "Observações adicionais (opcional):",
+                        key=f"observacao_{i}",
+                        placeholder="Ex.: A ave que observei estava em outro ambiente, ou a espécie foi exibida com cores incorretas."
+                    )
+                    submit_feedback = st.form_submit_button("Enviar Feedback")
+
+                    if submit_feedback:
+                        if info_corretas is None or especie_correta is None:
+                            st.warning("Por favor, preencha ao menos uma opção antes de enviar.")
+                        else:
+                            feedback_data = {
+                                "info_corretas": info_corretas,
+                                "especie_correta": especie_correta,
+                                "observacao": observacao
+                            }
+                            feedback(
+                                feedback_data,
+                                especie,
+                                st.session_state.get("user_input", {})
+                            )
 
             st.markdown("---")
         except KeyError as e:
@@ -58,13 +130,12 @@ st.subheader("Descreva o que você viu e descubra qual ave pode ter sido.")
 
 
 with st.expander("🔐 Configurações avançadas"):
-    api_key = st.text_input("Chave da API da LLM (opcional)", type="password")
-    gq = None
-    if api_key:
-        try:
-            gq = GroqAPI(api_key)
-        except Exception as e:
-            st.error(f"Erro ao inicializar a API: {str(e)}")
+    # api_key = st.text_input("Chave da API da LLM", type="password")
+    # api_key = st.secrets.get("GROQ_API_KEY", None)
+    llm = st.checkbox(
+        "Habilitar identificação por IA",
+        value=True
+    )
 
 
 with st.form("form_identificacao"):
@@ -119,7 +190,6 @@ with st.form("form_identificacao"):
     )
     submitted = st.form_submit_button("🔍 Identificar")
 
-
 if submitted:
     campos_preenchidos = sum(
         [
@@ -132,6 +202,15 @@ if submitted:
             bool(descricao.strip())
         ]
     )
+    api_key = None
+    gq = None
+    if llm:
+        try:
+            api_key = get_secret_value("GROQ_API_KEY")
+            gq = GroqAPI(api_key)
+        except Exception as e:
+            st.error(f"Erro ao inicializar a API: {str(e)}")
+
     if api_key and not descricao.strip():
         st.warning("A descrição é obrigatória para identificação por IA.")
     elif campos_preenchidos <= 2:
@@ -139,8 +218,6 @@ if submitted:
             "Preencha pelo menos 3 campos para realizar a identificação."
         )
     else:
-        llm = bool(api_key and gq)
-
         filter = {
             k: v
             for k, v in {
@@ -153,6 +230,22 @@ if submitted:
             }.items()
             if v
         }
+
+        st.session_state["user_input"] = {
+            "tamanho": tamanho,
+            "cor_principal": cor_principal,
+            "bico": bico,
+            "habitat": habitat,
+            "dieta": dieta,
+            "horario": horario,
+            "descricao": descricao.strip()
+        }
+
         st.markdown("## 🐦 Espécies sugeridas:")
         result = get_result(index, llm, descricao, filter, gq)
-        show_result(result)
+        st.session_state["results"] = result
+        show_result(result, st.session_state.user_input)
+
+if "results" in st.session_state and st.session_state.results:
+    st.markdown("## 🐦 Espécies sugeridas:")
+    show_result(st.session_state.results)
