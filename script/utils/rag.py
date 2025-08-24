@@ -38,6 +38,9 @@ def build_prompt(query, search_results):
     disponíveis no CONTEXTO extraído da base de dados. Não adicione
     informações externas.
 
+    ⚠️ **Atenção especial:** As cores observadas da ave têm maior peso na identificação.
+    Priorize espécies cujas cores predominantes correspondam à descrição, antes de considerar outros atributos.
+
     QUESTÃO:
     {question}
 
@@ -47,7 +50,7 @@ def build_prompt(query, search_results):
     Instruções de saída:
     Retorne exatamente uma lista com até 3 espécies de aves no formato JSON
     mostrado abaixo. As espécies devem estar ordenadas da mais para a menos
-    semelhante ao contexto fornecido.
+    semelhante ao contexto fornecido, considerando **cores predominantes como o critério mais importante**.
 
     A resposta deve conter apenas o JSON, sem comentários, títulos ou qualquer
     outro texto adicional.

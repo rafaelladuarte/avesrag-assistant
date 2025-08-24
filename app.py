@@ -49,7 +49,6 @@ with st.form("form_identificacao"):
     st.markdown("### 📋 Descreva a ave que você viu:")
     st.session_state["llm"] = st.checkbox(
             "Habilitar identificação por IA",
-            value=False,
             help="Ative esta opção para permitir que o sistema utilize inteligência artificial para ajudar na identificação"
         )
     col1, col2 = st.columns(2)
@@ -84,7 +83,7 @@ with st.form("form_identificacao"):
         habitat = st.multiselect(
             "Habitat observado",
             [
-                "Floresta", "Campo", "Urbano", "Mata Ciliar", "Plantação",
+                "Floresta", "Campo", "Urbana", "Mata Ciliar", "Plantação",
                 "Brejo", "Mata seca", "Cerrado", "Caatinga", "Buriti",
                 "Mangue", "Rio", "Lago"
             ],
@@ -159,8 +158,8 @@ if submitted:
         }
 
         st.markdown("## 🐦 Espécies sugeridas:")
-        llm = False
-        result = get_result(index, llm, descricao, filter, gq)
+        # llm = False
+        result = get_result(index, st.session_state.llm, descricao, filter, gq)
         st.session_state["results"] = result
         show_result(result)
 

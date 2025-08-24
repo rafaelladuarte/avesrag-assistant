@@ -1,6 +1,6 @@
 # 🦜 AvesRAG – Assistente de Identificação de Aves do Cerrado
 
-![cover](images/avesrag.jpg)
+![cover](docs/images/avesrag.jpg)
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit\&logoColor=white)](https://streamlit.io/)
