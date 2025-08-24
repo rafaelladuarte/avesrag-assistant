@@ -9,6 +9,9 @@
 
 > 🏆 Projeto desenvolvido para o curso **LLM Zoomcamp** da [DataTalks.Club](https://datatalks.club)
 
+👉 [README in English](README_ENG.md)
+
+
 ## 📌 Problema 
 
 Os aplicativos de identificação de aves existentes funcionam, em geral, com fotos ou sons. No entanto, nem sempre o observador consegue registrar uma imagem ou gravação no momento do avistamento.
@@ -65,44 +68,43 @@ flowchart LR
 ✅ Busca otimizada com MinSearch (semântica + textual). \
 ✅ Retorno de **até 3 espécies candidatas**. \
 ✅ Resumo automático das espécies com imagens.\
-🔄 Coleta de feedback do usuário\
+✅  Coleta de feedback do usuário\
 🔄 Monitoramento do uso da LLM - API.
 
-## 🔬 Avaliação
+## 🔬 Evaluation
 
 ### 🔎 Retrieval
 
-* **Testes realizados**:
+* **Tests performed**:
 
-  * BM25 (textual)
-  * Vetorial (embeddings)
-  * Busca híbrida (melhor resultado)
-* **Resultado**: busca híbrida apresentou maior recall e precisão para descrições curtas.
+* BM25 (textual)
+* Vector (embeddings)
+* Hybrid search (best result)
+* **Result**: Hybrid search showed higher recall and precision for short descriptions.
 
 ### 🧠 LLM
 
-* Avaliados diferentes modelos open-source.
-  * `llama-3.1-8b-instant`
-  * `gemma2-9b-it `
-  * `deepseek-r1-distill-llama-70b`
-* Testados prompts *zero-shot* vs *few-shot*.
-* **Resultado**: `llama-3.1-8b-instant` com *few-shot* teve melhor equilíbrio entre custo e precisão.
+* Different open-source models evaluated. * `llama-3.1-8b-instant`
+* `gemma2-9b-it`
+* `deepseek-r1-distill-llama-70b`
+* Tested *zero-shot* vs *few-shot* prompts.
+* **Result**: `llama-3.1-8b-instant` with *few-shot* had a better balance between cost and accuracy.
 
-## 📊 Feedback e Monitoramento (em desenvolvimento)
+## 📊 Feedback and Monitoring (in development)
 
-* Coleta de feedback de usuários (sim/não sobre utilidade da resposta).
-* Armazenamento em PostgreSQL
-* Dashboard no Streamlit com métricas:
+* User feedback collection (yes/no on answer usefulness).
+* Storage in PostgreSQL
+* Streamlit dashboard with metrics:
 
-  * Nº de consultas
-  * Espécies mais buscadas
-  * Taxa de respostas aceitas
-  * Tempo médio de resposta
+* Number of queries
+* Most searched species
+* Accepted answer rate
+* Average response time
 
----
-## 🛠 Tecnologias Utilizadas
 
-| Categoria                | Ferramentas                                                                                                             |
+## 🛠 Technologies Used
+
+| Category                | Tools                                                                                                             |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | **Linguagem**            | Python 3.11+                                                                                                            |
 | **Framework Web**        | [Streamlit](https://streamlit.io/)                                                                                      |
@@ -113,81 +115,84 @@ flowchart LR
 | **Processamento**        | pandas, numpy                                                                                                           |
 | **Controle de Versão**   | Git + GitHub                                                                                                            |
 
-## 📂 Estrutura do Projeto
+## 📂 Project Structure
 
 ```
-📦 avesrag-assistant
-├── app.py
-├── dev.py
-├── images/
-├── Pipfile
-├── Pipfile.lock
-├── README.md
-├── .gitignore
-├── requirements.txt
-├── script/
-│   ├── api/
-│   ├── data/
-│   ├── database/
-│   ├── infra/
-│   ├── notebooks/
-│   └── utils/
-└── venv
+📦 averag-assistant
+├── app.py                # Arquivo principal da aplicação 
+├── dev.py                # Script auxiliar para desenvolvimento e testes locais
+├── docs/                 # Documentação do projeto
+│   ├── images/           # Imagens usadas na documentação
+│   └── notes/            # Anotações, rascunhos e referências
+├── Pipfile               # Definições de dependências (Pipenv)
+├── Pipfile.lock          # Lockfile de dependências
+├── requirements.txt      # Alternativa de dependências para instalação via pip
+├── README.md             # Documentação principal (Português)
+├── README_ENG.md         # Documentação principal (Inglês)
+├── .gitignore            # Arquivos e pastas ignorados pelo Git
+├── script/               # Scripts organizados por domínio
+│   ├── api/              # Código relacionado a integração com APIs externas
+│   ├── data/             # Base de dados utilizada para RAG em json
+│   ├── database/         # Conexão e operações no banco de dados
+│   ├── notebooks/        # Jupyter Notebooks para análises e experimentos
+│   ├── services/        # Scripts da interface Streamlit
+│   └── utils/           # Funções auxiliares e utilitários genéricos
+└── venv/                 
+
 ```
 
-## ⚙️ Instalação e Execução
+## ⚙️ Installation and Execution
 
-### 1. Clone o repositório
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/usuario/avesrag-assistant.git
 cd avesrag-assistant
 ```
 
-### 2. Crie o ambiente virtual e instale dependências
+### 2. Create the virtual environment and install dependencies
 
 ```bash
 python -m venv venv
-source venv/bin/activate          # Linux/Mac
-source venv\Scripts\activate      # Windows
+source venv/bin/activate # Linux/Mac
+source venv\Scripts\activate # Windows
 pip install -r requirements.txt
 ```
 
-### 3. Configure variáveis de ambiente
+### 3. Configure environment variables
 
-Crie um arquivo `.env` com:
+Create an `.env` file with:
 
 ```
-GROQ_API_KEY="suachaveaqui"
-POSTGRES_URL="suauriaqui"
+GROQ_API_KEY="yourkeyhere"
+POSTGRES_URL="yourkeyhere"
 ```
 
-### 4. Execute a aplicação
+### 4. Run the application
 
 ```bash
 streamlit run app.py
 ```
 
-## 📈 Critérios de Avaliação Atendidos
+## 📈 Evaluation Criteria Met
 
-* [x] Problema descrito claramente
-* [x] Knowledge base + LLM no fluxo
-* [x] Avaliação de múltiplos retrieval flows
-* [x] Avaliação de diferentes prompts/modelos
-* [x] Interface em Streamlit
-* [ ] Ingestão automatizada via scripts Python
-* [ ] Monitoramento com feedback + dashboard
-* [ ] Containerização com Docker
-* [x] Reprodutibilidade (instruções + requirements)
+* [x] Problem clearly described
+* [x] Knowledge base + LLM in the flow
+* [x] Evaluation of multiple retrieval flows
+* [x] Evaluation of different prompts/models
+* [x] Streamlit interface
+* [ ] Automated ingestion via Python scripts
+* [ ] Monitoring with feedback + dashboard
+* [ ] Containerization with Docker
+* [x] Reproducibility (instructions + requirements)
 
-## 📈 Próximos Passos
+## 📈 Next Steps
 
-* 🔧 Ajustar pesos e parâmetros de busca no MinSearch
-* 🐦 Expandir base para mais espécies brasileiras
-* 🧪 Criar testes unitários e de integração
-* 📊 Adicionar logging e monitoramento de consultas
+* 🔧 Adjust search weights and parameters in MinSearch
+* 🐦 Expand the database to more Brazilian species
+* 🧪 Create unit and integration tests
+* 📊 Add query logging and monitoring
 
+## 📜 License
 
-## 📜 Licença
-
-Distribuído sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Distributed under the MIT license. See the [LICENSE] file for more details.
