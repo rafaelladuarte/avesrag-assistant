@@ -1,21 +1,14 @@
 # 🦜 AvesRAG – Assistente de Identificação de Aves do Cerrado
 
+![cover](docs/images/avesrag.jpg)
+
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit\&logoColor=white)](https://streamlit.io/)
 [![LLM](https://img.shields.io/badge/LLM-llama--3.1--8b--instant-green)](#)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 🏆 Projeto desenvolvido para o **LLM Zoomcamp** da [DataTalks.Club](https://datatalks.club)
+> 🏆 Projeto desenvolvido para o curso **LLM Zoomcamp** da [DataTalks.Club](https://datatalks.club)
 
----
-
-## 🖼 Prévia da Interface
-
-> *(Adicione aqui um print da aplicação rodando)*
-
-![preview](docs/interface-preview.png)
-
----
 ## 📌 Problema 
 
 Os aplicativos de identificação de aves existentes funcionam, em geral, com fotos ou sons. No entanto, nem sempre o observador consegue registrar uma imagem ou gravação no momento do avistamento.
@@ -27,6 +20,11 @@ O AvesRAG foi criado para atender exatamente esse cenário, permitindo a identif
 O **AvesRAG Assistant** é um assistente inteligente interativo busca resolver esse problema, ele capaz de **identificar aves** com base em descrições fornecidas pelo usuário. Utilizando a técnica de **RAG (Retrieval-Augmented Generation)**, ele busca informações em uma base de dados personalizada e retorna **até 3 espécies candidatas** com descrições resumidas.
 
 ---
+## 🖼 Prévia da Interface
+
+> *(Adicione aqui um print da aplicação rodando)*
+
+![preview](images/preview.png)
 
 ## 🎯 Objetivos
 
@@ -34,7 +32,6 @@ O **AvesRAG Assistant** é um assistente inteligente interativo busca resolver e
 * Utilizar RAG para combinar **busca estruturada** e **geração de texto por LLM**.
 * Garantir que o backend e o pipeline sejam modulares e fáceis de adaptar.
 * Coletar feedback dos usuários para melhorar continuamente os resultados (Em desenvolvimento).
----
 
 ## 📊 Base de Dados
 
@@ -47,31 +44,30 @@ A base de dados utilizada foi criada a partir de:
 📂 Repositório do construtor da base:
 ➡ [rafaelladuarte/avesrag-dataset-builder](https://github.com/rafaelladuarte/avesrag-dataset-builder)
 
----
-
 ## 🧩 Arquitetura do Sistema
 
 ```mermaid
 flowchart LR
     A[Usuário] -->|Descrição da ave| B[Streamlit UI]
-    B --> C[RAG Pipeline]
-    C --> D[MinSearch - Vetores/Textos]
-    D --> C
-    C --> E[LLM - Groq API]
-    E --> B
-    B --> F[Feedback & Monitoramento - Em desenvolvimento]
+    B --> | Paramêtros | D[MinSearch - Busca Semântica + Vetorial]
+    D --> | Documentos Recuperados | E[LLM - Groq API]
+    E --> | Documentos Verificados | B
+    B --> | Validação do Resultado | F[Feedback - Em desenvolvimento]
+    F --> H[PostgresSQL]
+    B --> G[Monitoramento- Em desenvolvimento]
+    G --> H
+    H --> | Relatório com Métricas | B
 ```
 
----
 ## ✨ Funcionalidades
 
 ✅ Entrada de dados via formulário com validação . \
 ✅ Busca otimizada com MinSearch (semântica + textual). \
 ✅ Retorno de **até 3 espécies candidatas**. \
 ✅ Resumo automático das espécies com imagens.\
-🔄 Coleta de feedback do usuário (“Essa resposta foi útil?”)
+🔄 Coleta de feedback do usuário\
+🔄 Monitoramento do uso da LLM - API.
 
----
 ## 🔬 Avaliação
 
 ### 🔎 Retrieval
@@ -85,15 +81,17 @@ flowchart LR
 
 ### 🧠 LLM
 
-* Avaliados diferentes modelos (`llama`, `gemma`, `deepseek`).
+* Avaliados diferentes modelos open-source.
+  * `llama-3.1-8b-instant`
+  * `gemma2-9b-it `
+  * `deepseek-r1-distill-llama-70b`
 * Testados prompts *zero-shot* vs *few-shot*.
 * **Resultado**: `llama-3.1-8b-instant` com *few-shot* teve melhor equilíbrio entre custo e precisão.
 
----
-## 📊 Monitoramento (em desenvolvimento)
+## 📊 Feedback e Monitoramento (em desenvolvimento)
 
 * Coleta de feedback de usuários (sim/não sobre utilidade da resposta).
-* Armazenamento em JSON/SQLite.
+* Armazenamento em PostgreSQL
 * Dashboard no Streamlit com métricas:
 
   * Nº de consultas
@@ -115,15 +113,28 @@ flowchart LR
 | **Processamento**        | pandas, numpy                                                                                                           |
 | **Controle de Versão**   | Git + GitHub                                                                                                            |
 
----
-
 ## 📂 Estrutura do Projeto
 
 ```
 📦 avesrag-assistant
-(desenvolvimento)
+├── app.py
+├── dev.py
+├── images/
+├── Pipfile
+├── Pipfile.lock
+├── README.md
+├── .gitignore
+├── requirements.txt
+├── script/
+│   ├── api/
+│   ├── data/
+│   ├── database/
+│   ├── infra/
+│   ├── notebooks/
+│   └── utils/
+└── venv
 ```
----
+
 ## ⚙️ Instalação e Execução
 
 ### 1. Clone o repositório
@@ -137,8 +148,8 @@ cd avesrag-assistant
 
 ```bash
 python -m venv venv
-source venv/bin/activate   # Linux/Mac
-venv\Scripts\activate      # Windows
+source venv/bin/activate          # Linux/Mac
+source venv\Scripts\activate      # Windows
 pip install -r requirements.txt
 ```
 
@@ -147,7 +158,8 @@ pip install -r requirements.txt
 Crie um arquivo `.env` com:
 
 ```
-GROQ_API_KEY=suachaveaqui
+GROQ_API_KEY="suachaveaqui"
+POSTGRES_URL="suauriaqui"
 ```
 
 ### 4. Execute a aplicação
@@ -155,7 +167,6 @@ GROQ_API_KEY=suachaveaqui
 ```bash
 streamlit run app.py
 ```
----
 
 ## 📈 Critérios de Avaliação Atendidos
 
@@ -169,8 +180,6 @@ streamlit run app.py
 * [ ] Containerização com Docker
 * [x] Reprodutibilidade (instruções + requirements)
 
----
-
 ## 📈 Próximos Passos
 
 * 🔧 Ajustar pesos e parâmetros de busca no MinSearch
@@ -178,7 +187,6 @@ streamlit run app.py
 * 🧪 Criar testes unitários e de integração
 * 📊 Adicionar logging e monitoramento de consultas
 
----
 
 ## 📜 Licença
 

@@ -4,16 +4,18 @@ import streamlit as st
 
 def search_docs(query, filter, index):
     boost = {
-        "cores": 2.0,
+        "cores": 1.2,
         "dieta_principal": 0.5,
-        "tipo_bico": 0.8
+        "tipo_bico": 0.8,
+        "habitat": 0.5,
+        "tamanho": 0.2
     }
 
     results = index.search(
         query=query,
         filter_dict=filter,
         boost_dict=boost,
-        num_results=5
+        num_results=10
     )
 
     return results
@@ -36,6 +38,9 @@ def build_prompt(query, search_results):
     disponíveis no CONTEXTO extraído da base de dados. Não adicione
     informações externas.
 
+    ⚠️ **Atenção especial:** As cores observadas da ave têm maior peso na identificação.
+    Priorize espécies cujas cores predominantes correspondam à descrição, antes de considerar outros atributos.
+
     QUESTÃO:
     {question}
 
@@ -45,7 +50,7 @@ def build_prompt(query, search_results):
     Instruções de saída:
     Retorne exatamente uma lista com até 3 espécies de aves no formato JSON
     mostrado abaixo. As espécies devem estar ordenadas da mais para a menos
-    semelhante ao contexto fornecido.
+    semelhante ao contexto fornecido, considerando **cores predominantes como o critério mais importante**.
 
     A resposta deve conter apenas o JSON, sem comentários, títulos ou qualquer
     outro texto adicional.
@@ -61,9 +66,7 @@ def build_prompt(query, search_results):
             {
                 "taxonomia": doc['taxonomia'],
                 "nome_popular": doc['nome_pt'],
-                "caracteristicas": doc['caracteristicas'],
-                "alimentacao": doc['alimentacao'],
-                "habitos": doc['habitos']
+                "descricao": doc['resumo_llm']
             }
         )
 
@@ -86,7 +89,12 @@ def filter_result(answer, search_results):
             "nome_pt": s["nome_pt"],
             "url_wikiaves": s["url_wikiaves"],
             "resumo_llm": s["resumo_llm"],
-            "url_image": s["url_image"]
+            "url_image": s["url_image"],
+            'cores': s["cores"],
+            'tamanho': s["tamanho"],
+            'tipo_bico': s["tipo_bico"],
+            'dieta_principal': s["dieta_principal"],
+            'habitat': s["habitat"],
         }
         for a in answer
         if (s := mapa_taxonomia.get(a))

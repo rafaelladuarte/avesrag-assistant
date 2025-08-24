@@ -43,6 +43,7 @@ watchdog = "==6.0.0"
 pandas = "*"
 minsearch = "*"
 rapidfuzz = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 ipykernel = "*"

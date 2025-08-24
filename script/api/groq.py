@@ -1,15 +1,18 @@
 import requests
+import random
 
 
 class GroqAPI:
-    def __init__(self, api_key: str):
-        self._api_key = api_key
+    def __init__(self, list_api_key: list):
+        self._list_api_key = list_api_key
 
     def send_prompt(self, prompt):
+
+        choice_key = random.choice(self._list_api_key)
         response = requests.post(
             "https://api.groq.com/openai/v1/chat/completions",
             headers={
-                "Authorization": f"Bearer {self._api_key}",
+                "Authorization": f"Bearer {choice_key}",
                 "Content-Type": "application/json"
             },
             json={
