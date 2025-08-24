@@ -49,18 +49,7 @@ A base de dados utilizada foi criada a partir de:
 
 ## 🧩 Arquitetura do Sistema
 
-```mermaid
-flowchart LR
-    A[Usuário] -->|Descrição da ave| B[Streamlit UI]
-    B --> | Paramêtros | D[MinSearch - Busca Semântica + Vetorial]
-    D --> | Documentos Recuperados | E[LLM - Groq API]
-    E --> | Documentos Verificados | B
-    B --> | Validação do Resultado | F[Feedback - Em desenvolvimento]
-    F --> H[PostgresSQL]
-    B --> G[Monitoramento- Em desenvolvimento]
-    G --> H
-    H --> | Relatório com Métricas | B
-```
+![pipeline](docs/images/diagrama.png)
 
 ## ✨ Funcionalidades
 

@@ -98,9 +98,9 @@ flowchart LR
     E --> | Documentos Verificados | B
     B --> | Validação do Resultado | F[Feedback]
     F --> H[PostgresSQL]
-    B --> G[Monitoramento- Em desenvolvimento]
-    G --> H
-    H --> | Relatório com Métricas | B
+    B --> G[Monitoramento - Em desenvolvimento]
+    G --> I[Dashboard]
+  
 ```
 
 ## ✨ Features
