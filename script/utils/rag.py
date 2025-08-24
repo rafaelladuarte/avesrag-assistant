@@ -15,7 +15,7 @@ def search_docs(query, filter, index):
         query=query,
         filter_dict=filter,
         boost_dict=boost,
-        num_results=20
+        num_results=10
     )
 
     return results
@@ -114,7 +114,7 @@ def get_result(index,  llm, query, filter, groq=None):
                 result = json.loads(result)
         else:
             result = search_docs(index=index, query='', filter=filter)
-        return result
+        return result[:3]
     except Exception as e:
         st.error(f"Erro ao processar a busca: {str(e)}")
         return []
