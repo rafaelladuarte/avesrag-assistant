@@ -1,48 +1,3 @@
-# 🦜 AvesRAG – Assistente de Identificação de Aves do Cerrado
-
-![cover](docs/images/avesrag.jpg)
-
-[![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python)](https://www.python.org/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit\&logoColor=white)](https://streamlit.io/)
-[![LLM](https://img.shields.io/badge/LLM-llama--3.1--8b--instant-green)](#)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
-> 🏆 Project developed for the **LLM Zoomcamp** course from [DataTalks.Club](https://datatalks.club)
-
-## 📌 Problem
-
-Existing bird identification applications generally work with photos or sounds. However, observers are not always able to capture an image or recording at the time of sighting.
-In these situations, the only available reference is the visual description of the bird, such as color, size, beak shape, or behavior.
-AvesRAG was created to address this exact scenario, allowing bird identification based on text descriptions.
-
-## 📌 About the Project
-
-The **AvesRAG Assistant** is an interactive intelligent assistant that aims to solve this problem by identifying birds based on user-provided descriptions. Using the **RAG (Retrieval-Augmented Generation)** technique, it searches for information in a custom database and returns **up to 3 candidate species** with summarized descriptions.
-
----
-## 🖼 Interface Preview
-
-> *(Adicione aqui um print da aplicação rodando)*
-
-![preview](images/preview.png)
-
-## 🎯 Objectives
-
-* Create an interactive tool for bird identification.
-* Use RAG to combine structured search and text generation via LLM.
-* Ensure the backend and pipeline are modular and easy to adapt.
-* Collect user feedback to continuously improve results (In development).
-
-## 📊 Database
-
-The database used was created from:
-
-* Integration of existing databases.
-* Scraping from online sources.
-* Data parameterization via LLM.
-
-
-5.000 / 5.000
 # 🦜 AvesRAG – Bird Identification Assistant Cerrado
 
 ![cover](docs/images/avesrag.jpg)
@@ -67,9 +22,7 @@ The **AvesRAG Assistant** is an interactive intelligent assistant that aims to s
 ---
 ## 🖼 Interface Preview
 
-> *(Add a screenshot of the application running here)*
-
-![preview](images/preview.png)
+![preview](docs/images/preview.png)
 
 ## 🎯 Objectives
 
@@ -92,13 +45,13 @@ The database used was created from:
 
 ```mermaid
 flowchart LR
-    A[Usuário] -->|Descrição da ave| B[Streamlit UI]
-    B --> | Paramêtros | D[MinSearch - Busca Semântica + Vetorial]
-    D --> | Documentos Recuperados | E[LLM - Groq API]
-    E --> | Documentos Verificados | B
-    B --> | Validação do Resultado | F[Feedback]
+    A[User] -->|Describe the bird| B[Streamlit UI]
+    B --> | Params | D[MinSearch - Search Semantic + Vector]
+    D --> | Retriviel Documents | E[LLM - Groq API]
+    E --> | Verify Documents | B
+    B --> | Validation of the Result | F[Feedback]
     F --> H[PostgresSQL]
-    B --> G[Monitoramento - Em desenvolvimento]
+    B --> G[Monitoring - In Developt]
     G --> I[Dashboard]
   
 ```
@@ -112,41 +65,39 @@ flowchart LR
 ✅  User feedback collection\
 🔄 Monitoring LLM usage - API.
 
-## 🔬 Avaliação
+## 🔬 Evaluation
 
 ### 🔎 Retrieval
 
-* **Testes realizados**:
+* **Tests performed**:
 
-  * BM25 (textual)
-  * Vetorial (embeddings)
-  * Busca híbrida (melhor resultado)
-* **Resultado**: busca híbrida apresentou maior recall e precisão para descrições curtas.
+* BM25 (textual)
+* Vector (embeddings)
+* Hybrid search (best result)
+* **Result**: Hybrid search showed higher recall and precision for short descriptions.
 
 ### 🧠 LLM
 
-* Avaliados diferentes modelos open-source.
-  * `llama-3.1-8b-instant`
-  * `gemma2-9b-it `
-  * `deepseek-r1-distill-llama-70b`
-* Testados prompts *zero-shot* vs *few-shot*.
-* **Resultado**: `llama-3.1-8b-instant` com *few-shot* teve melhor equilíbrio entre custo e precisão.
+* Different open-source models evaluated. * `llama-3.1-8b-instant`
+* `gemma2-9b-it`
+* `deepseek-r1-distill-llama-70b`
+* Tested *zero-shot* vs *few-shot* prompts.
+* **Result**: `llama-3.1-8b-instant` with *few-shot* had a better balance between cost and accuracy.
 
-## 📊 Feedback e Monitoramento (em desenvolvimento)
+## 📊 Feedback and Monitoring (in development)
 
-* Coleta de feedback de usuários (sim/não sobre utilidade da resposta).
-* Armazenamento em PostgreSQL
-* Dashboard no Streamlit com métricas:
+* User feedback collection (yes/no on answer usefulness).
+* Storage in PostgreSQL
+* Streamlit dashboard with metrics:
 
-  * Nº de consultas
-  * Espécies mais buscadas
-  * Taxa de respostas aceitas
-  * Tempo médio de resposta
+* Number of queries
+* Most searched species
+* Accepted answer rate
+* Average response time
 
----
-## 🛠 Tecnologias Utilizadas
+## 🛠 Technologies Used
 
-| Categoria                | Ferramentas                                                                                                             |
+| Category                | Tools                                                                                                             |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | **Linguagem**            | Python 3.11+                                                                                                            |
 | **Framework Web**        | [Streamlit](https://streamlit.io/)                                                                                      |
@@ -157,85 +108,86 @@ flowchart LR
 | **Processamento**        | pandas, numpy                                                                                                           |
 | **Controle de Versão**   | Git + GitHub                                                                                                            |
 
-## 📂 Estrutura do Projeto
+## 📂 Project Structure
 
 ```
-📦 avesrag-assistant
 📦 averag-assistant
-├── app.py                # Main application entry point
-├── dev.py                # Auxiliary script for local development and testing
-├── docs/                 # Project documentation
-│   ├── images/           # Images used in the documentation
-│   └── notes/            # Notes, drafts, and references
-├── Pipfile               # Dependency definitions (Pipenv)
-├── Pipfile.lock          # Dependency lockfile (ensures reproducibility)
-├── requirements.txt      # Alternative dependency list for pip installation
-├── README.md             # Main documentation (Portuguese)
-├── README_ENG.md         # Main documentation (English)
-├── .gitignore            # Files and folders ignored by Git
-├── script/               # Scripts organized by domain
-│   ├── api/              # Code related to external API integration
-│   ├── data/             # Dataset used for RAG (in JSON format)
-│   ├── database/         # Database connection and operations
-│   ├── notebooks/        # Jupyter Notebooks for analysis and experiments
-│   ├── services/         # Streamlit interface scripts
-│   └── utils/            # Helper functions and general utilities
-└── venv/                 # Python virtual environment (not versioned)
+├── app.py                # Arquivo principal da aplicação 
+├── dev.py                # Script auxiliar para desenvolvimento e testes locais
+├── docs/                 # Documentação do projeto
+│   ├── images/           # Imagens usadas na documentação
+│   └── notes/            # Anotações, rascunhos e referências
+├── Pipfile               # Definições de dependências (Pipenv)
+├── Pipfile.lock          # Lockfile de dependências
+├── requirements.txt      # Alternativa de dependências para instalação via pip
+├── README.md             # Documentação principal (Português)
+├── README_ENG.md         # Documentação principal (Inglês)
+├── .gitignore            # Arquivos e pastas ignorados pelo Git
+├── script/               # Scripts organizados por domínio
+│   ├── api/              # Código relacionado a integração com APIs externas
+│   ├── data/             # Base de dados utilizada para RAG em json
+│   ├── database/         # Conexão e operações no banco de dados
+│   ├── notebooks/        # Jupyter Notebooks para análises e experimentos
+│   ├── services/        # Scripts da interface Streamlit
+│   └── utils/           # Funções auxiliares e utilitários genéricos
+└── venv/                 
+
 ```
 
-## ⚙️ Instalação e Execução
+## ⚙️ Installation and Execution
 
-### 1. Clone o repositório
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/usuario/avesrag-assistant.git
 cd avesrag-assistant
 ```
 
-### 2. Crie o ambiente virtual e instale dependências
+### 2. Create the virtual environment and install dependencies
 
 ```bash
 python -m venv venv
-source venv/bin/activate          # Linux/Mac
-source venv\Scripts\activate      # Windows
+source venv/bin/activate # Linux/Mac
+source venv\Scripts\activate # Windows
 pip install -r requirements.txt
 ```
 
-### 3. Configure variáveis de ambiente
+### 3. Configure environment variables
 
-Crie um arquivo `.env` com:
+Create an `.env` file with:
 
 ```
-GROQ_API_KEY="suachaveaqui"
-POSTGRES_URL="suauriaqui"
+GROQ_API_KEY1="yourkeyhere"
+GROQ_API_KEY2="yourkeyhere"
+POSTGRES_URL="yourkeyhere"
 ```
 
-### 4. Execute a aplicação
+### 4. Run the application
 
 ```bash
 streamlit run app.py
 ```
 
-## 📈 Critérios de Avaliação Atendidos
+## 📈 Evaluation Criteria Met
 
-* [x] Problema descrito claramente
-* [x] Knowledge base + LLM no fluxo
-* [x] Avaliação de múltiplos retrieval flows
-* [x] Avaliação de diferentes prompts/modelos
-* [x] Interface em Streamlit
-* [ ] Ingestão automatizada via scripts Python
-* [ ] Monitoramento com feedback + dashboard
-* [ ] Containerização com Docker
-* [x] Reprodutibilidade (instruções + requirements)
+* [x] Problem clearly described
+* [x] Knowledge base + LLM in the flow
+* [x] Evaluation of multiple retrieval flows
+* [x] Evaluation of different prompts/models
+* [x] Streamlit interface
+* [ ] Automated ingestion via Python scripts
+* [x] Monitoring with feedback
+* [ ] Monitoring with use LLM  + dashboard
+* [ ] Containerization with Docker
+* [x] Reproducibility (instructions + requirements)
 
-## 📈 Próximos Passos
+## 📈 Next Steps
 
-* 🔧 Ajustar pesos e parâmetros de busca no MinSearch
-* 🐦 Expandir base para mais espécies brasileiras
-* 🧪 Criar testes unitários e de integração
-* 📊 Adicionar logging e monitoramento de consultas
+* 🔧 Adjust search weights and parameters in MinSearch
+* 🐦 Expand the database to more Brazilian species
+* 🧪 Create unit and integration tests
+* 📊 Add query logging and monitoring
 
+## 📜 License
 
-## 📜 Licença
-
-Distribuído sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Distributed under the MIT license. See the [LICENSE] file for more details.

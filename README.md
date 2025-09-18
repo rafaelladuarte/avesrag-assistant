@@ -7,16 +7,12 @@
 [![LLM](https://img.shields.io/badge/LLM-llama--3.1--8b--instant-green)](#)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 🏆 Projeto desenvolvido para o curso **LLM Zoomcamp** da [DataTalks.Club](https://datatalks.club)
+🏆 Projeto desenvolvido para o curso **LLM Zoomcamp** da [DataTalks.Club](https://datatalks.club)
 
-👉 [README in English](README_ENG.md)
-
-
-## 📌 Problema 
+## 📌 Problema (Problem)
 
 Os aplicativos de identificação de aves existentes funcionam, em geral, com fotos ou sons. No entanto, nem sempre o observador consegue registrar uma imagem ou gravação no momento do avistamento.
-Nessas situações, a única referência disponível é a descrição visual da ave, como por exemplo: cor, tamanho, formato do bico ou comportamento.
-O AvesRAG foi criado para atender exatamente esse cenário, permitindo a identificação de aves a partir de descrições em texto.
+Nessas situações, a única referência disponível é a descrição visual da ave, como por exemplo: cor, tamanho, formato do bico ou comportamento. O AvesRAG foi criado para atender exatamente esse cenário, permitindo a identificação de aves a partir de descrições em texto.
 
 ## 📌 Sobre o Projeto
 
@@ -25,9 +21,7 @@ O **AvesRAG Assistant** é um assistente inteligente interativo busca resolver e
 ---
 ## 🖼 Prévia da Interface
 
-> *(Adicione aqui um print da aplicação rodando)*
-
-![preview](images/preview.png)
+![preview](docs/images/preview.png)
 
 ## 🎯 Objetivos
 
@@ -47,11 +41,12 @@ A base de dados utilizada foi criada a partir de:
 📂 Repositório do construtor da base:
 ➡ [rafaelladuarte/avesrag-dataset-builder](https://github.com/rafaelladuarte/avesrag-dataset-builder)
 
+
 ## 🧩 Arquitetura do Sistema
 
 ![pipeline](docs/images/diagrama.png)
 
-## ✨ Funcionalidades
+## ✨ Funcionalidades (Features)
 
 ✅ Entrada de dados via formulário com validação . \
 ✅ Busca otimizada com MinSearch (semântica + textual). \
@@ -60,40 +55,40 @@ A base de dados utilizada foi criada a partir de:
 ✅  Coleta de feedback do usuário\
 🔄 Monitoramento do uso da LLM - API.
 
-## 🔬 Evaluation
+
+## 🔬 Avaliação
 
 ### 🔎 Retrieval
 
-* **Tests performed**:
+* **Testes realizados**:
+  * BM25 (textual)
+  * Vetorial (embeddings)
+  * Busca híbrida (melhor resultado)
 
-* BM25 (textual)
-* Vector (embeddings)
-* Hybrid search (best result)
-* **Result**: Hybrid search showed higher recall and precision for short descriptions.
+* **Resultado**: busca híbrida apresentou maior recall e precisão para descrições curtas.
 
 ### 🧠 LLM
 
-* Different open-source models evaluated. * `llama-3.1-8b-instant`
-* `gemma2-9b-it`
-* `deepseek-r1-distill-llama-70b`
-* Tested *zero-shot* vs *few-shot* prompts.
-* **Result**: `llama-3.1-8b-instant` with *few-shot* had a better balance between cost and accuracy.
+* Avaliados diferentes modelos open-source.
+  * `llama-3.1-8b-instant`
+  * `gemma2-9b-it `
+  * `deepseek-r1-distill-llama-70b`
+* Testados prompts *zero-shot* vs *few-shot*.
+* **Resultado**: `llama-3.1-8b-instant` com *few-shot* teve melhor equilíbrio entre custo e precisão.
 
-## 📊 Feedback and Monitoring (in development)
+## 📊 Feedback e Monitoramento (em desenvolvimento)
 
-* User feedback collection (yes/no on answer usefulness).
-* Storage in PostgreSQL
-* Streamlit dashboard with metrics:
+* Coleta de feedback de usuários (sim/não sobre utilidade da resposta).
+* Armazenamento em PostgreSQL
+* Dashboard no Streamlit com métricas:
+  * Nº de consultas
+  * Espécies mais buscadas
+  * Taxa de respostas aceitas
+  * Tempo médio de resposta
 
-* Number of queries
-* Most searched species
-* Accepted answer rate
-* Average response time
+## 🛠 Tecnologias Utilizadas
 
-
-## 🛠 Technologies Used
-
-| Category                | Tools                                                                                                             |
+| Categoria               | Ferramentas                                                                                                            |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | **Linguagem**            | Python 3.11+                                                                                                            |
 | **Framework Web**        | [Streamlit](https://streamlit.io/)                                                                                      |
@@ -104,7 +99,7 @@ A base de dados utilizada foi criada a partir de:
 | **Processamento**        | pandas, numpy                                                                                                           |
 | **Controle de Versão**   | Git + GitHub                                                                                                            |
 
-## 📂 Project Structure
+## 📂 Estrutura do Projeto
 
 ```
 📦 averag-assistant
@@ -130,16 +125,16 @@ A base de dados utilizada foi criada a partir de:
 
 ```
 
-## ⚙️ Installation and Execution
+## ⚙️ Instalação e Execução
 
-### 1. Clone the repository
+### 1. Clone o repositório
 
 ```bash
 git clone https://github.com/usuario/avesrag-assistant.git
 cd avesrag-assistant
 ```
 
-### 2. Create the virtual environment and install dependencies
+### 2. Crie o ambiente virtual e instale dependências
 
 ```bash
 python -m venv venv
@@ -148,40 +143,42 @@ source venv\Scripts\activate # Windows
 pip install -r requirements.txt
 ```
 
-### 3. Configure environment variables
+### 3. Configure variáveis de ambiente
 
-Create an `.env` file with:
+Crie um arquivo `.env` com::
 
 ```
-GROQ_API_KEY="yourkeyhere"
+GROQ_API_KEY1="yourkeyhere"
+GROQ_API_KEY2="yourkeyhere"
 POSTGRES_URL="yourkeyhere"
 ```
 
-### 4. Run the application
+### 4. Execute a aplicação
 
 ```bash
 streamlit run app.py
 ```
 
-## 📈 Evaluation Criteria Met
+## 📈 Critérios de Avaliação Atendidos
 
-* [x] Problem clearly described
-* [x] Knowledge base + LLM in the flow
-* [x] Evaluation of multiple retrieval flows
-* [x] Evaluation of different prompts/models
-* [x] Streamlit interface
-* [ ] Automated ingestion via Python scripts
-* [ ] Monitoring with feedback + dashboard
-* [ ] Containerization with Docker
-* [x] Reproducibility (instructions + requirements)
+* [x] Problema descrito claramente
+* [x] Knowledge base + LLM no fluxo
+* [x] Avaliação de múltiplos retrieval flows
+* [x] Avaliação de diferentes prompts/modelos
+* [x] Interface em Streamlit
+* [ ] Ingestão automatizada via scripts Python
+* [x] Monitoramento de feedback
+* [ ] Monitoramento do uso do LLM + dashboard
+* [ ] Containerização com Docker
+* [x] Reprodutibilidade (instruções + requirements)
 
-## 📈 Next Steps
+## 📈 Próximos Passos
 
-* 🔧 Adjust search weights and parameters in MinSearch
-* 🐦 Expand the database to more Brazilian species
-* 🧪 Create unit and integration tests
-* 📊 Add query logging and monitoring
+* 🔧 Ajustar pesos e parâmetros de busca no MinSearch
+* 🐦 Expandir base para mais espécies brasileiras
+* 🧪 Criar testes unitários e de integração
+* 📊 Adicionar logging e monitoramento de consultas
 
-## 📜 License
+## 📜 Licença
 
-Distributed under the MIT license. See the [LICENSE] file for more details.
+Distribuído sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.

@@ -1,16 +1,13 @@
 [
   {
+    "conservacao":"Quase Ameaçada",
     "atividade": [
       "diurna",
       "crepuscular"
     ],
     "cores": [
       "cinza",
-      "preto",
-      "amarelado"
-    ],
-    "cores2": [
-      "cinza"
+      "preto"
     ],
     "dieta_principal": [
       "folhas",
@@ -46,14 +43,11 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/ema"
   },
   {
+    "conservacao": "Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
-    "cores": [],
-    "cores2": [
-      "cinza",
-      "marrom"
-    ],
+    "cores": ["cinza","marrom"],
     "dieta_principal": [
       "frutas",
       "moluscos",
@@ -79,21 +73,20 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/jao"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna",
       "crepuscular"
     ],
     "cores": [
-      "marrom avermelhado",
-      "acinzentado"
-    ],
-    "cores2": [
-      "marrom"
+      "marrom",
+      "cinza"
     ],
     "dieta_principal": [
       "sementes",
       "insetos",
-      "vermes"
+      "vermes",
+      "artropodes"
     ],
     "especie": "parvirostris",
     "familia": "Tinamidae",
@@ -112,28 +105,20 @@
     "resumo_llm": "Crypturellus parvirostris, conhecido como inhambu-chororó, é uma ave de corpo marrom-avermelhado com tons acinzentados no dorso, ventre e barriga, e garganta no mesmo tom do peito. Seus pés e bico são avermelhados, e sua vocalização se caracteriza por uma sequência de notas em escala descendente. Alimenta-se de pequenas sementes, insetos, vermes, artrópodes e moluscos, procurando alimentos em folhagem apodrecida e engolindo grãos de areia. Distribui-se por grande parte do Brasil, Peru, Bolívia, Paraguai e Argentina, habitando áreas abertas como cerrados, campos, plantações e pastagens, bem como ambientes semi-abertos com árvores esparsas ou sub-bosque. Na reprodução, o macho assume a incubação dos ovos, que são de cor chocolate-claro rosáceo, e cuida dos filhotes, com ninhadas de 4 a 5 ovos e incubação durando entre 19 e 21 dias.",
     "tamanho": null,
     "taxonomia": "Crypturellus parvirostris",
-    "tipo_bico": "sondador",
+    "tipo_bico": "generalista",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/0073/3700882_cfd0b1081af51cb8bc01876524964a26.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/inhambu-chororo"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "preto",
       "bege",
-      "marrom escuro",
-      "canela",
-      "castanho claro",
       "marrom",
-      "cinza",
-      "branco",
-      "avermelhado",
-      "acinzentado"
-    ],
-    "cores2": [
-      "marrom"
+      "cinza"
     ],
     "dieta_principal": [
       "insetos",
@@ -158,16 +143,17 @@
     "resumo_llm": "Rhynchotus rufescens, uma ave terrícola da família Tinamidae, mede entre 38 e 42 cm, com machos pesando entre 700 a 920 g e fêmeas ligeiramente maiores, entre 815 a 1040 g. Possui plumagem dorsal escura com listras marrons e bege, ventre claro barrado e asas mais claras com listras marrons, cinza e branco. O bico longo e levemente curvado, íris verde claro e pernas cinza claro são características distintivas. Habita campos, cerrados, buritizais e caatingas, sendo experta em camuflagem e voando pouco, com voos curtos e barulhentos. Alimenta-se de insetos, sementes, raízes e ocasionalmente pequenos roedores, forrageando com fortes pernas e bico. Na reprodução, o macho constrói o ninho, incuba os ovos e cuida dos filhotes, permitindo que a fêmea se reproduza várias vezes, uma adaptação para rápida procriação. Distribui-se pelo Brasil, Argentina, Uruguai, Paraguai e Bolívia, com ocorrência excepcional na ilha do Marajó.",
     "tamanho": "media",
     "taxonomia": "Rhynchotus rufescens",
-    "tipo_bico": "sondador",
+    "tipo_bico": "generalista",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/1374/4731559_077c3c0ee30a7714ed30a26ff2a3be32.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/perdiz"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "marrons",
+      "marron",
       "amarelo",
       "branco"
     ],
@@ -177,10 +163,9 @@
       "branco"
     ],
     "dieta_principal": [
-      "grãos",
-      "artrópodes",
-      "moluscos",
-      "frutas"
+      "graos",
+      "artropodes",
+      "moluscos"
     ],
     "especie": "maculosa",
     "familia": "Tinamidae",
@@ -198,17 +183,19 @@
     "resumo_llm": "A espécie *Nothura maculosa* é uma ave de pequeno porte, medindo aproximadamente 23 centímetros e pesando cerca de 300 gramas. Apresenta coloração camuflada, com tons marrons barrados de amarelo, e se distingue de espécies semelhantes, como a *Nothura boraquira*, por suas pernas brancas e íris alaranjadas. Alimenta-se de grãos, artrópodes, moluscos e frutas caídas. Distribui-se pelo Brasil (Norte, Nordeste, Centro-Oeste, Sudeste e Sul), Argentina, Uruguai e Paraguai, habitando campos abertos, pastagens, culturas agrícolas e áreas rurais próximas a residências, evitando matas densas. É conhecida por sua confiança no ser humano, permitindo aproximação próxima, e por seu voo pesado e barulhento quando perturbada. Na reprodução, a fêmea põe 7 a 8 ovos de coloração escura no chão, e o macho assume a incubação e os cuidados com os filhotes.",
     "tamanho": "pequena",
     "taxonomia": "Nothura maculosa",
-    "tipo_bico": null,
+    "tipo_bico": "generalista",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/3483/3843453_6353f6e5fa02dbced00883058a09b17a.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/codorna-amarela"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "preto",
-      "branco"
+      "branco",
+      "cinza"
     ],
     "cores2": [
       "preto",
@@ -224,7 +211,8 @@
     "genero": "Anhima",
     "habitat": [
       "pantanal",
-      "área de água com vegetação"
+      "lago",
+      "rio"
     ],
     "nome_eng": "Horned Screamer",
     "nome_pt": "anhuma",
@@ -238,6 +226,7 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/anhuma"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "crepuscular",
       "noturna"
@@ -257,8 +246,6 @@
       "bege"
     ],
     "dieta_principal": [
-      "plantas",
-      "gramíneas",
       "invertebrados",
       "peixes",
       "grãos"
@@ -268,27 +255,30 @@
     "frequencia_normalizada": 0.137254902,
     "genero": "Dendrocygna",
     "habitat": [
-      "área alagada"
+      "área alagada",
+      "lago"
     ],
     "nome_eng": "White-faced Whistling-Duck",
     "nome_pt": "irerê",
     "ordem": "Anseriformes",
     "qtd_registros": 22.0,
     "resumo_llm": "A espécie Dendrocygna viduata, conhecida como marreca, apresenta uma máscara facial branca contrastando com o pescoço negro e bico escuro. Seu plumagem varia, com transições bruscas de branco para castanho-avermelhado no pescoço e peito, estrias finas nos flancos e partes superiores marrom com bordas bege. Asas escuras em voo e pernas cinza-escuro completam suas características físicas. Os juvenis carecem da máscara branca e têm coloração mais desbotada. Alimentando-se de plantas submersas, gramíneas, invertebrados aquáticos, pequenos peixes e girinos, eles também se alimentam de grãos de arroz caídos no Rio Grande do Sul. Distribuída pelo Brasil e outros países da América do Sul, além da África, incluindo Madagascar e Comores, esta ave habita variados corpos d'água, até mesmo lagos poluídos. Ativa principalmente ao crepúsculo e à noite, forma bandos, especialmente durante migrações no sul do Brasil. A reprodução ocorre em ninhos no chão, com a fêmea botando 8 a 14 ovos, incubados por ambos os pais, que também cuidam dos filhotes.",
-    "tamanho": null,
+    "tamanho": "media",
     "taxonomia": "Dendrocygna viduata",
     "tipo_bico": "filtrador",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/0091/1900396_9fc844dc6c02ac703740519fa9509f3e.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/irere"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "cinza",
       "preto",
-      "branco"
+      "branco",
+      "vermelho"
     ],
     "cores2": [
       "cinza",
@@ -324,17 +314,15 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/marreca-cabocla"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna",
       "crepuscular"
     ],
     "cores": [
       "branco",
-      "preto"
-    ],
-    "cores2": [
       "preto",
-      "branco"
+      "azulado"
     ],
     "dieta_principal": [
       "raízes",
@@ -347,7 +335,7 @@
       "mamíferos",
       "peixes",
       "cobras",
-      "filhotes de tartaruga",
+      "tartaruga",
       "centopéias",
       "invertebrados"
     ],
@@ -357,28 +345,26 @@
     "genero": "Cairina",
     "habitat": [
       "mata ciliar",
-      "áreas alagadas"
+      "áreas alagadas",
+      "lagos"
     ],
     "nome_eng": "Muscovy Duck",
     "nome_pt": "pato-do-mato",
     "ordem": "Anseriformes",
     "qtd_registros": 31.0,
     "resumo_llm": "A Cairina moschata, ave de tamanho moderado, pode ser distinguida pelas suas características físicas destacadas. Possui um comprimento de 85 centímetros e uma envergadura de 120 centímetros, com machos pesando cerca de 2,2 kg e fêmeas, ao redor de 1,1 kg. O hábitat da espécie abrange o Brasil, com exceção de menor frequência no leste e sul. Seus ninhos são construídos em ocos de árvores ou palmeiras mortas, localizados próximos à água ou nas margens das matas ribeirinhas. A alimentação é diversificada, consistindo em raízes, sementes, folhas aquáticas, além de anfíbios, répteis, crustáceos, pequenos mamíferos, peixes, répteis e invertebrados aquáticos. A reprodução ocorre entre outubro e março, resultando em crias que seguem a mãe para a água logo após o nascimento.",
-    "tamanho": "grande",
+    "tamanho": "media",
     "taxonomia": "Cairina moschata",
     "tipo_bico": "filtrador",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/276/672817_84e061e11861115c2f083b78705ed155.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/pato-do-mato"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
-    "cores": [],
-    "cores2": [
-      "marrom",
-      "cinza"
-    ],
+    "cores": ["preto","branco","marrom"],
     "dieta_principal": [
       "sementes",
       "folhas",
@@ -390,7 +376,8 @@
     "frequencia_normalizada": 0.0,
     "genero": "Sarkidiornis",
     "habitat": [
-      "área alagada",
+      "lagos",
+      "rios",
       "brejo",
       "pantanal"
     ],
@@ -398,7 +385,7 @@
     "nome_pt": "pato-de-crista",
     "ordem": "Anseriformes",
     "qtd_registros": 1.0,
-    "resumo_llm": "**Resumo:**  A espécie *Sarkidiornis sylvicola*, conhecida como pato-de-crista, é uma ave de porte médio, com o macho alcançando até 75 centímetros de comprimento e 2 quilos de peso. De hábitos ariscos, evita a aproximação de observadores e é frequentemente vista em bandos voando em fila indiana. Alimenta-se principalmente de sementes aquáticas, folhas, vermes e pequenos invertebrados. Distribui-se desde o Brasil até a Argentina, habitando áreas úmidas como rios, lagoas, açudes e pântanos. Na época da reprodução, o macho apresenta uma crista mais proeminente e plumagem mais colorida, enquanto a fêmea, menor e sem carúncula sobre o bico, constrói ninhos em cavidades de árvores, onde pode colocar até 20 ovos. Após a eclosão, os filhotes abandonam o ninho rapidamente e seguem a mãe.",
+    "resumo_llm": "A espécie *Sarkidiornis sylvicola*, conhecida como pato-de-crista, é uma ave de porte médio, com o macho alcançando até 75 centímetros de comprimento e 2 quilos de peso. De hábitos ariscos, evita a aproximação de observadores e é frequentemente vista em bandos voando em fila indiana. Alimenta-se principalmente de sementes aquáticas, folhas, vermes e pequenos invertebrados. Distribui-se desde o Brasil até a Argentina, habitando áreas úmidas como rios, lagoas, açudes e pântanos. Na época da reprodução, o macho apresenta uma crista mais proeminente e plumagem mais colorida, enquanto a fêmea, menor e sem carúncula sobre o bico, constrói ninhos em cavidades de árvores, onde pode colocar até 20 ovos. Após a eclosão, os filhotes abandonam o ninho rapidamente e seguem a mãe.",
     "tamanho": "media",
     "taxonomia": "Sarkidiornis sylvicola",
     "tipo_bico": "filtrador",
@@ -406,14 +393,12 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/pato-de-crista"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna",
       "crepuscular"
     ],
-    "cores": [],
-    "cores2": [
-      ""
-    ],
+    "cores": ["marrom", "azul", "cinza"],
     "dieta_principal": [
       "plantas aquáticas",
       "crustáceos",
@@ -435,18 +420,19 @@
     "nome_pt": "marreca-anullaí",
     "ordem": "Anseriformes",
     "qtd_registros": null,
-    "resumo_llm": "Desculpe, mas não há informações suficientes fornecidas sobre a espécie *Amazonetta brasiliensis* para gerar um resumo objetivo. Se você puder fornecer os detalhes necessários sobre as características físicas, alimentação, reprodução, hábitos, distribuição geográfica e habitat, ficarei feliz em ajudar!",
+    "resumo_llm": "A Amazonetta brasiliensis (Gmelin, 1789), pertencente à família Anatidae, é um marreco de pequeno porte que ocupa lagoas, banhados e coleções d’água temporárias. O macho distingue-se pelo bico vermelho, maior extensão de verde nas asas e coloração cefálica em tons de marrom a cinza, enquanto a fêmea apresenta bico preto com manchas brancas próximas ao bico e acima dos olhos; as vocalizações também diferem, sendo um assobio agudo no macho e um grasnado na fêmea. Sua dieta filtradora inclui plantas aquáticas, crustáceos, moluscos, insetos, minhocas e grãos, com frequência em áreas de arroz irrigado no sul do Brasil. Vive em casais ou bandos, apresenta atividade principalmente diurna e convive pacificamente com outras espécies de anseriformes. A reprodução ocorre do final do verão ao início do inverno, com ninhos construídos em touceiras próximas a banhados, postura de seis a nove ovos (podendo chegar a onze) e cuidado biparental até o desenvolvimento pleno dos filhotes, sendo a fêmea reconhecida pela protuberância abdominal durante a fase de postura.",
     "tamanho": "pequena",
     "taxonomia": "Amazonetta brasiliensis",
     "tipo_bico": "filtrador",
-    "url_image": null,
-    "url_wikiaves": "https://www.wikiaves.com.br/wiki/marreca-anullai"
+    "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/1241/1421415_17cd58516966008732554e7af6e575ef.jpg",
+    "url_wikiaves": "https://www.wikiaves.com.br/wiki/marreca-ananai"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
-    "cores": [],
+    "cores": ["marrom","avermelhado", "cinza"],
     "cores2": [
       "preto",
       "branco"
@@ -473,18 +459,11 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/marreca-caucau"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "vermelho",
-      "branco",
-      "cinza",
-      "pardacento claro",
-      "ferrugíneo"
-    ],
-    "cores2": [
-      "vermelho",
       "cinza",
       "marrom"
     ],
@@ -514,20 +493,15 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/jacupemba"
   },
   {
+    "conservacao":"Vulnerável",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "preto",
       "branco",
-      "cinza"
-    ],
-    "cores2": [
-      "preto",
-      "branco",
-      "bege",
-      "azul",
-      "preto"
+      "cinza",
+      "marrom"
     ],
     "dieta_principal": [
       "frutas",
@@ -559,27 +533,22 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/mutum-de-penacho"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna",
       "noturna"
     ],
     "cores": [
-      "pardo-acinzentada",
-      "preta",
+      "cinza",
+      "marrom",
       "branco",
-      "amarelo"
-    ],
-    "cores2": [
-      "preto",
-      "pardo-acinzentada",
-      "branco",
-      "amarelo"
+      "pardo"
     ],
     "dieta_principal": [
-      "peixes pequenos",
+      "peixe",
       "alevinos",
-      "anfíbios",
-      "invertebrados diversos",
+      "anfibios",
+      "invertebrados",
       "algas"
     ],
     "especie": "dominicus",
@@ -588,7 +557,8 @@
     "genero": "Tachybaptus",
     "habitat": [
       "área alagada",
-      "lagos"
+      "lagos",
+      "poços artificiais"
     ],
     "nome_eng": "Least Grebe",
     "nome_pt": "mergulhão-pequeno",
@@ -597,19 +567,16 @@
     "resumo_llm": "O *Tachybaptus dominicus* é uma ave aquática de pequeno porte, medindo entre 21 e 26 cm e pesando entre 130 e 180 g, sendo o menor mergulhão do continente. Apresenta coloração pardo-acinzentada, com garganta preta durante o acasalamento, e asas com um grande espelho branco notável. Seus olhos são amarelo-claros. Alimenta-se principalmente de peixes pequenos, alevinos, anfíbios, girinos e invertebrados, capturando alimentos em mergulhos submarinos que podem durar até 15 segundos, além de consumir algas e outros materiais vegetais. Distribui-se do sul dos Estados Unidos ao norte da Argentina, incluindo todo o Brasil. Habita diversas massas d’água, desde lagos isolados até poços artificiais e áreas alagadas, preferindo ambientes não cobertos por plantas aquáticas. Na reprodução, constrói um ninho flutuante volumoso, com ovos pequenos, alongados e brancos, que podem adquirir manchas escuras. A incubação dura 21 dias, e os casais se revezam no cuidado e alimentação dos filhotes.",
     "tamanho": "pequena",
     "taxonomia": "Tachybaptus dominicus",
-    "tipo_bico": null,
+    "tipo_bico": "pescador",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/8151/1518894_db2a848c155324b775483d874684c2d7.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/mergulhao-pequeno"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
-    "cores": [],
-    "cores2": [
-      "pretos",
-      "brancos"
-    ],
+    "cores": ["preto","branco","marrom","cinza escuro", "esverdeada","roxo"],
     "dieta_principal": [
       "sementes",
       "frutas"
@@ -633,24 +600,16 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/pombo-domestico"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "marrom",
-      "vinho",
       "branco",
-      "prateado",
       "preto",
       "roxo",
-      "cinza",
-      "marrom apagado",
-      "pálido"
-    ],
-    "cores2": [
-      "marrom",
-      "branco",
-      "roxo"
+      "cinza"
     ],
     "dieta_principal": [
       "sementes",
@@ -679,6 +638,7 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/pomba-asa-branca"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
@@ -686,10 +646,6 @@
       "vinho",
       "cinza-azulado",
       "prardo-claro"
-    ],
-    "cores2": [
-      "vinosa",
-      "cinza-azulado"
     ],
     "dieta_principal": [
       "frutas",
@@ -700,9 +656,10 @@
     "frequencia_normalizada": 0.1437908497,
     "genero": "Patagioenas",
     "habitat": [
-      " borda de florestas",
-      "campos com árvores isoladas",
-      "árvores nas margens de rios"
+      "borda de florestas",
+      "campos",
+      "margens de rios",
+      "manguezais"
     ],
     "nome_eng": "Pale-vented Pigeon",
     "nome_pt": "pomba-galega",
@@ -716,6 +673,7 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/pomba-galega"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
@@ -725,13 +683,6 @@
       "cinza",
       "vermelho-ferrugem",
       "azulada"
-    ],
-    "cores2": [
-      "marrom",
-      "cinza",
-      "azul",
-      "vermelho-ferrugem",
-      "preto"
     ],
     "dieta_principal": [
       "grãos",
@@ -759,17 +710,13 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/juriti-pupu"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "branco",
-      "rosado"
-    ],
-    "cores2": [
-      "branco",
-      "rosa",
-      "cinza"
+      "rosa"
     ],
     "dieta_principal": [
       "sementes",
@@ -781,13 +728,8 @@
     "genero": "Leptotila",
     "habitat": [
       "mata ciliar",
-      "sub-bosque fechado e denso",
-      "matas secundárias",
-      "matas mesófilas",
-      "matas secas",
-      "matas subtropicais",
-      "matas de araucária",
-      "Mata Atlântica de encosta e da baixada litorânea"
+      "bosque",
+      "matas secas"
     ],
     "nome_eng": "Gray-fronted Dove",
     "nome_pt": "juriti-de-testa-branca",
@@ -796,28 +738,17 @@
     "resumo_llm": "A Leptotila rufaxilla, conhecida como pomba-do-peito-rosado, é uma ave de aproximadamente 28 centímetros de comprimento e peso entre 115 e 183 gramas. Apresenta fronte esbranquiçada, nuca e peito levemente rosados, e ausência de coloração azulada nas costas, características que a distinguem de espécies congêneres. Seu canto, um \"pu\" melancólico com intervalos de cerca de 5 segundos, também é um marcador de identificação. Alimenta-se de frutos, sementes e insetos, semelhante a outras pombas. Distribui-se pelo Brasil, Venezuela e Uruguai, preferindo habitats florestais densos, como matas secundárias, mesófilas, Mata Atlântica e florestas subtropicais. Na reprodução, constrói ninhos com galhos e fezes, geralmente na borda de florestas, colocando 2 ovos brancos que incubam por 15 dias, com os filhotes permanecendo no ninho por 14 dias.",
     "tamanho": "pequena",
     "taxonomia": "Leptotila rufaxilla",
-    "tipo_bico": null,
+    "tipo_bico": "generalista",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/703/307395_0a22e7f53c54acf6115ea588c506868d.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/juriti-de-testa-branca"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "preto",
-      "branco",
-      "azul",
-      "amarronzado",
-      "ruivo",
-      "rosa",
-      "amarelo",
-      "verde"
-    ],
-    "cores2": [
-      "marrom",
-      "preto",
-      "azul"
+      "cinza"
     ],
     "dieta_principal": [
       "grãos",
@@ -845,20 +776,15 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/avoante"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "cinza-azulado",
-      " Pardo",
-      "castanho",
-      "amarelado"
-    ],
-    "cores2": [
-      "cinza-azulada",
       "pardo",
       "castanho",
-      "amarelo"
+      "amarelado"
     ],
     "dieta_principal": [
       "frutas",
@@ -869,8 +795,8 @@
     "frequencia_normalizada": 0.0065359477,
     "genero": "Claravis",
     "habitat": [
-      "cerca de habitações rurais",
-      "plantações de grãos",
+      "fazenda",
+      "plantações",
       "beira da mata",
       "restingas"
     ],
@@ -886,6 +812,7 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/pararu-azul"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
@@ -893,13 +820,6 @@
       "pardo escuro",
       "cinza azulada",
       "avermelhado"
-    ],
-    "cores2": [
-      "pardo-escuro",
-      "cinza",
-      "azul",
-      "vermelho",
-      "branco"
     ],
     "dieta_principal": [
       "sementes"
@@ -921,6 +841,7 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/rolinha-de-asa-canela"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
@@ -928,19 +849,13 @@
       "marrom avermelhado",
       "cinza azulada",
       "pardo",
-      "preto"
-    ],
-    "cores2": [
-      "marrom",
-      "cinza",
       "preto",
-      "branco",
-      "pardo"
+      "roxo"
     ],
     "dieta_principal": [
       "grãos",
       "sementes",
-      "quirera de milho"
+      "milho"
     ],
     "especie": "talpacoti",
     "familia": "Columbidae",
@@ -963,20 +878,13 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/rolinha-roxa"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "marrom",
       "acinzentado",
-      "cinza rosado",
-      "branco",
-      "escuro",
-      "castanho"
-    ],
-    "cores2": [
-      "marrom-acinzentada",
-      "cinza-rosado",
       "branco"
     ],
     "dieta_principal": [
@@ -1003,35 +911,30 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/rolinha-fogo-apagou"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna",
       "crepuscular"
     ],
     "cores": [
       "ocre-amarelada",
-      "amarilo",
-      "amarilo-alaranjado",
+      "amarelo",
+      "alaranjado",
       "branco-azulado",
       "pálido",
       "preto",
       "marrom",
       "branco"
     ],
-    "cores2": [
-      "ocre-amarelada",
-      "amarelo",
-      "alaranjada"
-    ],
     "dieta_principal": [
       "gafanhotos",
       "percevejos",
       "aranhas",
-      "miriápodes",
-      "lagartas peludas",
+      "lagartas",
       "lagartixas",
       "camundongos",
       "rãs",
-      "filhotes de outras aves",
+      "aves",
       "frutas",
       "bagas",
       "coquinhos",
@@ -1042,7 +945,7 @@
     "familia": "Cuculidae",
     "frequencia_normalizada": 0.4117647059,
     "genero": "Guira",
-    "habitat": [],
+    "habitat": ["campo", "pastagem","lavouras","area urbana", "canavial"],
     "nome_eng": "Guira Cuckoo",
     "nome_pt": "anu-branco",
     "ordem": "Cuculiformes",
@@ -1050,18 +953,16 @@
     "resumo_llm": "A guira (Guira guira) é uma ave de porte médio, medindo entre 36 e 42 cm, com uma cauda longa e graduada, e pesando entre 113 e 168,6 gramas. Apresenta coloração ocre-amarelada, com uma crista desgrenhada, pele facial nua amarela, bico forte e curvo de coloração amarelo-alaranjada, e íris variáveis. Seus juvenis distinguem-se por rêmiges com pontas brancas, bico acinzentado e íris escuras. Primariamente carnívora, a guira consome gafanhotos, percevejos, aranhas, além de pequenos vertebrados e, ocasionalmente, frutas e sementes. Distribui-se do sudeste do Amapá à Bolívia, Argentina e Uruguai. Na reprodução, os ovos são grandes e verdes, com uma rede branca, e podem ser postos em ninhos individuais ou coletivos. Os adultos nem sempre protegem os ninhos, e os filhotes deixam o ninho antes de voar, recebendo alimentação por algumas semanas. Ninhos abandonados são frequentemente utilizados por outros animais.",
     "tamanho": "media",
     "taxonomia": "Guira guira",
-    "tipo_bico": null,
+    "tipo_bico": "generalista",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/7891/1987557_8416fb527fa1250cfb58c86a210f42e3.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/anu-branco"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "preto"
-    ],
-    "cores2": [
       "preto"
     ],
     "dieta_principal": [
@@ -1081,7 +982,8 @@
     "habitat": [
       "campo natural",
       "área alagada",
-      "brejo"
+      "brejo",
+      "area urbana"
     ],
     "nome_eng": "Smooth-billed Ani",
     "nome_pt": "anu-preto",
@@ -1095,20 +997,11 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/anu-preto"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "canela",
-      "castanho",
-      "preto",
-      "esbranquiçado",
-      "cinza",
-      "areia",
-      "azarule",
-      "camember"
-    ],
-    "cores2": [
       "castanho",
       "canela",
       "branco"
@@ -1137,19 +1030,14 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/saci"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "ferrugínea",
-      "acinzentado",
-      "escuro",
-      "claras"
-    ],
-    "cores2": [
-      "ferrugíneo",
-      "acinzentado",
-      "escuro"
+      "marrom",
+      "alaranjada",
+      "acinzentado"
     ],
     "dieta_principal": [
       "insetos",
@@ -1165,7 +1053,6 @@
     "habitat": [
       "mata ciliar",
       "matas secundárias",
-      "capoeira",
       "parques",
       "bairros arborizados"
     ],
@@ -1174,30 +1061,22 @@
     "ordem": "Cuculiformes",
     "qtd_registros": 61.0,
     "resumo_llm": "A Piaya cayana, conhecida como chincoã ou alma-de-gato, é uma ave de tamanho médio que apresenta plumagem ferrugínea nas partes superiores, peito acinzentado, ventre escuro, cauda longa e escura. Alimenta-se de insetos, como lagartas e lagartixas, além de frutinhas e ovos de outras espécies, distribuindo-se por todo o Brasil e a América Latina. Habita matas ciliares, matas secundárias, capoeiras e áreas arborizadas às margens das cidades, onde desloca-se com facilidade usando sua cauda longa para planar. A reprodução ocorre na primavera, com ninhais feitas de galhos entrelaçados, onde a fêmea deposita cerca de 6 ovos que os pais se revezam para incubar e alimentar, cuidando dos filhotes por cerca de três semanas.",
-    "tamanho": null,
+    "tamanho": "media",
     "taxonomia": "Piaya cayana",
     "tipo_bico": "generalista",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/5371/1735018_0b419d9635f0305126f60d7b15bb8510.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/alma-de-gato"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "noturna",
       "diurna"
     ],
     "cores": [
       "alaranjada",
-      "acinzentadas",
-      "preto",
       "branco",
       "amarelada"
-    ],
-    "cores2": [
-      "alaranjado",
-      "acinzentado",
-      "preto",
-      "branco",
-      "amarelo"
     ],
     "dieta_principal": [
       "gafanhotos",
@@ -1215,7 +1094,6 @@
     "habitat": [
       "floresta alta",
       "varzea",
-      "capoiera",
       "floresta de galeria"
     ],
     "nome_eng": "Dark-billed Cuckoo",
@@ -1225,24 +1103,19 @@
     "resumo_llm": "Coccyzus melacoryphus é uma ave de plumagem distinta, com ventre alaranjado, dorso acinzentado escuro e cauda preta e branca. Os juvenis apresentam ventre amarelado, e a espécie mede aproximadamente 28,3 cm. Seus chamados são ventríloquos, como \"ga-ga-ga-go-go\" e uma sequência decrescente de \"goa\", além de vocalizações monossilábicas, inclusive à noite. Alimenta-se principalmente de insetos como gafanhotos, percevejos e miriápodes, além de lagartas urticantes e pequenos vertebrados. Distribui-se por todo o Brasil, desde a Venezuela até as Guianas, norte da Argentina até o sul da Bolívia e Paraguai, incluindo o Arquipélago de Galápagos. Habita o estrato médio de florestas altas, várzeas e capoeiras, sendo geralmente solitária e furtiva, com possíveis migrações sazonais. Na reprodução, no sul do Brasil durante o verão, o casal constrói um ninho pequeno, onde a fêmea põe 3 a 5 ovos verde-claros ou azuis.",
     "tamanho": "pequena",
     "taxonomia": "Coccyzus melacoryphus",
-    "tipo_bico": null,
+    "tipo_bico": "generalista",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/5495/5945218_c51ac278bb58018f46fcf378e4bd9d21.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/papa-lagarta-acanelado"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "preto",
       "amarelo",
-      "ferrugíneos",
-      "branco"
-    ],
-    "cores2": [
-      "preto",
-      "amarelo",
-      "marrom",
+      "marrom avermelhada",
       "branco"
     ],
     "dieta_principal": [
@@ -1273,11 +1146,11 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/papa-lagarta-de-asa-vermelha"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "noturna"
     ],
-    "cores": [],
-    "cores2": [
+    "cores": [
       "preto",
       "branco",
       "cinza"
@@ -1301,31 +1174,21 @@
     "ordem": "Nyctibiiformes",
     "qtd_registros": 21.0,
     "resumo_llm": "O urutau (Nyctibius griseus) é uma ave noturna que se destaca por sua adaptação única, o \"olho mágico\", caracterizado por duas fendas na pálpebra superior, permitindo que permaneça imóvel e vigilante, mesmo com os olhos fechados. Alimenta-se principalmente de insetos noturnos, como mariposas, cupins e besouros, caçando em voo. Distribui-se por todo o Brasil, incluindo áreas urbanas arborizadas, além de ser encontrado da Costa Rica à Bolívia, Argentina e Uruguai. Habita bordas de florestas, campos arborizados e cerrados, frequentemente se disfarçando em galhos. Seu canto é emitido à noite. Na reprodução, a fêmea põe um ovo em cavidades de árvores, incubando-o por aproximadamente 33 dias, com o filhote permanecendo no ninho por cerca de sete semanas.",
-    "tamanho": null,
+    "tamanho": "pequena",
     "taxonomia": "Nyctibius griseus",
     "tipo_bico": "insetivoro",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/5112/2115237_c340256c9fc6c7d340f8ebf328d54a3d.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/urutau"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "marrom acinzentado",
-      "castanho",
       "marrom",
       "cinza",
-      "branco",
-      "bege",
-      "acinzentado escuro",
-      "castanha"
-    ],
-    "cores2": [
-      "marrom",
-      "cinza",
-      "branco",
-      "amarelo"
+      "bege"
     ],
     "dieta_principal": [
       "besouros",
@@ -1356,16 +1219,13 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/bacurau"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "noturna"
     ],
     "cores": [
       "branco",
-      "amarelo"
-    ],
-    "cores2": [
-      "branco",
-      "amarelo",
+      "marrom amarelada",
       "cinza"
     ],
     "dieta_principal": [
@@ -1390,12 +1250,12 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/bacurau-chinta"
   },
   {
+    "conservacao": "Quase Ameaçada",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "branco-amarelado",
-      "branco"
+      "marrom amarelada"
     ],
     "cores2": [
       "branco",
@@ -1424,17 +1284,14 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/curiango-do-banhado"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "ruivo",
+      "marrom",
+      "alaranjada",
       "branco"
-    ],
-    "cores2": [
-      "preto",
-      "branco",
-      "roxo"
     ],
     "dieta_principal": [
       "insetos"
@@ -1455,20 +1312,18 @@
     "resumo_llm": "A espécie Hydropsalis maculicaudus, conhecida como bacurau, mede 19 cm e apresenta um colar ruivo na nuca, semelhante ao bacurau-tesoura, mas se distingue por sua cauda curta e quadrada. Os machos possuem garganta branca, cauda com faixa terminal e pintas brancas nas asas, características que são ausentes nas fêmeas. Distribui-se desde o México até a Bolívia, incluindo todo o Brasil, habitando ambientes como buritizais, matas de galeria, campos, varjões e áreas úmidas abertas. É comum encontrá-la em plantações de cana-de-açúcar pós-colheita, onde pousa nas palhas secas, realizando curtos vôos e raramente descendo em estradas. Seu canto ocorre tanto em vôo quanto quando empoleirada.",
     "tamanho": "pequena",
     "taxonomia": "Hydropsalis maculicaudus",
-    "tipo_bico": null,
+    "tipo_bico": "insetivoro",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/802/208162_44498f17c889d688e29c063a1e2881eb.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/bacurau-de-rabo-maculado"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "noturna"
     ],
     "cores": [
-      "ferrugena"
-    ],
-    "cores2": [
       "marrom",
-      "cinza"
+      "branco"
     ],
     "dieta_principal": [
       "insetos",
@@ -1496,27 +1351,15 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/bacurau-tesoura"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna",
       "noturna"
     ],
     "cores": [
-      "marrom pardacenta claro",
-      "marrom",
-      "acinzentado",
-      "castanho",
-      "camurça pálido",
-      "bege pálido",
-      "branco",
-      "cinza claro",
-      "pardacento",
-      "esbranquiçado"
-    ],
-    "cores2": [
       "marrom",
       "branco-acinzentado",
-      "castanho",
-      "camurça-pálido"
+      "castanho"
     ],
     "dieta_principal": [
       "insetos"
@@ -1540,18 +1383,15 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/bacurauzinho"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna",
       "crepuscular"
     ],
     "cores": [
-      "marrom-escura",
+      "marrom",
       "branco",
       "acinzentado"
-    ],
-    "cores2": [
-      "marrom",
-      "branco"
     ],
     "dieta_principal": [
       "insetos"
@@ -1575,18 +1415,14 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/corucao"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna",
       "crepuscular"
     ],
     "cores": [
-      "branco",
+      "marrom",
       "amarelado"
-    ],
-    "cores2": [
-      "branco",
-      "branca",
-      "amarelo"
     ],
     "dieta_principal": [
       "insetos"
@@ -1616,6 +1452,7 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/bacurau-norte-americano"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna",
       "noturna"
@@ -1641,17 +1478,18 @@
     "ordem": "Apodiformes",
     "qtd_registros": 1.0,
     "resumo_llm": "A espécie Cypseloides fumigatus é caracterizada por sua plumagem uniformemente negra e se alimenta principalmente de insetos. Distribui-se geograficamente pelo Brasil, Bolívia, Argentina e Paraguai, sendo considerada rara e frequentemente encontrada nas proximidades de cachoeiras. Em termos de reprodução, esta ave constrói seus ninhos em paredões rochosos próximos a cachoeiras, evidenciando uma adaptação específica ao seu ambiente aquático.",
-    "tamanho": null,
+    "tamanho": "pequena",
     "taxonomia": "Cypseloides fumigatus",
     "tipo_bico": "insetivoro",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/2052/2502745_ca932e723bcf790bb113ece5eeeca7c7.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/taperucu-preto"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
-    "cores": [],
+    "cores": ["cinza","pardo"],
     "cores2": [
       "preto"
     ],
@@ -1677,14 +1515,11 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/taperucu-velho"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "preto",
-      "branco"
-    ],
-    "cores2": [
       "preto",
       "branco"
     ],
@@ -1712,16 +1547,13 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/taperucu-de-coleira-branca"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna",
       "noturna"
     ],
     "cores": [
-      "bege claro"
-    ],
-    "cores2": [
-      "branco",
-      "bege"
+      "bege","acinzentada"
     ],
     "dieta_principal": [
       "insetos"
@@ -1746,6 +1578,7 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/andorinhao-do-temporal"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
@@ -1753,10 +1586,6 @@
       "preto",
       "marrom",
       "branco"
-    ],
-    "cores2": [
-      "branco",
-      "marrom"
     ],
     "dieta_principal": [
       "insetos"
@@ -1781,18 +1610,13 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/andorinhao-do-buriti"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "branco",
-      "preto",
-      "castanho",
-      "pardo",
-      "cinza"
-    ],
-    "cores2": [
-      "verde"
+      "preto"
     ],
     "dieta_principal": [
       "néctar",
@@ -1819,20 +1643,17 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/beija-flor-preto"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "preto",
       "branco",
-      "pardacentas",
+      "parda",
       "cinza",
       "amarelo",
       "verde"
-    ],
-    "cores2": [
-      "branco",
-      "preto"
     ],
     "dieta_principal": [
       "néctar",
@@ -1861,6 +1682,7 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/rabo-branco-acanelado"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna",
       "crepuscular"
@@ -1868,18 +1690,10 @@
     "cores": [
       "verde",
       "azul",
-      "roxo",
-      "violeta",
-      "preto",
-      "branco"
-    ],
-    "cores2": [
-      "verde",
-      "roxo",
-      "azul"
+      "roxo"
     ],
     "dieta_principal": [
-      "sementes"
+      "nectar"
     ],
     "especie": "serrirostris",
     "familia": "Trochilidae",
@@ -1889,7 +1703,7 @@
       "cerrado",
       "campo natural",
       "savana",
-      "borda da floresta",
+      "borda de floresta",
       "mata ciliar",
       "área urbana",
       "pantana"
@@ -1901,29 +1715,23 @@
     "resumo_llm": "O Colibri serrirostris, uma espécie de beija-flor comum no centro-oriental do Brasil, apresenta dimorfismo sexual: o macho, medindo cerca de 15 cm, exibe coloração verde com tons de roxo no peito e asas, orelhas violeta e uma mancha azulada na cabeça, enquanto a fêmea é verde-esbranquiçada sem as orelhas violeta. A dieta consiste em néctar e pequenos artrópodes. Habitando áreas semiabertas, bordas de floresta, cerrados e espaços urbanos, esta ave migra sazonalmente, como no outono, para vales mais baixos. Territorial agressivo, o macho defende suas flores e canta continuamente. Na reprodução, o macho realiza uma exibição aérea para cortejar a fêmea, que constrói o ninho com materiais como gravetos e teias. A fêmea incubação é quase constante, saindo raramente para se alimentar, já que o macho fornece comida, e só deixa o ninho em caso de perigo iminente.",
     "tamanho": "pequena",
     "taxonomia": "Colibri serrirostris",
-    "tipo_bico": null,
+    "tipo_bico": "nectarivoro",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/4602/2064191_bd9776fa1f6754bc5d58dbaf1b74da8b.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/beija-flor-de-orelha-violeta"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "vermelho",
       "azul",
-      "dourado",
+      "amarelo dourado",
       "preto",
       "branco",
       "bronze",
       "esverdeado"
-    ],
-    "cores2": [
-      "vermelho",
-      "azul",
-      "dourado",
-      "bronze",
-      "preto"
     ],
     "dieta_principal": [
       "frutas",
@@ -1942,20 +1750,22 @@
     "ordem": "Apodiformes",
     "qtd_registros": 1.0,
     "resumo_llm": "A espécie Heliactin bilophus é uma ave conhecida por seu impressionante dimorfismo sexual, onde o macho apresenta um topete bipartido com penas coloridas em vermelho, azul e dourado, contrastando com uma coroa de penas iridescentes azuis-escuras. Seu dorso é bronze-esverdeado, enquanto a garganta e o peito superior são negros, e a barriga e laterais do pescoço são brancas. A cauda longa e pontiaguda exibe um 'V' escuro quando vista por baixo em voo. Alimenta-se de néctar de flores do Cerrado, como cambará e cajueiro, além de pequenos insetos, e é conhecida por seu comportamento de pilhadora de néctar. Habita áreas abertas do Cerrado e florestas de galeria, utilizando poleiros para descansar e cantar. Distribui-se pelo Nordeste, Centro-Oeste e Sudeste do Brasil, Bolívia, com populações isoladas no Suriname e Maranhão. Considerada como Pouco Preocupante na Lista Vermelha da IUCN devido à sua ampla distribuição e abundância populacional.",
-    "tamanho": null,
+    "tamanho": "pequena",
     "taxonomia": "Heliactin bilophus",
     "tipo_bico": "nectarivoro",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/6312/2136571_39d9afc98e59ee182f81fe59fc28e61e.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/chifre-de-ouro"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
-    "cores": [],
-    "cores2": [
+    "cores": [
       "verde",
-      "azul"
+      "azul",
+      "roxo",
+      "preto"
     ],
     "dieta_principal": [
       "insetos",
@@ -1974,29 +1784,24 @@
     "ordem": "Apodiformes",
     "qtd_registros": 28.0,
     "resumo_llm": "A espécie *Anthracothorax nigricollis* é uma ave conhecida por seu marcante dimorfismo sexual, onde fêmeas e machos apresentam plumagens tão distintas que podem ser confundidas como espécies diferentes. Se alimenta principalmente de néctar e pequenos insetos, capturados em voos pairantes em áreas abertas, demonstrando uma tendência notável para o insetivorismo. Distribui-se amplamente, estando presente em todo o Brasil, além de outros países da América do Sul, como Argentina e Bolívia, com registros que se estendem do Panamá ao sul do continente. Seu habitat inclui bordas de matas, cerradões e paisagens abertas com arbustos e matas de aspecto parqueado. Na reprodução, constroem ninhos em forma de tigela, utilizando materiais macios como paina de gravatá e fiapos de xaxim, revestidos externamente com folhas, liquens e musgos, fixados com teias de aranhas. Os ninhos são colocados em galhos horizontais ou forquilhas de árvores e arbustos, às vezes próximos a corpos d'água. Um registro interessante foi feito em Ananindeua, no Pará, onde seis ninhos foram observados em fios de energia, cada um abrigando dois filhotes saudáveis.",
-    "tamanho": null,
+    "tamanho": "pequena",
     "taxonomia": "Anthracothorax nigricollis",
     "tipo_bico": "nectarivoro",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/308/803405_286e02ca7bf29790f7da3119e87691dd.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/beija-flor-de-veste-preta"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "vermelho-violeta",
+      "roxo",
       "verde",
-      "cinza-claro"
-    ],
-    "cores2": [
-      "vermelho",
-      "azul",
-      "preto",
-      "branco"
+      "cinza"
     ],
     "dieta_principal": [
-      "nctar",
+      "nectar",
       "flores"
     ],
     "especie": "squamosus",
@@ -2021,6 +1826,7 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/bico-reto-de-banda-branca"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
@@ -2030,14 +1836,8 @@
       "verde",
       "cinza"
     ],
-    "cores2": [
-      "azul",
-      "verde",
-      "rosa",
-      "branco"
-    ],
     "dieta_principal": [
-      "frutas"
+      "frutas", "nectar"
     ],
     "especie": "furcifer",
     "familia": "Trochilidae",
@@ -2059,6 +1859,7 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/bico-reto-azul"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna",
       "noturna"
@@ -2068,11 +1869,7 @@
       "ametista",
       "verde-bronze",
       "branco",
-      "roxa"
-    ],
-    "cores2": [
-      "azul",
-      "vermelho"
+      "rosa"
     ],
     "dieta_principal": [
       "néctar",
@@ -2102,18 +1899,11 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/estrelinha-ametista"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "verde",
-      "dourado",
-      "azul",
-      "metálico",
-      "branco",
-      "azul"
-    ],
-    "cores2": [
       "verde",
       "dourado",
       "azul",
@@ -2145,24 +1935,13 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/besourinho-de-bico-vermelho"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "esverdeadas",
-      "verde-metálica",
       "verde",
-      "preto",
-      "azul-violeta",
-      "cinza",
-      "branco",
-      "azul escuro"
-    ],
-    "cores2": [
-      "verde",
-      "azul-violeta",
-      "cinza",
-      "branco"
+      "azul"
     ],
     "dieta_principal": [
       "sementes",
@@ -2189,18 +1968,12 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/beija-flor-tesoura-verde"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "azul violeta",
-      "verde-escuro",
-      "branco",
-      "castanho-escuro",
-      "azul-escuro"
-    ],
-    "cores2": [
-      "azul violeta",
+      "preto",
       "azul-escuro"
     ],
     "dieta_principal": [
@@ -2231,23 +2004,13 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/beija-flor-tesoura"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "cinza-esverdeado",
-      "verde-acobreado",
       "cinza",
-      "branco",
-      "cinza-escuras",
-      "verde"
-    ],
-    "cores2": [
-      "preto",
-      "verde",
-      "azul",
-      "branco",
-      "cinza"
+      "branco"
     ],
     "dieta_principal": [
       "nectar",
@@ -2258,7 +2021,6 @@
     "frequencia_normalizada": 0.137254902,
     "genero": "Aphantochroa",
     "habitat": [
-      "floresta aberta",
       "floresta aberta"
     ],
     "nome_eng": "Sombre Hummingbird",
@@ -2273,21 +2035,14 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/beija-flor-cinza"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "esverdeado",
-      "aziulados",
+      "amarelada",
       "branco",
-      "alaranjado"
-    ],
-    "cores2": [
-      "esverdeada",
-      "verde",
-      "azul",
-      "vermelho",
-      "branco"
+      "verde"
     ],
     "dieta_principal": [
       "néctar",
@@ -2314,19 +2069,13 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/beija-flor-de-banda-branca"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "verde",
-      "branco",
-      "verde-bronzeado",
-      "escuro"
-    ],
-    "cores2": [
-      "verde",
-      "branco",
-      "preto"
+      "branco"
     ],
     "dieta_principal": [
       "néctar",
@@ -2351,22 +2100,15 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/beija-flor-de-garganta-verde"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "violeta",
+      "verde escuro",
       "branco",
-      "verde brilhante",
-      "azul escuro",
       "azul",
-      "ocrâceo"
-    ],
-    "cores2": [
-      "verde",
-      "azul",
-      "preto",
-      "branco"
+      "cinza"
     ],
     "dieta_principal": [
       "frutas",
@@ -2393,24 +2135,13 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/beija-flor-de-peito-azul"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "verde",
-      "dourado",
-      "acobreado",
-      "cinza",
       "branco",
-      "alaranjado",
-      "preto"
-    ],
-    "cores2": [
-      "verde",
-      "ouro",
-      "branco",
-      "vermelho",
-      "preto"
+      "amarelo esverdeado"
     ],
     "dieta_principal": [
       "néctar",
@@ -2422,8 +2153,7 @@
     "frequencia_normalizada": 0.0261437908,
     "genero": "Hylocharis",
     "habitat": [
-      "floresta aberta",
-      "savana"
+      "floresta aberta"
     ],
     "nome_eng": "Gilded Hummingbird",
     "nome_pt": "beija-flor-dourado",
@@ -2442,15 +2172,9 @@
       "diurna"
     ],
     "cores": [
-      "pardo-escuro",
+      "marrom",
       "branco",
-      "amarelo",
-      "preto"
-    ],
-    "cores2": [
-      "pardo-escuro",
-      "branco",
-      "amarelo"
+      "amarelo acizentado"
     ],
     "dieta_principal": [
       "caramujos",
@@ -3360,24 +3084,15 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/bigua"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna",
       "crepuscular"
     ],
     "cores": [
-      "castanho",
-      "branco",
-      "pardo-acinzentado",
-      "acinzentado",
-      "amarelo-clara",
-      "preto"
-    ],
-    "cores2": [
-      "preto",
-      "vermelho",
-      "branco",
       "marrom",
-      "cinza"
+      "acinzentado",
+      "preto"
     ],
     "dieta_principal": [
       "crustáceos",
@@ -3497,24 +3212,12 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/socozinho"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "branco",
-      "laranja pálido",
-      "amarelo",
-      "avermelhado",
-      "rosado",
-      "esverdeado escuro",
-      "preto"
-    ],
-    "cores2": [
-      "laranja",
-      "branco",
-      "preto",
-      "amarelo",
-      "rosa"
+      "branco"
     ],
     "dieta_principal": [
       "insetos",
@@ -3549,10 +3252,11 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/garca-vaqueira"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
-    "cores": [],
+    "cores": ["branco","preto","cinza"],
     "cores2": [
       "cinza",
       "acastanhado preto"
@@ -3591,20 +3295,12 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/garca-moura"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "branco",
-      "amarelo",
-      "amarelo-alaranjado",
-      "preto",
-      "esverdeado"
-    ],
-    "cores2": [
-      "branco",
-      "amarelo",
-      "preto"
+      "branco"
     ],
     "dieta_principal": [
       "peixes",
@@ -3639,6 +3335,7 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/garca-branca-grande"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna",
       "crepuscular"
@@ -3646,20 +3343,8 @@
     "cores": [
       "azul-claro",
       "cinza-escuro",
-      "preto",
-      "amarelo",
       "branco",
-      "canela",
-      "rosado",
-      "amarelo-claro",
-      "preto-esverdeado"
-    ],
-    "cores2": [
-      "cinza",
-      "amarelo",
-      "azul-clara",
-      "roxo",
-      "branco"
+      "amarelo-claro"
     ],
     "dieta_principal": [
       "insetos",
@@ -3740,20 +3425,12 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/garca-real"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "branco",
-      "preto",
-      "amarelo",
-      "avermelhado",
-      "alaranjado"
-    ],
-    "cores2": [
-      "branco",
-      "preto",
-      "amarelo"
+      "branco"
     ],
     "dieta_principal": [
       "peixes",
@@ -3798,12 +3475,6 @@
       "bronceado",
       "azul-metálico",
       "verde-esmeralda",
-      "cinza"
-    ],
-    "cores2": [
-      "preto",
-      "verde",
-      "azul",
       "cinza"
     ],
     "dieta_principal": [
@@ -3884,9 +3555,8 @@
     ],
     "cores": [
       "cinzento-claro",
-      "esverdeado",
       "preto",
-      "branco"
+      "pardo"
     ],
     "cores2": [
       "cinza",
@@ -3921,20 +3591,13 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/curicaca"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "rosa",
-      "avermelhado",
-      "branco",
-      "cinza"
-    ],
-    "cores2": [
-      "rosa",
-      "branco",
-      "cinzento",
-      "vermelho"
+      "branco"
     ],
     "dieta_principal": [
       "insetos",
@@ -3950,7 +3613,8 @@
     "genero": "Platalea",
     "habitat": [
       "área alagada",
-      "mangue"
+      "mangue",
+      "brejo"
     ],
     "nome_eng": "Roseate Spoonbill",
     "nome_pt": "colhereiro",
@@ -4259,13 +3923,7 @@
     "atividade": [
       "diurna"
     ],
-    "cores": [],
-    "cores2": [
-      "preto",
-      "branco",
-      "marrom",
-      "verde"
-    ],
+    "cores": ["esverdeada","azul-metálico","cinza","preto"],
     "dieta_principal": [
       "caracóis",
       "lagartas",
@@ -4280,7 +3938,8 @@
     "habitat": [
       "floresta aberta",
       "mata ciliar",
-      "área alagada",
+      "lagoa",
+      "rios",
       "brejo"
     ],
     "nome_eng": "Hook-billed Kite",
@@ -5665,7 +5324,7 @@
       "manguezal",
       "orla marítima",
       "rocha nas margens",
-      "fio elétrico pendendo de uma vala molhada",
+      "",
       "área aberta",
       "serra"
     ],
@@ -5876,7 +5535,7 @@
     "frequencia_normalizada": 0.2156862745,
     "genero": "Monasa",
     "habitat": [
-      " Floresta aberta",
+      "floresta aberta",
       "Mata ciliar"
     ],
     "nome_eng": "Black-fronted Nunbird",
@@ -8818,7 +8477,7 @@
     "nome_pt": "patinho",
     "ordem": "Passeriformes",
     "qtd_registros": 4.0,
-    "resumo_llm": "Platyrinchus mystaceus, uma ave de aproximadamente 10 cm, é encontrada em regiões que incluem Roraima, Maranhão, Ceará até o Rio Grande do Sul, além de Mato Grosso e Mato Grosso do Sul, estendendo-se pela Costa Rica, Panamá, Venezuela, Guiana, Guiana Francesa, Colômbia, Equador, Peru, Bolívia, Paraguai e Argentina. Habita o sub-bosque de capoeiras altas e florestas úmidas em montanhas, frequentemente em emaranhados de bambus e cipós na borda da floresta, onde vive solitária e passa despercebida devido à sua pequena estatura. Seu comportamento alimentar é marcado por períodos de imobilidade na vegetação densa, seguidos de voos rápidos para capturar insetos. A reprodução ocorre em ninhos xícara, colocados a cerca de 1 metro do chão, onde são postos 2 ovos brancos-amarelados.",
+    "resumo_llm": "Platyrinchus mystaceus, uma ave de aproximadamente 10 cm, é encontrada em regiões que incluem Roraima, Maranhão, Ceará até o Rio Grande do Sul, além de Mato Grosso e Mato Grosso do Sul, estendendo-se pela Costa Rica, Panamá, Venezuela, Guiana, Guiana Francesa, Colômbia, Equador, Peru, Bolívia, Paraguai e Argentina. Habita o sub-bosque de capoeiras altas e florestas úmidas em montanhas, frequentemente em emaranhados de bambus e cipós na borda de floresta, onde vive solitária e passa despercebida devido à sua pequena estatura. Seu comportamento alimentar é marcado por períodos de imobilidade na vegetação densa, seguidos de voos rápidos para capturar insetos. A reprodução ocorre em ninhos xícara, colocados a cerca de 1 metro do chão, onde são postos 2 ovos brancos-amarelados.",
     "tamanho": "pequena",
     "taxonomia": "Platyrinchus mystaceus",
     "tipo_bico": null,
@@ -12271,7 +11930,7 @@
       "caatinga",
       "brejo",
       "floresta aberta",
-      "breno",
+      "brejo",
       "área alagada",
       ""
     ],
@@ -13112,10 +12771,10 @@
     "habitat": [
       "brejo",
       "banhado",
-      " área alagada",
-      "\"área urbana",
+      "área alagada",
+      "área urbana",
       "campos",
-      "\"área agrícola"
+      "área agrícola"
     ],
     "nome_eng": "Chestnut-capped Blackbird",
     "nome_pt": "garibaldi",
@@ -14087,7 +13746,7 @@
       "savana",
       "caatinga",
       "brejo",
-      "borda da floresta",
+      "borda de floresta",
       "clareira"
     ],
     "nome_eng": "White-lined Tanager",
@@ -14548,7 +14207,7 @@
     "genero": "Sporophila",
     "habitat": [
       "floresta aberta",
-      "floresta subtropicais ou tropicais úmidas de baixa altitude",
+      "floresta tropicais",
       "floresta secundária"
     ],
     "nome_eng": "Chestnut-bellied Seed-Finch",
@@ -14885,17 +14544,13 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/tietinga"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "cinzento",
       "preto",
-      "verde-olivácea"
-    ],
-    "cores2": [
-      "cinzento",
-      "preto"
+      "azul acinzentada"
     ],
     "dieta_principal": [
       "frutinhas",
@@ -14916,7 +14571,7 @@
     "nome_pt": "sanhaço-de-coleira",
     "ordem": "Passeriformes",
     "qtd_registros": 26.0,
-    "resumo_llm": "A [Schistochlamys melanopis] é uma ave de tamanho médio, com cerca de 18 centímetros de comprimento, caracterizada por plumagem cinzenta, cabeça, garganta e pescoço negros, enquanto os juvenis apresentam cor verde-olivácea. Sua alimentação compõe-se principalmente de vegetais, incluindo frutas, folhas, botões e néctar. Esta espécie é amplamente distribuída no Brasil, desde Roraima até o Paraná, e também pode ser encontrada em diversos países da bacia amazônica, incluindo Venezuela, Guianas, Colômbia, Equador, Peru, Bolívia e Paraguai. A [Schistochlamys melanopis] habita várias regiões, incluindo matas baixas ribeirinhas, pântanos, cerrados, restingas e campos sujos, com tendência a preferir áreas baixas, embora possa ser encontrada a até 1.800 metros de altitude em regiões específicas.",
+    "resumo_llm": "A Schistochlamys melanopis é uma ave de tamanho médio, com cerca de 18 centímetros de comprimento, caracterizada por plumagem cinzenta, cabeça, garganta e pescoço negros, enquanto os juvenis apresentam cor verde-olivácea. Sua alimentação compõe-se principalmente de vegetais, incluindo frutas, folhas, botões e néctar. Esta espécie é amplamente distribuída no Brasil, desde Roraima até o Paraná, e também pode ser encontrada em diversos países da bacia amazônica, incluindo Venezuela, Guianas, Colômbia, Equador, Peru, Bolívia e Paraguai. A [Schistochlamys melanopis] habita várias regiões, incluindo matas baixas ribeirinhas, pântanos, cerrados, restingas e campos sujos, com tendência a preferir áreas baixas, embora possa ser encontrada a até 1.800 metros de altitude em regiões específicas.",
     "tamanho": "pequena",
     "taxonomia": "Schistochlamys melanopis",
     "tipo_bico": "generalista",
@@ -14924,16 +14579,12 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/sanhaco-de-coleira"
   },
   {
-    "atividade": [],
+    "conservacao":"Pouco Preocupante",
+    "atividade": ["diurna"],
     "cores": [
-      "azul-acinzentada",
-      "negra",
-      "acanelado",
+      "azul acinzentada",
+      "alaranjada",
       "branco-acinzentado"
-    ],
-    "cores2": [
-      "marrom",
-      "branco"
     ],
     "dieta_principal": [
       "frutos",
@@ -14958,23 +14609,19 @@
     "resumo_llm": "A espécie Schistochlamys ruficapillus, também conhecida como ruficapillus, mede cerca de 18 centímetros de comprimento e pesa 38 gramas. Habita regiões de cerrados, caatingas, campos de altitude, campos sujos, jardins e áreas abertas, distribuindo-se por largas áreas de solo brasileiro. Alimenta-se de granos, frutos, flores e insetos, tendo preferência por frutos do tapiá (Alchornea glandulosa). Reproduz-se com ninhadas de 2 a 3 ovos, incubados por cerca de 13 dias, e os filhotes se tornam independents em cerca de 35 a 40 dias. Distribui-se por estados da região Norte, Centro-Oeste, Sudeste e Sul do Brasil, com registros em países da América do Sul, classificada como Pouco Preocupante (LC) de extinção.",
     "tamanho": "pequena",
     "taxonomia": "Schistochlamys ruficapillus",
-    "tipo_bico": null,
+    "tipo_bico": "generalista",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/4212/2124755_2f65dbc9892eb087bfbcca0bf573a057.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/bico-de-veludo"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "vermelho",
-      "cinza",
-      "preto",
       "branco",
-      "pardo"
-    ],
-    "cores2": [
-      "marrom"
+      "cinza"
     ],
     "dieta_principal": [
       "sementes",
@@ -15000,18 +14647,14 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/cardeal-do-nordeste"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
       "cinza",
       "azul turquesa",
-      "esverdeado",
-      "branco"
-    ],
-    "cores2": [
-      "marrom",
-      "branco"
+      "esverdeado"
     ],
     "dieta_principal": [
       "frutas",
@@ -15040,17 +14683,13 @@
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/sanhaco-cinzento"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "esverdeada",
-      "amarelada"
-    ],
-    "cores2": [
-      "verde",
-      "amarelo",
-      "laranja"
+      "amarelada",
+      "parda esverdeada"
     ],
     "dieta_principal": [
       "insetos",
@@ -15071,25 +14710,21 @@
     "ordem": "Passeriformes",
     "qtd_registros": 44.0,
     "resumo_llm": "A Thraupis palmarum, conhecida como sanhaço-do-coqueiro, é uma ave medindo entre 17 e 18 centímetros de comprimento e pesando entre 27 e 48 gramas, que habita o Brasil e partes da América Central e do Sul. Alimenta-se de insetos, néctar, frutos e frequenta comedouros, sendo particularmente atraída por embaúba. Distribui-se em diversas regiões, incluindo ambientes florestados, capões de cerrado, áreas urbanas e parques, podendo ser observada em jardins e edifícios. A reprodução ocorre o ano todo, com um chamado agudo, e a construção do ninho pela fêmea e pelo macho, que utiliza folhas secas e fibras vegetais, os ovos são incubados durante 14 dias e os filhotes permanecem no ninho por 17 a 21 dias.",
-    "tamanho": "media",
+    "tamanho": "pequena",
     "taxonomia": "Thraupis palmarum",
     "tipo_bico": "generalista",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/9212/2129428_65daef733bef1585e09210d0d98e513a.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/sanhaco-do-coqueiro"
   },
   {
+    "conservacao":"Pouco Preocupante",
     "atividade": [
       "diurna"
     ],
     "cores": [
-      "amarelo-dourada",
       "amarelo",
-      "preto",
-      "negra"
-    ],
-    "cores2": [
-      "amarelo",
-      "dourado",
+      "verde",
+      "azul turquesa",
       "preto"
     ],
     "dieta_principal": [
@@ -15102,7 +14737,7 @@
     "genero": "Stilpnia",
     "habitat": [
       "mata ciliar",
-      "caATINGa",
+      "caatinga",
       "campo natural",
       "plantação",
       "brejo",
@@ -15115,7 +14750,7 @@
     "resumo_llm": "A espécie *Stilpnia cayana* é uma ave que apresenta dimorfismo sexual marcante, com o macho exibindo plumagem amarelo-dourada e uma característica máscara negra que se estende pela garganta e barriga, enquanto a fêmea possui coloração amarela mais suave. A espécie é dividida em dois grupos: o grupo *cayana*, encontrado na região norte da Amazônia, onde os machos possuem apenas uma mancha escura ao redor dos olhos, e o grupo *flava*, mais amplamente distribuído no Brasil, incluindo regiões Nordeste, Sudeste e Centro-Oeste, com machos que apresentam a extensa máscara negra. Essa saíra se alimenta principalmente de frutos e insetos, como cupins e vespas, freqüentando árvores frutíferas e comedouros. Habitam capoeiras, matas abertas, áreas cultivadas, parques e jardins, vivendo aos pares ou em pequenos grupos. Na reprodução, o ninho, em forma de taça aberta, é construído pela fêmea com folhas, raízes e capins, colocado em árvores baixas a cerca de 2 metros do solo. A fêmea incuba 2 ou 3 ovos, de coloração esbranquiçada a azul-pálida ou branco-parda, com manchas pardas, e é auxiliada pelo macho na alimentação dos filhotes.",
     "tamanho": "media",
     "taxonomia": "Stilpnia cayana",
-    "tipo_bico": null,
+    "tipo_bico": "generalista",
     "url_image": "https://s3.amazonaws.com/media.wikiaves.com.br/images/5214/4125055_1d495d17a9f5749ed677354d916ea756.jpg",
     "url_wikiaves": "https://www.wikiaves.com.br/wiki/saira-amarela"
   }
