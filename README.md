@@ -11,7 +11,7 @@
 
 > 🇬🇧 This README is also available in [English](README.en.md).
 
-## 📌 Problema (Problem)
+## 📌 Problema
 
 Os aplicativos de identificação de aves existentes funcionam, em geral, com fotos ou sons. No entanto, nem sempre o observador consegue registrar uma imagem ou gravação no momento do avistamento.
 Nessas situações, a única referência disponível é a descrição visual da ave, como por exemplo: cor, tamanho, formato do bico ou comportamento. O AvesRAG foi criado para atender exatamente esse cenário, permitindo a identificação de aves a partir de descrições em texto.

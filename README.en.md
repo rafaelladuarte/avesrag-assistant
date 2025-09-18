@@ -72,10 +72,10 @@ flowchart LR
 ### 🔎 Retrieval
 
 * **Tests performed**:
+    * BM25 (textual)
+    * Vector (embeddings)
+    * Hybrid search (best result)
 
-* BM25 (textual)
-* Vector (embeddings)
-* Hybrid search (best result)
 * **Result**: Hybrid search showed higher recall and precision for short descriptions.
 
 ### 🧠 LLM
