@@ -91,11 +91,10 @@ flowchart LR
 * User feedback collection (yes/no on answer usefulness).
 * Storage in PostgreSQL
 * Streamlit dashboard with metrics:
-
-* Number of queries
-* Most searched species
-* Accepted answer rate
-* Average response time
+    * Number of queries
+    * Most searched species
+    * Accepted answer rate
+    * Average response time
 
 ## 🛠 Technologies Used
 
