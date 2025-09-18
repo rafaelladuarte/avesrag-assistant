@@ -7,7 +7,9 @@
 [![LLM](https://img.shields.io/badge/LLM-llama--3.1--8b--instant-green)](#)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-🏆 Projeto desenvolvido para o curso **LLM Zoomcamp** da [DataTalks.Club](https://datatalks.club)
+> 🏆 Projeto desenvolvido para o curso **LLM Zoomcamp** da [DataTalks.Club](https://datatalks.club)
+
+> 🇬🇧 This README is also available in [English](README.en.md).
 
 ## 📌 Problema (Problem)
 

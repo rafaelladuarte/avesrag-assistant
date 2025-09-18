@@ -9,6 +9,8 @@
 
 > 🏆 Project developed for the course **LLM Zoomcamp** by [DataTalks.Club](https://datatalks.club)
 
+> > 🇧🇷 Este README também está disponível em [Português](README.md).
+
 ## 📌 Problem
 
 Existing bird identification applications generally work with photos or sounds. However, observers are not always able to capture an image or recording at the time of sighting.
