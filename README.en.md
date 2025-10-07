@@ -21,7 +21,6 @@ AvesRAG was created to address this exact scenario, allowing bird identification
 
 The **AvesRAG Assistant** is an interactive intelligent assistant that aims to solve this problem by identifying birds based on user-provided descriptions. Using the **RAG (Retrieval-Augmented Generation)** technique, it searches for information in a custom database and returns **up to 3 candidate species** with summarized descriptions.
 
----
 ## 🖼 Interface Preview
 
 ![preview](docs/images/preview.png)
@@ -29,9 +28,10 @@ The **AvesRAG Assistant** is an interactive intelligent assistant that aims to s
 ## 🎯 Objectives
 
 * Create an interactive tool for bird identification.
-* Use RAG to combine structured search and text generation via LLM.
+* Use RAG to combine **structured search** and **LLM text generation**.
 * Ensure the backend and pipeline are modular and easy to adapt.
-* Collect user feedback to continuously improve results (In development).
+* Collect user feedback to continually improve results
+* Monitor LLM API usage
 
 ## 📊 Database
 
@@ -45,18 +45,7 @@ The database used was created from:
 
 ## 🧩 System Architecture
 
-```mermaid
-flowchart LR
-    A[User] -->|Describe the bird| B[Streamlit UI]
-    B --> | Params | D[MinSearch - Search Semantic + Vector]
-    D --> | Retriviel Documents | E[LLM - Groq API]
-    E --> | Verify Documents | B
-    B --> | Validation of the Result | F[Feedback]
-    F --> H[PostgresSQL]
-    B --> G[Monitoring - In Developt]
-    G --> I[Dashboard]
-  
-```
+![pipeline](docs/images/diagrama.png)
 
 ## ✨ Features
 
@@ -112,27 +101,28 @@ flowchart LR
 ## 📂 Project Structure
 
 ```
-📦 averag-assistant
-├── app.py                # Arquivo principal da aplicação 
-├── dev.py                # Script auxiliar para desenvolvimento e testes locais
-├── docs/                 # Documentação do projeto
-│   ├── images/           # Imagens usadas na documentação
-│   └── notes/            # Anotações, rascunhos e referências
-├── Pipfile               # Definições de dependências (Pipenv)
-├── Pipfile.lock          # Lockfile de dependências
-├── requirements.txt      # Alternativa de dependências para instalação via pip
-├── README.md             # Documentação principal (Português)
-├── README_ENG.md         # Documentação principal (Inglês)
-├── .gitignore            # Arquivos e pastas ignorados pelo Git
-├── script/               # Scripts organizados por domínio
-│   ├── api/              # Código relacionado a integração com APIs externas
-│   ├── data/             # Base de dados utilizada para RAG em json
-│   ├── database/         # Conexão e operações no banco de dados
-│   ├── notebooks/        # Jupyter Notebooks para análises e experimentos
-│   ├── services/        # Scripts da interface Streamlit
-│   └── utils/           # Funções auxiliares e utilitários genéricos
-└── venv/                 
-
+📦 avesrag-assistant
+├── app/                   # Source code of the Streamlit application
+│   ├── app.py             # Main application file
+│   ├── dev.py             # Auxiliary script for development and local testing
+│   ├── Dockerfile         # Defines how to build the Docker image for the app
+│   ├── entrypoint.sh      # Container startup script (e.g., waits for DB)
+│   ├── requirements.txt   # Python dependencies for the application
+│   └── script/            # Auxiliary scripts for the application
+├── db/                    # Database initialization and maintenance scripts
+│   └── init.sql            # SQL script to create tables and initial data
+├── docker-compose.yml     # Docker container orchestration (app + database + services)
+├── docs/                  # Documentation and supporting materials
+│   ├── images/            # Images used in the documentation
+│   ├── note/              # Notes, drafts, and references
+│   └── notebooks/         # Jupyter Notebooks for analyses and experiments
+├── monitoring/            # Application monitoring configuration  (
+developing)
+├── Pipfile                # Dependency definitions via Pipenv
+├── Pipfile.lock           # Pipenv dependency lock file
+├── README.md              # Main documentation (Portuguese)
+├── README.en.md           # Main documentation (English)
+└── requirements.txt       # Alternative dependencies file for pip installation              
 ```
 
 ## ⚙️ Installation and Execution
@@ -143,31 +133,51 @@ flowchart LR
 git clone https://github.com/usuario/avesrag-assistant.git
 cd avesrag-assistant
 ```
-
-### 2. Create the virtual environment and install dependencies
-
-```bash
-python -m venv venv
-source venv/bin/activate # Linux/Mac
-source venv\Scripts\activate # Windows
-pip install -r requirements.txt
-```
-
-### 3. Configure environment variables
+### 2. Configure environment variables
 
 Create an `.env` file with:
 
 ```
 GROQ_API_KEY1="yourkeyhere"
 GROQ_API_KEY2="yourkeyhere"
-POSTGRES_URL="yourkeyhere"
+POSTGRES_URI="postgres://username:password@avesrag_db:5432/avesrag"
+POSTGRES_USER="username"
+POSTGRES_PASSWORD="password"
+POSTGRES_DB="avesrag"
+POSTGRES_HOST="avesrag_db"
 ```
 
-### 4. Run the application
+> Docker Compose will read this file to configure the containers.
+
+### 3. Build e start dos containers
+
+
+In the project root directory:
 
 ```bash
-streamlit run app.py
+docker compose --build
 ```
+
+> This will:
+>
+> 1. Build the application image.
+> 2. Upload the application container (`avesrag_app`) and database container (`avesrag_db`) automatically.
+
+### 4. Access the application
+
+After the containers are running, open the browser:
+
+```
+http://localhost:8501
+```
+
+### 5. Stop containers
+
+```bash
+docker compose down
+```
+
+> This stops and removes the containers, but keeps the database saved on the volume defined in `docker-compose.yml`.
 
 ## 📈 Evaluation Criteria Met
 
@@ -179,7 +189,7 @@ streamlit run app.py
 * [ ] Automated ingestion via Python scripts
 * [x] Monitoring with feedback
 * [ ] Monitoring with use LLM  + dashboard
-* [ ] Containerization with Docker
+* [x] Containerization with Docker
 * [x] Reproducibility (instructions + requirements)
 
 ## 📈 Next Steps
@@ -191,4 +201,4 @@ streamlit run app.py
 
 ## 📜 License
 
-Distributed under the MIT license. See the [LICENSE] file for more details.
+Distributed under the MIT license. See the [LICENSE](LICENSE) file for more details.
