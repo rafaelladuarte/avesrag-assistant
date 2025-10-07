@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:15
+    container_name: avesrag_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-username}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-avesrag}
+    ports:
+      - "5432:5432" 
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ../db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-username} -d ${POSTGRES_DB:-avesrag}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: avesrag_app
+    ports:
+      - "8501:8501"
+    environment:
+      - GROQ_API_KEY1=${GROQ_API_KEY1}
+      - GROQ_API_KEY2=${GROQ_API_KEY2}
+      - POSTGRES_URI=${POSTGRES_URI}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    depends_on:
+      - db
+    env_file:
+      - .env
+    volumes:
+      - ./app:/app 
+
+volumes:
+  db_data:
