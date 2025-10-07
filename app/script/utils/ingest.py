@@ -3,7 +3,7 @@ import json
 
 
 def load_index():
-    with open("script/data/oficial_dataset_udi.json") as file:
+    with open("app/script/data/oficial_dataset_udi.json") as file:
         documents = json.load(file)
 
     index = Index(

@@ -29,7 +29,7 @@ O **AvesRAG Assistant** é um assistente inteligente interativo busca resolver e
 * Criar uma ferramenta interativa para identificação de aves.
 * Utilizar RAG para combinar **busca estruturada** e **geração de texto por LLM**.
 * Garantir que o backend e o pipeline sejam modulares e fáceis de adaptar.
-* Coletar feedback dos usuários para melhorar continuamente os resultados
+* Coletar feedback dos usuários para melhorar continuamente os resultados.
 * Monitorar o uso da api de LLM.
 
 ## 📊 Base de Dados
@@ -151,7 +151,7 @@ POSTGRES_HOST="avesrag_db"
 
 > O Docker Compose irá ler este arquivo para configurar os containers.
 
-### 3. Build e start dos containers
+### 3. Construir e iniciar os containers
 
 No diretório raiz do projeto:
 

@@ -9,7 +9,7 @@
 
 > 🏆 Project developed for the course **LLM Zoomcamp** by [DataTalks.Club](https://datatalks.club)
 
-> > 🇧🇷 Este README também está disponível em [Português](README.md).
+> 🇧🇷 Este README também está disponível em [Português](README.md).
 
 ## 📌 Problem
 
@@ -30,8 +30,8 @@ The **AvesRAG Assistant** is an interactive intelligent assistant that aims to s
 * Create an interactive tool for bird identification.
 * Use RAG to combine **structured search** and **LLM text generation**.
 * Ensure the backend and pipeline are modular and easy to adapt.
-* Collect user feedback to continually improve results
-* Monitor LLM API usage
+* Collect user feedback to continually improve results.
+* Monitor LLM API usage.
 
 ## 📊 Database
 
