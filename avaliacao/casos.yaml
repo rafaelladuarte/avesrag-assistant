@@ -1,0 +1,21 @@
+# Conjunto de avaliação do retriever (plano_assistant1.md §5). Público e versionado.
+#
+# Cada caso é uma descrição escrita por uma pessoa, a espécie esperada e os
+# atributos anotados (o gabarito do extrator do Assistant 2):
+#
+#   - id: c001
+#     descricao: "Vi no quintal uma ave do tamanho de um pardal, barriga amarela forte..."
+#     esperada: sp_pitangus_sulphuratus
+#     autoria: rafaella                    # quem escreveu
+#     origem: avistamento                  # avistamento | memoria | foto
+#     uso: calibracao                      # calibracao (~2/3) | teste (~1/3)
+#     atributos:
+#       tamanho: [pequeno, medio]
+#       cores_por_parte: [{ parte: barriga, cor: amarelo }]
+#       marcas: [sobrancelha]
+#       ambiente: [parque_jardim]
+#
+# Meta: ≥ 30 casos, com comuns de Uberlândia, grupos que se confundem, algumas
+# noturnas e aquáticas e 2 ou 3 espécies incompletas.
+versao: "1.0"
+casos: []

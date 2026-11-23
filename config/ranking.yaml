@@ -1,0 +1,25 @@
+# Pesos da reordenação do retriever (plano_assistant1.md §3.3).
+# Os valores iniciais são um palpite. O ajuste é feito à mão só com os casos de
+# calibração e registrado aqui, com a data e o resultado.
+versao: "1.0"
+
+vetor:
+  peso: 1.0          # peso da nota do vetor, normalizada entre a menor e a maior das candidatas
+  candidatos: 400    # numCandidates do $vectorSearch
+  documentos: 120    # limit do $vectorSearch (documentos, até 3 por espécie)
+  especies: 40       # espécies que seguem para a reordenação
+
+penalidade_conflito: 0.5   # `conflita` tira peso × penalidade; `sem_dado` é neutro
+
+pesos:             # pontos por atributo que bate
+  cores_por_parte: 0.6
+  cores: 0.4
+  marcas: 0.4
+  bico: 0.4
+  tamanho: 0.3
+  cauda: 0.3
+  o_que_fazia: 0.2
+  onde_estava: 0.2
+  ambiente: 0.2
+  grupo: 0.1
+  atividade: 0.3

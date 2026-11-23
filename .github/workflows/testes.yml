@@ -1,0 +1,44 @@
+# Testes unitários e lint em todo push e pull request.
+# O assistant depende do builder por caminho (../avesrag-dataset-builder), então
+# os dois repositórios são clonados lado a lado. Os testes de integração precisam
+# do MongoDB montado pelo builder e rodam só localmente: ver o README.
+name: testes
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unitarios:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: avesrag-assistant
+
+      - uses: actions/checkout@v4
+        with:
+          repository: rafaelladuarte/avesrag-dataset-builder
+          ref: main
+          path: avesrag-dataset-builder
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Instalar o Poetry
+        run: pipx install poetry==2.3.2
+
+      - name: Instalar as dependências
+        working-directory: avesrag-assistant
+        run: poetry install --no-interaction
+
+      - name: Lint
+        working-directory: avesrag-assistant
+        run: |
+          poetry run ruff check src tests
+          poetry run ruff format --check src tests
+
+      - name: Testes unitários (sem .env, sem rede, sem MongoDB)
+        working-directory: avesrag-assistant
+        run: poetry run pytest

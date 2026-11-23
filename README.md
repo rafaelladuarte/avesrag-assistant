@@ -1,205 +1,77 @@
-# 🦜 AvesRAG – Assistente de Identificação de Aves do Cerrado
+# AvesRAG Assistant
 
 ![cover](docs/images/avesrag.jpg)
 
-[![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python)](https://www.python.org/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit\&logoColor=white)](https://streamlit.io/)
-[![LLM](https://img.shields.io/badge/LLM-llama--3.1--8b--instant-green)](#)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+Assistente que identifica aves do Cerrado a partir de uma descrição em texto ("do tamanho de um pardal, barriga amarela, uma faixa branca em cima do olho"). Ele conversa com a pessoa até ter informação suficiente, busca as espécies candidatas na base montada pelo [avesrag-dataset-builder](https://github.com/rafaelladuarte/avesrag-dataset-builder), cruza com as observações recentes do eBird na região e apresenta 3 candidatas para confirmar.
 
-> 🏆 Projeto desenvolvido para o curso **LLM Zoomcamp** da [DataTalks.Club](https://datatalks.club)
+> **Esta é a v2, em construção.** A v1 (Streamlit + Groq + MinSearch + PostgreSQL, feita para o LLM Zoomcamp) está no último commit da `main` antes da reescrita: [`0cb81ef`](https://github.com/rafaelladuarte/avesrag-assistant/tree/0cb81ef).
 
-> 🇬🇧 This README is also available in [English](README.en.md).
+## Estado
 
-## 📌 Problema
+| Marco | Entrega | Situação |
+| --- | --- | --- |
+| Assistant 1 | retriever (busca vetorial + reordenação por atributos) e conjunto de avaliação | em andamento: estrutura do repositório |
+| Assistant 2 | extrator de atributos, perguntas e orquestrador, pela linha de comando | — |
+| Assistant 3 | geocodificação, eBird como bônus no ranking e redator da resposta | — |
+| Assistant 4 | API FastAPI, guardrails e sessões | — |
+| Assistant 5 | página web | — |
 
-Os aplicativos de identificação de aves existentes funcionam, em geral, com fotos ou sons. No entanto, nem sempre o observador consegue registrar uma imagem ou gravação no momento do avistamento.
-Nessas situações, a única referência disponível é a descrição visual da ave, como por exemplo: cor, tamanho, formato do bico ou comportamento. O AvesRAG foi criado para atender exatamente esse cenário, permitindo a identificação de aves a partir de descrições em texto.
+## Como funciona
 
-## 📌 Sobre o Projeto
+Um orquestrador determinístico (máquina de estados) conduz a conversa. O LLM aparece só em três pontos, sempre com saída estruturada e validada: extrair os atributos da descrição, perguntar o que falta e redigir a resposta. A busca usa o `$vectorSearch` do MongoDB e depois reordena as candidatas pelos atributos observados: o que bate na ficha da espécie ganha pontos, o que conflita perde, e o que a ficha não cita é neutro.
 
-O **AvesRAG Assistant** é um assistente inteligente interativo busca resolver esse problema, ele capaz de **identificar aves** com base em descrições fornecidas pelo usuário. Utilizando a técnica de **RAG (Retrieval-Augmented Generation)**, ele busca informações em uma base de dados personalizada e retorna **até 3 espécies candidatas** com descrições resumidas.
+## Requisitos
 
-## 🖼 Prévia da Interface
-
-![preview](docs/images/preview.png)
-
-## 🎯 Objetivos
-
-* Criar uma ferramenta interativa para identificação de aves.
-* Utilizar RAG para combinar **busca estruturada** e **geração de texto por LLM**.
-* Garantir que o backend e o pipeline sejam modulares e fáceis de adaptar.
-* Coletar feedback dos usuários para melhorar continuamente os resultados.
-* Monitorar o uso da api de LLM.
-
-## 📊 Base de Dados
-
-A base de dados utilizada foi criada a partir de:
-
-* Integração de bases já existentes.
-* Scraping de fontes online.
-* Parametrização de dados via LLM*.
-
-📂 Repositório do construtor da base:
-➡ [rafaelladuarte/avesrag-dataset-builder](https://github.com/rafaelladuarte/avesrag-dataset-builder)
-
-
-## 🧩 Arquitetura do Sistema
-
-![pipeline](docs/images/diagrama.png)
-
-## ✨ Funcionalidades (Features)
-
-✅ Entrada de dados via formulário com validação . \
-✅ Busca otimizada com MinSearch (semântica + textual). \
-✅ Retorno de **até 3 espécies candidatas**. \
-✅ Resumo automático das espécies com imagens.\
-✅ Coleta de feedback do usuário\
-🔄 Monitoramento do uso da LLM - API.
-
-## 🔬 Avaliação
-
-### 🔎 Retrieval
-
-* **Testes realizados**:
-  * BM25 (textual)
-  * Vetorial (embeddings)
-  * Busca híbrida (melhor resultado)
-
-* **Resultado**: busca híbrida apresentou maior recall e precisão para descrições curtas.
-
-### 🧠 LLM
-
-* Avaliados diferentes modelos open-source.
-  * `llama-3.1-8b-instant`
-  * `gemma2-9b-it `
-  * `deepseek-r1-distill-llama-70b`
-* Testados prompts *zero-shot* vs *few-shot*.
-* **Resultado**: `llama-3.1-8b-instant` com *few-shot* teve melhor equilíbrio entre custo e precisão.
-
-## 📊 Feedback e Monitoramento (em desenvolvimento)
-
-* Coleta de feedback de usuários (sim/não sobre utilidade da resposta).
-* Armazenamento em PostgreSQL
-* Dashboard no Streamlit com métricas:
-  * Nº de consultas
-  * Espécies mais buscadas
-  * Taxa de respostas aceitas
-  * Tempo médio de resposta
-
-## 🛠 Tecnologias Utilizadas
-
-| Categoria               | Ferramentas                                                                                                            |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| **Linguagem**            | Python 3.11+                                                                                                            |
-| **Framework Web**        | [Streamlit](https://streamlit.io/)                                                                                      |
-| **LLM (Assistente)**     | `llama-3.1-8b-instant`                                                                                                  |
-| **LLMs (Base de dados)** | `gemma2-9b-it`, `deepseek-r1-distill-llama-70b`, `llama-3.1-8b-instant` |
-| **Backend de Busca**     | [MinSearch](https://github.com/alexeygrigorev/minsearch) *(adaptado)*                                                   |
-| **API LLM**              | [Groq API](https://groq.com/)                                                                                           |
-| **Processamento**        | pandas, numpy                                                                                                           |
-| **Controle de Versão**   | Git + GitHub                                                                                                            |
-
-## 📂 Estrutura do Projeto
+- Python 3.13 e [Poetry](https://python-poetry.org/) 2.
+- O [avesrag-dataset-builder](https://github.com/rafaelladuarte/avesrag-dataset-builder) clonado **ao lado** deste repositório, com o MongoDB de pé e a base do piloto montada (veja o README dele). O assistant usa o vocabulário e as regras de bico do builder e consulta o mesmo banco.
 
 ```
-📦 avesrag-assistant
-├── app/                   # Código-fonte da aplicação Streamlit
-│   ├── app.py             # Arquivo principal da aplicação
-│   ├── dev.py             # Script auxiliar para desenvolvimento e testes locais
-│   ├── Dockerfile         # Define como construir a imagem Docker da aplicação
-│   ├── entrypoint.sh      # Script de inicialização do container (ex: espera pelo DB)
-│   ├── requirements.txt   # Dependências Python da aplicação
-│   └── script/            # Scripts auxiliares da aplicação
-├── db/                    # Scripts para inicialização e manutenção do banco de dados
-│   └── init.sql            # Script SQL para criar tabelas e dados iniciais
-├── docker-compose.yml     # Orquestração de containers Docker (app + banco + serviços)
-├── docs/                  # Documentação e materiais de apoio
-│   ├── images/            # Imagens usadas na documentação
-│   ├── note/              # Anotações, rascunhos e referências
-│   └── notebooks/         # Jupyter Notebooks de análises e experimentos
-├── monitoring/            # Configuração de monitoramento da aplicação (em desenvolvimento)
-├── Pipfile                # Definições de dependências via Pipenv
-├── Pipfile.lock           # Lockfile de dependências do Pipenv
-├── README.md              # Documentação principal (Português)
-├── README.en.md           # Documentação principal (Inglês)
-└── requirements.txt       # Alternativa de dependências para instalação via pip
+pasta/
+├── avesrag-dataset-builder/
+└── avesrag-assistant/
 ```
 
-## ⚙️ Instalação e Execução via Docker
+- Uma chave da OpenAI, para os embeddings das consultas (`text-embedding-3-large`).
 
-### 1. Clone o repositório
+## Instalação
 
 ```bash
-git clone https://github.com/usuario/avesrag-assistant.git
 cd avesrag-assistant
+poetry install
+cp .env.example .env    # preencha OPENAI_API_KEY e a MONGODB_URI do builder
 ```
 
-### 2. Configure variáveis de ambiente
-
-Crie um arquivo `.env` com:
-
-```
-GROQ_API_KEY1="yourkeyhere"
-GROQ_API_KEY2="yourkeyhere"
-POSTGRES_URI="postgres://username:password@avesrag_db:5432/avesrag"
-POSTGRES_USER="username"
-POSTGRES_PASSWORD="password"
-POSTGRES_DB="avesrag"
-POSTGRES_HOST="avesrag_db"
-```
-
-> O Docker Compose irá ler este arquivo para configurar os containers.
-
-### 3. Construir e iniciar os containers
-
-No diretório raiz do projeto:
+## Comandos
 
 ```bash
-docker compose up --build
+poetry run avesrag-assistant --help
+poetry run avesrag-assistant buscar "barriga amarela e sobrancelha branca" \
+    --atributos '{"cores_por_parte": [{"parte": "barriga", "cor": "amarelo"}], "marcas": ["sobrancelha"]}'
+poetry run avesrag-assistant avaliar                 # o conjunto de avaliação, nos 3 modos de busca
+poetry run avesrag-assistant avaliar --uso teste     # só os casos de teste
 ```
 
-> Isso irá:
->
-> 1. Construir a imagem da aplicação.
-> 2. Subir o container da aplicação (`avesrag_app`) e do banco (`avesrag_db`) automaticamente.
+`buscar` e `avaliar` ainda não estão implementados.
 
-### 4. Acesse a aplicação
+## Configuração
 
-Depois que os containers estiverem rodando, abra no navegador:
+| Arquivo | O que define |
+| --- | --- |
+| `config/ranking.yaml` | pesos da reordenação por atributo e parâmetros da busca vetorial |
+| `avaliacao/casos.yaml` | conjunto de avaliação: descrições escritas por pessoas, a espécie esperada e os atributos anotados |
+| `.env` | `OPENAI_API_KEY`, `MONGODB_URI`, `MONGODB_DATABASE`, `EMBEDDING_MODEL` e, se o builder não estiver na pasta irmã, `BUILDER_DIR` |
 
-```
-http://localhost:8501
-```
-
-### 5. Parar os containers
+## Desenvolvimento
 
 ```bash
-docker compose down
+poetry run pytest                    # unitários: sem .env, sem rede, sem MongoDB
+poetry run pytest -m integration     # precisa do MongoDB do builder de pé
+poetry run ruff check src tests && poetry run ruff format --check src tests
+poetry run pre-commit install
 ```
 
-> Isso para e remove os containers, mas mantém o banco de dados salvo no volume definido no `docker-compose.yml`.
+O código, as mensagens e os testes são escritos em português.
 
-## 📈 Critérios de Avaliação Atendidos
+## Licença
 
-* [x] Problema descrito claramente
-* [x] Knowledge base + LLM no fluxo
-* [x] Avaliação de múltiplos retrieval flows
-* [x] Avaliação de diferentes prompts/modelos
-* [x] Interface em Streamlit
-* [ ] Ingestão automatizada via scripts Python
-* [x] Monitoramento de feedback
-* [ ] Monitoramento do uso do LLM + dashboard
-* [x] Containerização com Docker
-* [x] Reprodutibilidade (instruções + requirements)
-
-## 📈 Próximos Passos
-
-* 🔧 Ajustar pesos e parâmetros de busca no MinSearch
-* 🐦 Expandir base para mais espécies brasileiras
-* 🧪 Criar testes unitários e de integração
-* 📊 Adicionar logging e monitoramento de consultas
-
-## 📜 Licença
-
-Distribuído sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+MIT. Veja [LICENSE](LICENSE).

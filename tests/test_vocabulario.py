@@ -1,0 +1,25 @@
+"""A dependência do builder por caminho: os YAML dele carregam pelo `BUILDER_DIR`."""
+
+import yaml
+
+from avesrag_assistant import vocabulario
+from avesrag_assistant.settings import ROOT_DIR, get_settings
+
+
+def test_carrega_vocabulario_e_regras_bico_do_builder():
+    voc, regras = vocabulario.carregar()
+    assert voc is not None
+    assert regras is not None
+
+
+def test_usa_o_builder_dir_do_assistant(monkeypatch, tmp_path):
+    monkeypatch.setenv("BUILDER_DIR", str(tmp_path))
+    assert get_settings().builder_config_dir == tmp_path / "config"
+
+
+def test_yaml_do_assistant_sao_validos():
+    ranking = yaml.safe_load((ROOT_DIR / "config" / "ranking.yaml").read_text(encoding="utf-8"))
+    casos = yaml.safe_load((ROOT_DIR / "avaliacao" / "casos.yaml").read_text(encoding="utf-8"))
+    assert ranking["versao"] == "1.0"
+    assert all(peso > 0 for peso in ranking["pesos"].values())
+    assert casos == {"versao": "1.0", "casos": []}
