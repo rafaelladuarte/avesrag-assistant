@@ -3,6 +3,7 @@
 import yaml
 
 from avesrag_assistant import vocabulario
+from avesrag_assistant.busca.pontuacao import carregar_ranking
 from avesrag_assistant.settings import ROOT_DIR, get_settings
 
 
@@ -18,8 +19,7 @@ def test_usa_o_builder_dir_do_assistant(monkeypatch, tmp_path):
 
 
 def test_yaml_do_assistant_sao_validos():
-    ranking = yaml.safe_load((ROOT_DIR / "config" / "ranking.yaml").read_text(encoding="utf-8"))
+    ranking = carregar_ranking(ROOT_DIR / "config" / "ranking.yaml")
     casos = yaml.safe_load((ROOT_DIR / "avaliacao" / "casos.yaml").read_text(encoding="utf-8"))
-    assert ranking["versao"] == "1.0"
-    assert all(peso > 0 for peso in ranking["pesos"].values())
+    assert ranking.versao == "1.0"
     assert casos == {"versao": "1.0", "casos": []}
