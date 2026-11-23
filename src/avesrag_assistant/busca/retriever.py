@@ -170,29 +170,24 @@ def carregar_fichas(db: Database, species_ids: Sequence[str]) -> dict[str, Ficha
     return fichas
 
 
-def buscar(
+def montar_candidatas(
     db: Database,
-    consulta: Consulta,
-    vetor: list[float],
+    acertos: Sequence[Acerto],
+    atributos: AtributosObservados,
     ranking: Ranking,
     regras_bico: RegrasBico,
-    modo: Modo = "reordenado",
     k: int = TOP,
 ) -> list[Candidata]:
-    """As `k` espécies candidatas para a consulta, no modo pedido."""
-    if modo not in MODOS:
-        raise ValueError(f"modo desconhecido: {modo!r} (use {', '.join(MODOS)})")
-    filtro = filtro_duro(consulta.atributos) if modo == "filtros_duros" else None
-    acertos = buscar_vetor(db, vetor, ranking, consulta.recusadas, filtro)
+    """Acertos da busca → fichas → reordenação → as `k` primeiras como `Candidata`.
+
+    Sem atributos, a ordem é a da nota da busca, com o mesmo desempate.
+    """
     fichas = carregar_fichas(db, [a.species_id for a in acertos])
     sem_ficha = [a.species_id for a in acertos if a.species_id not in fichas]
     if sem_ficha:
         log.warning("espécies com documento de busca e sem ficha: %s", ", ".join(sem_ficha))
     acertos = [a for a in acertos if a.species_id in fichas]
 
-    atributos = (
-        consulta.atributos if modo == "reordenado" else AtributosObservados.model_construct()
-    )
     entradas = [Entrada(a.species_id, a.nota, fichas[a.species_id].atributos) for a in acertos]
     por_id = {a.species_id: a for a in acertos}
     candidatas = []
@@ -212,3 +207,23 @@ def buscar(
             )
         )
     return candidatas
+
+
+def buscar(
+    db: Database,
+    consulta: Consulta,
+    vetor: list[float],
+    ranking: Ranking,
+    regras_bico: RegrasBico,
+    modo: Modo = "reordenado",
+    k: int = TOP,
+) -> list[Candidata]:
+    """As `k` espécies candidatas para a consulta, no modo pedido."""
+    if modo not in MODOS:
+        raise ValueError(f"modo desconhecido: {modo!r} (use {', '.join(MODOS)})")
+    filtro = filtro_duro(consulta.atributos) if modo == "filtros_duros" else None
+    acertos = buscar_vetor(db, vetor, ranking, consulta.recusadas, filtro)
+    atributos = (
+        consulta.atributos if modo == "reordenado" else AtributosObservados.model_construct()
+    )
+    return montar_candidatas(db, acertos, atributos, ranking, regras_bico, k)

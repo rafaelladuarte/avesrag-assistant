@@ -1,12 +1,13 @@
 """Retriever com um banco falso: pipeline, filtro duro, agregação e os três modos."""
 
 import pytest
-from avesrag_builder.db.collections import SPECIES, SPECIES_RETRIEVAL_DOCS
+from avesrag_builder.db.collections import SPECIES_RETRIEVAL_DOCS
 
 from avesrag_assistant.busca.modelos import Consulta, contexto
 from avesrag_assistant.busca.pontuacao import carregar_ranking
 from avesrag_assistant.busca.retriever import Acerto, agregar, buscar, etapa_vetor, filtro_duro
 from avesrag_assistant.settings import ROOT_DIR
+from conftest import DOCS, FICHAS, BancoFalso
 
 
 @pytest.fixture(scope="module")
@@ -95,52 +96,6 @@ def test_agregar_maior_nota_dominio_corte_e_desempate():
 # ---------------------------------------------------------------------------
 # buscar com banco falso
 # ---------------------------------------------------------------------------
-
-
-class ColecaoFalsa:
-    def __init__(self, docs):
-        self.docs = docs
-        self.pipelines = []
-
-    def aggregate(self, pipeline):
-        self.pipelines.append(pipeline)
-        return iter(self.docs)
-
-    def find(self, filtro, projecao=None):
-        ids = set(filtro["species_id"]["$in"])
-        return iter(d for d in self.docs if d["species_id"] in ids)
-
-
-class BancoFalso:
-    def __init__(self, docs, fichas):
-        self.colecoes = {SPECIES_RETRIEVAL_DOCS: ColecaoFalsa(docs), SPECIES: ColecaoFalsa(fichas)}
-
-    def __getitem__(self, nome):
-        return self.colecoes[nome]
-
-
-DOCS = [
-    {"species_id": "sp_verde", "dominio": "aparencia", "nota": 0.80},
-    {"species_id": "sp_amarela", "dominio": "aparencia", "nota": 0.72},
-    {"species_id": "sp_amarela", "dominio": "voz_habitos", "nota": 0.78},
-    {"species_id": "sp_sem_ficha", "dominio": "aparencia", "nota": 0.79},
-    {"species_id": "sp_cinza", "dominio": "comportamento_ambiente", "nota": 0.70},
-]
-FICHAS = [
-    {
-        "species_id": "sp_verde",
-        "nome_cientifico": "Ave verde",
-        "nomes": {"pt": ["ave-verde"]},
-        "atributos": {"cores": ["verde"]},
-    },
-    {
-        "species_id": "sp_amarela",
-        "nome_cientifico": "Ave amarela",
-        "nomes": {"pt": ["ave-amarela", "outra"]},
-        "atributos": {"cores": ["amarelo"], "marcas": ["sobrancelha"]},
-    },
-    {"species_id": "sp_cinza", "nome_cientifico": "Ave cinza"},
-]
 
 
 @pytest.fixture

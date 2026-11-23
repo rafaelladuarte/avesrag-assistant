@@ -61,3 +61,12 @@ def test_recusada_some_do_resultado(banco, vetor_bem_te_vi, ranking, vocab_regra
     saida = buscar(banco, consulta, vetor_bem_te_vi, ranking, vocab_regras[1])
     assert BEM_TE_VI not in [c.species_id for c in saida]
     assert len(saida) == 10
+
+
+def test_degradado_acha_o_bem_te_vi_pelo_nome(banco, ranking, vocab_regras):
+    from avesrag_assistant.busca.degradado import buscar_degradado
+
+    consulta = validar_consulta({"descricao": "bem-te-vi"}, *vocab_regras)
+    saida = buscar_degradado(banco, consulta, ranking, vocab_regras[1])
+    assert saida, "o $search não devolveu nada"
+    assert BEM_TE_VI in [c.species_id for c in saida[:3]]
