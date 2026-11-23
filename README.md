@@ -48,7 +48,7 @@ poetry run avesrag-assistant --help
 poetry run avesrag-assistant buscar "barriga amarela e sobrancelha branca" \
     --atributos '{"cores_por_parte": [{"parte": "barriga", "cor": "amarelo"}], "marcas": ["sobrancelha"]}'
 poetry run avesrag-assistant buscar "bem-te-vi" --modo degradado     # busca por palavras, sem embedding
-poetry run avesrag-assistant avaliar                 # o conjunto de avaliação, nos 4 modos de busca
+poetry run avesrag-assistant avaliar                 # o conjunto de avaliação, nos 5 modos de busca
 poetry run avesrag-assistant avaliar --uso teste --modo reordenado --tsv reports/teste.tsv
 ```
 
@@ -91,3 +91,7 @@ O código, as mensagens e os testes são escritos em português.
 ## Licença
 
 MIT. Veja [LICENSE](LICENSE).
+
+### Ajuste 1: modo `hibrido` (23/11, `ranking.yaml` 1.1)
+
+O `hibrido` junta às 40 espécies do vetor até 20 espécies de cada busca vetorial com os atributos como filtro, do mais estrito ao mais solto (todos os atributos → só a aparência → só as cores), e reordena tudo pelos pontos. Na calibração (32 casos): top 3 de 47% para 59%, top 10 de 62% para 75%, mediana de 5 para 2. O teste ainda não foi rodado; o padrão do `buscar` continua `reordenado` até lá.

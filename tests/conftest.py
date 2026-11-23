@@ -32,13 +32,15 @@ def obs(vocab_regras):
 
 
 class ColecaoFalsa:
-    def __init__(self, docs):
+    def __init__(self, docs, responder=None):
+        """`responder(pipeline) -> docs`: resposta por pipeline; sem ele, sempre `docs`."""
         self.docs = docs
+        self.responder = responder
         self.pipelines = []
 
     def aggregate(self, pipeline):
         self.pipelines.append(pipeline)
-        return iter(self.docs)
+        return iter(self.responder(pipeline) if self.responder else self.docs)
 
     def find(self, filtro, projecao=None):
         ids = set(filtro["species_id"]["$in"])

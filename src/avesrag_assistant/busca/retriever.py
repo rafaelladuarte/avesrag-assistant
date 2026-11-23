@@ -8,9 +8,11 @@ Etapas (plano_assistant1.md §3.2):
 3. a reordenação pelos atributos (`pontuacao.reordenar`).
 
 `buscar` recebe o vetor pronto: quem gera o embedding é o chamador, pelo cache.
-Os três modos da avaliação passam pelo mesmo caminho: `vetor` e `filtros_duros`
-reordenam sem atributos (a ordem fica a do vetor), e `filtros_duros` ainda põe
-os atributos como `$and` no `filter`, como a fumaça do builder.
+Os modos passam pelo mesmo caminho: `vetor` e `filtros_duros` reordenam sem
+atributos (a ordem fica a do vetor), e `filtros_duros` ainda põe os atributos
+como `$and` no `filter`, como a fumaça do builder. O `hibrido` junta às espécies
+do vetor as de buscas extras com os atributos como filtro, do nível mais estrito
+ao mais solto (`ranking.hibrido`), e reordena tudo como o `reordenado`.
 """
 
 from __future__ import annotations
@@ -37,8 +39,9 @@ from avesrag_assistant.busca.pontuacao import Entrada, Ranking, reordenar
 
 log = logging.getLogger(__name__)
 
-Modo = Literal["vetor", "filtros_duros", "reordenado"]
-MODOS: tuple[Modo, ...] = ("vetor", "filtros_duros", "reordenado")
+Modo = Literal["vetor", "filtros_duros", "reordenado", "hibrido"]
+MODOS: tuple[Modo, ...] = ("vetor", "filtros_duros", "reordenado", "hibrido")
+VETOR = "vetor"  # origem das espécies da busca vetorial sem filtro
 TOP = 10
 
 
@@ -49,6 +52,7 @@ class Acerto:
     species_id: str
     nota: float
     dominio: str
+    origem: str = VETOR  # a busca que trouxe a espécie
 
 
 @dataclass(frozen=True)
@@ -100,13 +104,20 @@ def etapa_vetor(
     ]
 
 
-def filtro_duro(atributos: AtributosObservados) -> dict[str, Any] | None:
-    """Os atributos como filtro eliminatório do índice (modo `filtros_duros`).
+def filtro_duro(
+    atributos: AtributosObservados, campos: Sequence[str] | None = None
+) -> dict[str, Any] | None:
+    """Os atributos como filtro eliminatório do índice (`filtros_duros` e `hibrido`).
 
     Cada valor de lista vira uma igualdade; a cor de `cores_por_parte` vira
     `filtros.cores` (o índice não tem os pares); o `tamanho` vira `$in`, porque
     basta uma das faixas. O bico fica de fora: o índice só tem o `bico_tipo`.
+    Com `campos`, só esses atributos entram no filtro.
     """
+    if campos is not None:
+        atributos = AtributosObservados.model_construct(
+            **{c: getattr(atributos, c) for c in campos}
+        )
     condicoes: list[dict[str, Any]] = []
     for nome in ATRIBUTOS_LISTA:
         valores = getattr(atributos, nome)
@@ -126,15 +137,31 @@ def filtro_duro(atributos: AtributosObservados) -> dict[str, Any] | None:
     return condicoes[0] if len(condicoes) == 1 else {"$and": condicoes}
 
 
-def agregar(docs: Iterable[dict[str, Any]], n: int) -> list[Acerto]:
+def agregar(docs: Iterable[dict[str, Any]], n: int, origem: str = VETOR) -> list[Acerto]:
     """Documentos → as `n` melhores espécies pela maior nota; desempate pelo `species_id`."""
     melhores: dict[str, Acerto] = {}
     for d in docs:
         sid, nota = d["species_id"], float(d["nota"])
         atual = melhores.get(sid)
         if atual is None or nota > atual.nota:
-            melhores[sid] = Acerto(sid, nota, d["dominio"])
+            melhores[sid] = Acerto(sid, nota, d["dominio"], origem)
     return sorted(melhores.values(), key=lambda a: (-a.nota, a.species_id))[:n]
+
+
+def unir(base: Sequence[Acerto], extras: Iterable[Acerto]) -> list[Acerto]:
+    """Acrescenta à base as espécies novas, na ordem em que chegam.
+
+    Uma espécie repetida fica com a maior nota e o domínio dela, mas mantém a
+    origem da primeira busca que a trouxe.
+    """
+    unidos = {a.species_id: a for a in base}
+    for a in extras:
+        atual = unidos.get(a.species_id)
+        if atual is None:
+            unidos[a.species_id] = a
+        elif a.nota > atual.nota:
+            unidos[a.species_id] = Acerto(a.species_id, a.nota, a.dominio, atual.origem)
+    return list(unidos.values())
 
 
 # ---------------------------------------------------------------------------
@@ -148,9 +175,38 @@ def buscar_vetor(
     ranking: Ranking,
     recusadas: Sequence[str] = (),
     filtro: dict[str, Any] | None = None,
+    n: int | None = None,
+    origem: str = VETOR,
 ) -> list[Acerto]:
+    """As `n` melhores espécies (padrão: `ranking.vetor.especies`)."""
     docs = db[SPECIES_RETRIEVAL_DOCS].aggregate(etapa_vetor(vetor, ranking, recusadas, filtro))
-    return agregar(docs, ranking.vetor.especies)
+    return agregar(docs, n or ranking.vetor.especies, origem)
+
+
+def buscar_hibrido(
+    db: Database,
+    consulta: Consulta,
+    vetor: list[float],
+    ranking: Ranking,
+) -> list[Acerto]:
+    """As espécies do vetor mais as de cada nível de `ranking.hibrido`.
+
+    Um nível com o filtro vazio, ou igual ao do nível anterior, é pulado.
+    """
+    if ranking.hibrido is None:
+        raise ValueError("o modo hibrido precisa da seção `hibrido` no ranking.yaml")
+    acertos = buscar_vetor(db, vetor, ranking, consulta.recusadas)
+    anterior = None
+    for nivel in ranking.hibrido.niveis:
+        filtro = filtro_duro(consulta.atributos, nivel.campos())
+        if filtro is None or filtro == anterior:
+            continue
+        anterior = filtro
+        extras = buscar_vetor(
+            db, vetor, ranking, consulta.recusadas, filtro, ranking.hibrido.especies, nivel.nome
+        )
+        acertos = unir(acertos, extras)
+    return acertos
 
 
 def carregar_fichas(db: Database, species_ids: Sequence[str]) -> dict[str, Ficha]:
@@ -201,6 +257,7 @@ def montar_candidatas(
                 nota_vetor=p.nota_vetor,
                 nota_vetor_normalizada=p.nota_vetor_normalizada,
                 dominio=por_id[p.species_id].dominio,
+                origem=por_id[p.species_id].origem,
                 pontos=p.pontos,
                 nota_final=p.nota_final,
                 detalhes=p.detalhes,
@@ -221,9 +278,11 @@ def buscar(
     """As `k` espécies candidatas para a consulta, no modo pedido."""
     if modo not in MODOS:
         raise ValueError(f"modo desconhecido: {modo!r} (use {', '.join(MODOS)})")
-    filtro = filtro_duro(consulta.atributos) if modo == "filtros_duros" else None
-    acertos = buscar_vetor(db, vetor, ranking, consulta.recusadas, filtro)
-    atributos = (
-        consulta.atributos if modo == "reordenado" else AtributosObservados.model_construct()
-    )
+    if modo == "hibrido":
+        acertos = buscar_hibrido(db, consulta, vetor, ranking)
+    else:
+        filtro = filtro_duro(consulta.atributos) if modo == "filtros_duros" else None
+        acertos = buscar_vetor(db, vetor, ranking, consulta.recusadas, filtro)
+    reordena = modo in ("reordenado", "hibrido")
+    atributos = consulta.atributos if reordena else AtributosObservados.model_construct()
     return montar_candidatas(db, acertos, atributos, ranking, regras_bico, k)

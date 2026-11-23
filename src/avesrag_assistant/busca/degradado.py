@@ -64,6 +64,6 @@ def buscar_degradado(
     docs = db[SPECIES_RETRIEVAL_DOCS].aggregate(
         etapa_texto(consulta.descricao, ranking, consulta.recusadas)
     )
-    acertos = agregar(docs, ranking.vetor.especies)
+    acertos = agregar(docs, ranking.vetor.especies, origem="texto")
     vazios = AtributosObservados.model_construct()
     return montar_candidatas(db, acertos, vazios, ranking, regras_bico, k)

@@ -1,7 +1,11 @@
 # Pesos da reordenação do retriever (plano_assistant1.md §3.3).
 # Os valores iniciais são um palpite. O ajuste é feito à mão só com os casos de
 # calibração e registrado aqui, com a data e o resultado.
-versao: "1.0"
+# Histórico:
+#   1.0 (23/11) linha de base: plano_assistant1.md §13.
+#   1.1 (23/11) seção `hibrido` (modo novo; os pesos não mudaram). Resultado na
+#       calibração logo abaixo da seção.
+versao: "1.1"
 
 vetor:
   peso: 1.0          # peso da nota do vetor, normalizada entre a menor e a maior das candidatas
@@ -23,3 +27,16 @@ pesos:             # pontos por atributo que bate
   ambiente: 0.2
   grupo: 0.1
   atividade: 0.3
+
+hibrido:             # modo `hibrido`: buscas extras com os atributos como filtro
+  especies: 20       # espécies que cada nível acrescenta, no máximo
+  niveis:            # do mais estrito ao mais solto; o bico não entra (o índice não o filtra)
+    - nome: completo
+      atributos: todos
+    - nome: aparencia
+      atributos: [cores, cores_por_parte, marcas, tamanho, cauda]
+    - nome: cores
+      atributos: [cores, cores_por_parte]
+# Resultado da 1.1 (23/11, calibração, 32 casos; o teste ainda não foi rodado):
+#   reordenado  top1 41%  top3 47%  top10 62%  mediana 5
+#   hibrido     top1 44%  top3 59%  top10 75%  mediana 2   (~49 espécies reordenadas)

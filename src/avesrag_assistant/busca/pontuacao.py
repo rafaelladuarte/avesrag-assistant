@@ -17,7 +17,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Self
+from typing import Literal, Self
 
 from avesrag_builder.core.models import Atributos
 
@@ -86,11 +86,59 @@ class ConfigVetor(_Base):
         return self
 
 
+# O índice de busca não filtra as dimensões do bico (só tem o `bico_tipo`).
+FORA_DO_HIBRIDO = ("bico",)
+
+
+class NivelHibrido(_Base):
+    """Uma busca extra do modo `hibrido`: os atributos deste nível viram filtro."""
+
+    nome: str = Field(min_length=1)
+    atributos: Literal["todos"] | list[str] = Field(min_length=1)
+
+    @field_validator("atributos")
+    @classmethod
+    def _atributos_conhecidos(cls, v: Literal["todos"] | list[str]) -> Literal["todos"] | list[str]:
+        if v == "todos":
+            return v
+        conhecidos = set(AtributosObservados.model_fields)
+        erros = []
+        if desconhecidos := sorted(set(v) - conhecidos):
+            erros.append(f"atributos desconhecidos: {desconhecidos}")
+        if fora := sorted(set(v) & set(FORA_DO_HIBRIDO)):
+            erros.append(f"o índice não filtra {fora}")
+        if len(set(v)) != len(v):
+            erros.append("atributo repetido")
+        if erros:
+            raise ValueError("; ".join(erros))
+        return v
+
+    def campos(self) -> tuple[str, ...]:
+        """Os campos do `AtributosObservados` que este nível usa como filtro."""
+        if self.atributos == "todos":
+            return tuple(c for c in AtributosObservados.model_fields if c not in FORA_DO_HIBRIDO)
+        return tuple(self.atributos)
+
+
+class ConfigHibrido(_Base):
+    especies: PositiveInt  # espécies que cada nível acrescenta, no máximo
+    niveis: list[NivelHibrido] = Field(min_length=1)  # do mais estrito ao mais solto
+
+    @field_validator("niveis")
+    @classmethod
+    def _nomes_unicos(cls, v: list[NivelHibrido]) -> list[NivelHibrido]:
+        nomes = [n.nome for n in v]
+        if repetidos := sorted({n for n in nomes if nomes.count(n) > 1}):
+            raise ValueError(f"níveis com o mesmo nome: {repetidos}")
+        return v
+
+
 class Ranking(_Base):
     versao: str = Field(min_length=1)
     vetor: ConfigVetor
     penalidade_conflito: float = Field(ge=0)
     pesos: dict[str, PositiveFloat]
+    hibrido: ConfigHibrido | None = None  # só o modo `hibrido` usa
 
     @field_validator("pesos")
     @classmethod

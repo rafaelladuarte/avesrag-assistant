@@ -90,7 +90,13 @@ def test_rodar_posicoes_por_modo_e_uma_chamada_de_embedding(tmp_path, casos, ran
     assert (av.chamadas, av.tokens) == (1, 9)
     assert embedder.pedidos == [["descrição c001", "descrição c002", "descrição c003"]]
     c001, c002, c003 = av.resultados
-    assert c001.posicoes == {"vetor": 2, "filtros_duros": 2, "reordenado": 1, "degradado": 2}
+    assert c001.posicoes == {
+        "vetor": 2,
+        "filtros_duros": 2,
+        "reordenado": 1,
+        "hibrido": 1,
+        "degradado": 2,
+    }
     assert c001.primeiras["reordenado"][0] == "sp_amarela"
     assert c002.posicoes["vetor"] == 3
     assert not c003.alcancavel and c003.posicoes["vetor"] is None

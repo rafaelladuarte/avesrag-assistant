@@ -278,3 +278,48 @@ def test_ranking_com_chave_duplicada_e_recusado(tmp_path):
     texto = yaml.safe_dump(RANKING) + "penalidade_conflito: 0.3\n"
     with pytest.raises(RankingInvalido, match="chave duplicada"):
         carregar_ranking(_gravar(tmp_path, None, texto))
+
+
+# ---------------------------------------------------------------------------
+# Seção hibrido
+# ---------------------------------------------------------------------------
+
+HIBRIDO = {
+    "especies": 20,
+    "niveis": [
+        {"nome": "completo", "atributos": "todos"},
+        {"nome": "cores", "atributos": ["cores", "cores_por_parte"]},
+    ],
+}
+
+
+def test_ranking_sem_hibrido_e_valido(ranking):
+    assert ranking.hibrido is None
+
+
+def test_hibrido_valido_e_campos(tmp_path):
+    r = carregar_ranking(_gravar(tmp_path, {**RANKING, "hibrido": HIBRIDO}))
+    completo, cores = r.hibrido.niveis
+    assert "bico" not in completo.campos() and "marcas" in completo.campos()
+    assert cores.campos() == ("cores", "cores_por_parte")
+
+
+@pytest.mark.parametrize(
+    ("atributos", "mensagem"),
+    [
+        (["cor"], "atributos desconhecidos"),
+        (["cores", "bico"], "não filtra"),
+        (["cores", "cores"], "repetido"),
+    ],
+)
+def test_hibrido_nivel_invalido(tmp_path, atributos, mensagem):
+    hibrido = {"especies": 20, "niveis": [{"nome": "x", "atributos": atributos}]}
+    with pytest.raises(RankingInvalido, match=mensagem):
+        carregar_ranking(_gravar(tmp_path, {**RANKING, "hibrido": hibrido}))
+
+
+def test_hibrido_niveis_com_o_mesmo_nome(tmp_path):
+    nivel = {"nome": "x", "atributos": ["cores"]}
+    hibrido = {"especies": 20, "niveis": [nivel, nivel]}
+    with pytest.raises(RankingInvalido, match="mesmo nome"):
+        carregar_ranking(_gravar(tmp_path, {**RANKING, "hibrido": hibrido}))

@@ -67,6 +67,7 @@ def formatar_candidatas(candidatas: list[Candidata]) -> list[str]:
             f"{i:2}. {c.nome} ({c.nome_cientifico})  final {c.nota_final:+.2f} = "
             f"busca {c.nota_vetor:.3f} (norm. {c.nota_vetor_normalizada:.2f}) "
             f"+ pontos {c.pontos:+.2f}  [{c.dominio}]"
+            + (f"  (via {c.origem})" if c.origem not in ("vetor", "texto") else "")
         )
         bateram = [f"{d.atributo} {','.join(d.bateram)}" for d in c.detalhes if d.bateram]
         conflitaram = [
