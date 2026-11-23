@@ -613,3 +613,57 @@ casos:
       cores_por_parte: [{ parte: olho, cor: amarelo }]
       marcas: [listrado, topete]
       cauda: [longa]
+
+  # Consultas de fumaça do builder (config/consultas_fumaca.yaml). Escritas
+  # conhecendo os dados: entram como `memoria`, com autoria `fumaca`.
+  - id: f001
+    descricao: "barriga amarela e sobrancelha branca"
+    esperada: sp_pitangus_sulphuratus # bem-te-vi
+    autoria: fumaca
+    origem: memoria
+    uso: calibracao
+    atributos:
+      cores_por_parte: [{ parte: barriga, cor: amarelo }]
+      marcas: [sobrancelha]
+
+  - id: f002
+    descricao: "bico enorme e colorido"
+    esperada: sp_ramphastos_toco # tucanuçu
+    autoria: fumaca
+    origem: memoria
+    uso: calibracao
+    atributos:
+      bico: { comprimento: muito_longo }
+
+  - id: f003
+    descricao: "pia à noite numa árvore perto de casa"
+    esperada: sp_megascops_choliba # corujinha-do-mato
+    autoria: fumaca
+    origem: memoria
+    uso: teste
+    atributos:
+      ambiente: [area_urbana]
+      atividade: [noturna]
+
+  - id: f004
+    descricao: "ave enorme que corre no campo e não voa"
+    esperada: sp_rhea_americana # ema
+    autoria: fumaca
+    origem: memoria
+    uso: calibracao
+    atributos:
+      tamanho: [grande]
+      ambiente: [cerrado_campo]
+      o_que_fazia: [andando_no_chao]
+
+  - id: f005
+    descricao: "anda pelo chão do jardim e canta em dueto bem alto"
+    esperada: sp_furnarius_rufus # joão-de-barro
+    autoria: fumaca
+    origem: memoria
+    uso: calibracao
+    atributos:
+      ambiente: [parque_jardim]
+      onde_estava: [chao]
+      o_que_fazia: [andando_no_chao]
+      grupo: [casal]

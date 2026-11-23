@@ -1,5 +1,5 @@
 import pytest
-from avesrag_builder.db.collections import SPECIES, SPECIES_RETRIEVAL_DOCS
+from avesrag_builder.db.collections import SPECIES, SPECIES_REGISTRY, SPECIES_RETRIEVAL_DOCS
 
 from avesrag_assistant.settings import get_settings
 
@@ -44,10 +44,21 @@ class ColecaoFalsa:
         ids = set(filtro["species_id"]["$in"])
         return iter(d for d in self.docs if d["species_id"] in ids)
 
+    def distinct(self, campo, filtro):
+        ids = set(filtro["species_id"]["$in"])
+        return sorted({d[campo] for d in self.docs if d["species_id"] in ids})
+
 
 class BancoFalso:
-    def __init__(self, docs, fichas):
-        self.colecoes = {SPECIES_RETRIEVAL_DOCS: ColecaoFalsa(docs), SPECIES: ColecaoFalsa(fichas)}
+    def __init__(self, docs, fichas, registry=None):
+        """`registry`: species_id do registry; por padrão, os das fichas e dos documentos."""
+        if registry is None:
+            registry = {d["species_id"] for d in [*docs, *fichas]}
+        self.colecoes = {
+            SPECIES_RETRIEVAL_DOCS: ColecaoFalsa(docs),
+            SPECIES: ColecaoFalsa(fichas),
+            SPECIES_REGISTRY: ColecaoFalsa([{"species_id": s} for s in sorted(registry)]),
+        }
 
     def __getitem__(self, nome):
         return self.colecoes[nome]

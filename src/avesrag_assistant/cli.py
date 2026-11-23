@@ -5,6 +5,7 @@ No Assistant 1 há dois comandos: `buscar` (uma consulta ao retriever) e
 """
 
 import json
+from pathlib import Path
 
 import typer
 from avesrag_builder.core.vocabulario import VocabularioInvalido
@@ -13,6 +14,10 @@ from pydantic import ValidationError
 from pymongo.errors import PyMongoError
 
 from avesrag_assistant import __version__, vocabulario
+from avesrag_assistant.avaliacao.casos import CasosInvalidos, carregar_casos, conferir_no_banco
+from avesrag_assistant.avaliacao.relatorio import gravar_tsv, tabela
+from avesrag_assistant.avaliacao.relatorio import inalcancaveis as relatorio_inalcancaveis
+from avesrag_assistant.avaliacao.rodar import DEGRADADO, MODOS_AVALIACAO, rodar
 from avesrag_assistant.busca.cache import criar_cache
 from avesrag_assistant.busca.degradado import buscar_degradado
 from avesrag_assistant.busca.modelos import Candidata, validar_consulta
@@ -22,7 +27,8 @@ from avesrag_assistant.busca.retriever import buscar as buscar_especies
 from avesrag_assistant.db import get_db
 from avesrag_assistant.settings import MissingSettingError, get_settings
 
-MODO_DEGRADADO = "degradado"
+MODO_DEGRADADO = DEGRADADO
+AJUDA_MODOS_AVALIACAO = f"Modos a avaliar (pode repetir; padrão: {', '.join(MODOS_AVALIACAO)})."
 
 app = typer.Typer(
     name="avesrag-assistant",
@@ -31,11 +37,6 @@ app = typer.Typer(
     add_completion=False,
     rich_markup_mode=None,
 )
-
-
-def nao_implementado(comando: str) -> None:
-    typer.echo(f"`{comando}` ainda não foi implementado (plano_assistant1.md).", err=True)
-    raise typer.Exit(code=2)
 
 
 def _versao(valor: bool) -> None:
@@ -157,6 +158,48 @@ def avaliar(
     uso: str | None = typer.Option(
         None, "--uso", help="Só os casos de um uso: calibracao ou teste."
     ),
+    modo: list[str] = typer.Option([], "--modo", help=AJUDA_MODOS_AVALIACAO),
+    tsv: Path | None = typer.Option(
+        None, "--tsv", help="Onde gravar o relatório por caso (padrão: reports/avaliacao.tsv)."
+    ),
 ) -> None:
-    """Roda o conjunto de avaliação nos modos vetor, filtros_duros e reordenado."""
-    nao_implementado("avaliar")
+    """Roda o conjunto de avaliação nos modos de busca e mostra top 1, top 3 e top 10."""
+    modos = tuple(modo) or MODOS_AVALIACAO
+    if desconhecidos := [m for m in modos if m not in MODOS_AVALIACAO]:
+        falhar(f"modos desconhecidos: {desconhecidos} (use {', '.join(MODOS_AVALIACAO)})", 2)
+    if uso not in (None, "calibracao", "teste"):
+        falhar(f"uso desconhecido: {uso!r} (use calibracao ou teste)", 2)
+    settings = get_settings()
+    try:
+        voc, regras = vocabulario.carregar()
+        ranking = carregar_ranking(settings.CONFIG_DIR / "ranking.yaml")
+        casos = carregar_casos(settings.AVALIACAO_DIR / "casos.yaml", voc, regras)
+    except (VocabularioInvalido, RankingInvalido, CasosInvalidos) as e:
+        falhar(str(e), 2)
+    if uso:
+        casos = [c for c in casos if c.uso == uso]
+
+    try:
+        db = get_db()
+        conferencia = conferir_no_banco(db, casos)
+        if conferencia.inexistentes:
+            falhar(f"espécies esperadas fora do registry: {', '.join(conferencia.inexistentes)}", 2)
+        cache = criar_cache(settings) if any(m != DEGRADADO for m in modos) else None
+        av = rodar(db, casos, cache, ranking, regras, modos, conferencia.inalcancaveis)
+    except MissingSettingError as e:
+        falhar(str(e), 2)
+    except ErroFornecedor as e:
+        falhar(f"falha no embedding: {e}")
+    except PyMongoError as e:
+        falhar(f"falha no MongoDB ({settings.MONGODB_URI}): {e}")
+
+    typer.echo(
+        f"{len(casos)} casos · ranking {ranking.versao} · posições até {av.ate} · "
+        f"embedding: {av.chamadas} chamada(s), {av.tokens} tokens"
+    )
+    for linha in tabela(av):
+        typer.echo(linha)
+    if fora := relatorio_inalcancaveis(av):
+        typer.echo(f"inalcançáveis (sem documento de busca): {', '.join(fora)}")
+    caminho = gravar_tsv(av, tsv or settings.REPORTS_DIR / "avaliacao.tsv")
+    typer.echo(f"relatório: {caminho}")

@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from avesrag_builder.db.collections import SPECIES_RETRIEVAL_DOCS
+from avesrag_builder.db.collections import SPECIES_REGISTRY, SPECIES_RETRIEVAL_DOCS
 from avesrag_builder.llm.base import Embeddings
 from typer.testing import CliRunner
 
@@ -24,12 +24,6 @@ def test_version():
     resultado = runner.invoke(app, ["--version"])
     assert resultado.exit_code == 0
     assert __version__ in resultado.output
-
-
-def test_avaliar_ainda_nao_implementado():
-    resultado = runner.invoke(app, ["avaliar"])
-    assert resultado.exit_code == 2
-    assert "ainda não foi implementado" in resultado.output
 
 
 # ---------------------------------------------------------------------------
@@ -122,3 +116,83 @@ def test_buscar_sem_chave_de_api(monkeypatch):
     resultado = runner.invoke(app, ["buscar", "ave"])
     assert resultado.exit_code == 2
     assert "OPENAI_API_KEY" in resultado.output
+
+
+# ---------------------------------------------------------------------------
+# avaliar
+# ---------------------------------------------------------------------------
+
+CASOS_YAML = """
+versao: "1.0"
+casos:
+  - { id: c001, descricao: "ave amarela", esperada: sp_amarela, autoria: t, origem: memoria,
+      uso: calibracao, atributos: { cores: [amarelo] } }
+  - { id: c002, descricao: "ave cinza", esperada: sp_cinza, autoria: t, origem: llm, uso: teste }
+  - { id: c003, descricao: "ave rara", esperada: sp_incompleta, autoria: t, origem: memoria,
+      uso: teste }
+"""
+
+
+@pytest.fixture
+def avaliacao_falsa(ambiente, monkeypatch, tmp_path):
+    banco, embedder = ambiente
+    (tmp_path / "casos.yaml").write_text(CASOS_YAML, encoding="utf-8")
+    monkeypatch.setenv("AVALIACAO_DIR", str(tmp_path))
+    monkeypatch.setenv("REPORTS_DIR", str(tmp_path / "reports"))
+    banco.colecoes[SPECIES_REGISTRY].docs.append({"species_id": "sp_incompleta"})
+    return tmp_path, embedder
+
+
+def test_avaliar(avaliacao_falsa):
+    tmp_path, embedder = avaliacao_falsa
+    resultado = runner.invoke(app, ["avaliar"])
+    assert resultado.exit_code == 0, resultado.output
+    linhas = resultado.output.splitlines()
+    assert linhas[0].startswith("3 casos · ranking 1.0 · posições até 40 · embedding: 1 chamada(s)")
+    assert linhas[1].split()[:3] == ["modo", "grupo", "n"]
+    assert len(linhas) == 2 + 4 * 4 + 2
+    assert "inalcançáveis (sem documento de busca): c003 sp_incompleta" in resultado.output
+    assert (tmp_path / "reports" / "avaliacao.tsv").exists()
+    assert len(embedder.textos) == 3
+
+    de_novo = runner.invoke(app, ["avaliar", "--uso", "teste", "--modo", "vetor"])
+    assert de_novo.exit_code == 0, de_novo.output
+    assert de_novo.output.startswith("2 casos")
+    assert "embedding: 0 chamada(s), 0 tokens" in de_novo.output
+    assert len(embedder.textos) == 3
+
+
+def test_avaliar_so_degradado_nao_pede_a_chave(avaliacao_falsa, monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "")
+    resultado = runner.invoke(app, ["avaliar", "--modo", "degradado"])
+    assert resultado.exit_code == 0, resultado.output
+
+
+@pytest.mark.parametrize(
+    ("args", "mensagem"),
+    [
+        (["--modo", "outro"], "modos desconhecidos"),
+        (["--uso", "treino"], "uso desconhecido"),
+    ],
+)
+def test_avaliar_opcao_invalida(avaliacao_falsa, args, mensagem):
+    resultado = runner.invoke(app, ["avaliar", *args])
+    assert resultado.exit_code == 2
+    assert mensagem in resultado.output
+
+
+def test_avaliar_esperada_fora_do_registry(avaliacao_falsa):
+    tmp_path, _ = avaliacao_falsa
+    texto = CASOS_YAML.replace("sp_incompleta", "sp_inexistente")
+    (tmp_path / "casos.yaml").write_text(texto, encoding="utf-8")
+    resultado = runner.invoke(app, ["avaliar"])
+    assert resultado.exit_code == 2
+    assert "fora do registry: sp_inexistente" in resultado.output
+
+
+def test_avaliar_casos_invalidos(avaliacao_falsa):
+    tmp_path, _ = avaliacao_falsa
+    (tmp_path / "casos.yaml").write_text(CASOS_YAML.replace("memoria", "sonho", 1), "utf-8")
+    resultado = runner.invoke(app, ["avaliar"])
+    assert resultado.exit_code == 2
+    assert "casos.0.origem" in resultado.output
