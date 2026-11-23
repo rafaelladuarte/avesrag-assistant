@@ -10,7 +10,7 @@ Assistente que identifica aves do Cerrado a partir de uma descrição em texto (
 
 | Marco | Entrega | Situação |
 | --- | --- | --- |
-| Assistant 1 | retriever (busca vetorial + reordenação por atributos) e conjunto de avaliação | em andamento: estrutura do repositório |
+| Assistant 1 | retriever (busca vetorial + reordenação por atributos) e conjunto de avaliação | implementado; linha de base medida, ajuste dos pesos pendente |
 | Assistant 2 | extrator de atributos, perguntas e orquestrador, pela linha de comando | — |
 | Assistant 3 | geocodificação, eBird como bônus no ranking e redator da resposta | — |
 | Assistant 4 | API FastAPI, guardrails e sessões | — |
@@ -47,18 +47,34 @@ cp .env.example .env    # preencha OPENAI_API_KEY e a MONGODB_URI do builder
 poetry run avesrag-assistant --help
 poetry run avesrag-assistant buscar "barriga amarela e sobrancelha branca" \
     --atributos '{"cores_por_parte": [{"parte": "barriga", "cor": "amarelo"}], "marcas": ["sobrancelha"]}'
-poetry run avesrag-assistant avaliar                 # o conjunto de avaliação, nos 3 modos de busca
-poetry run avesrag-assistant avaliar --uso teste     # só os casos de teste
+poetry run avesrag-assistant buscar "bem-te-vi" --modo degradado     # busca por palavras, sem embedding
+poetry run avesrag-assistant avaliar                 # o conjunto de avaliação, nos 4 modos de busca
+poetry run avesrag-assistant avaliar --uso teste --modo reordenado --tsv reports/teste.tsv
 ```
 
-`buscar` e `avaliar` ainda não estão implementados.
+- `buscar` mostra as candidatas com a nota final, a nota da busca, os pontos e o que bateu, conflitou ou falta na ficha. Modos: `vetor`, `filtros_duros`, `reordenado` (o padrão) e `degradado`. `--recusar sp_x` tira uma espécie; `--k` muda quantas aparecem.
+- `avaliar` mostra top 1, top 3, top 10 e a posição mediana da espécie esperada por modo, para os casos de calibração, de teste, todos os alcançáveis e os que não foram gerados por LLM, e grava o detalhe por caso em `reports/avaliacao.tsv`.
+- Os embeddings das consultas ficam em cache (`reports/cache_embeddings.json`): rodar de novo não chama a API.
+
+## Linha de base (23/11)
+
+Com 52 casos (48 alcançáveis; os 4 restantes são de espécies incompletas, sem documento de busca):
+
+| Modo | Top 1 | Top 3 | Top 10 | Mediana |
+| --- | --- | --- | --- | --- |
+| vetor | 25% | 38% | 48% | 19 |
+| filtros_duros | 33% | 40% | 46% | >40 |
+| **reordenado** | **40%** | **52%** | **62%** | **3** |
+| degradado | 15% | 25% | 40% | 23 |
+
+44 dos 52 casos foram gerados por um LLM sem acesso às fichas (`origem: llm`); os números servem para comparar os modos, e o acerto real depende de descrições escritas por pessoas. A meta do piloto (a espécie certa entre as 3 primeiras em 70% das descrições) vale para o sistema completo, com o eBird.
 
 ## Configuração
 
 | Arquivo | O que define |
 | --- | --- |
 | `config/ranking.yaml` | pesos da reordenação por atributo e parâmetros da busca vetorial |
-| `avaliacao/casos.yaml` | conjunto de avaliação: descrições escritas por pessoas, a espécie esperada e os atributos anotados |
+| `avaliacao/casos.yaml` | conjunto de avaliação: as descrições, a espécie esperada, os atributos anotados (o gabarito do extrator), a origem e o uso (`calibracao` ou `teste`) |
 | `.env` | `OPENAI_API_KEY`, `MONGODB_URI`, `MONGODB_DATABASE`, `EMBEDDING_MODEL` e, se o builder não estiver na pasta irmã, `BUILDER_DIR` |
 
 ## Desenvolvimento
