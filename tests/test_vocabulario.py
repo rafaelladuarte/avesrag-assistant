@@ -22,4 +22,5 @@ def test_yaml_do_assistant_sao_validos():
     ranking = carregar_ranking(ROOT_DIR / "config" / "ranking.yaml")
     casos = yaml.safe_load((ROOT_DIR / "avaliacao" / "casos.yaml").read_text(encoding="utf-8"))
     assert ranking.versao == "1.0"
-    assert casos == {"versao": "1.0", "casos": []}
+    assert casos["versao"] == "1.0"
+    assert len(casos["casos"]) >= 30  # a validação completa vem com avaliacao/casos.py

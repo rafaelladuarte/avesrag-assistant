@@ -1,21 +1,615 @@
 # Conjunto de avaliação do retriever (plano_assistant1.md §5). Público e versionado.
 #
-# Cada caso é uma descrição escrita por uma pessoa, a espécie esperada e os
-# atributos anotados (o gabarito do extrator do Assistant 2):
+# Cada caso é uma descrição, a espécie esperada e os atributos anotados (o
+# gabarito do extrator do Assistant 2): só o que o texto diz e que tem valor no
+# vocabulário. Pistas sem valor ("tufinhos", "casinha de barro", o canto) ficam
+# só na descrição, que vira o embedding.
 #
-#   - id: c001
-#     descricao: "Vi no quintal uma ave do tamanho de um pardal, barriga amarela forte..."
-#     esperada: sp_pitangus_sulphuratus
-#     autoria: rafaella                    # quem escreveu
-#     origem: avistamento                  # avistamento | memoria | foto
-#     uso: calibracao                      # calibracao (~2/3) | teste (~1/3)
-#     atributos:
-#       tamanho: [pequeno, medio]
-#       cores_por_parte: [{ parte: barriga, cor: amarelo }]
-#       marcas: [sobrancelha]
-#       ambiente: [parque_jardim]
+#   autoria: quem escreveu (pessoa, `llm` ou `claude`)
+#   origem:  avistamento | memoria | foto | llm
+#   uso:     calibracao (~2/3, para ajustar os pesos) | teste (~1/3, o número que vale);
+#            as descrições da mesma espécie ficam no mesmo uso.
 #
-# Meta: ≥ 30 casos, com comuns de Uberlândia, grupos que se confundem, algumas
-# noturnas e aquáticas e 2 ou 3 espécies incompletas.
+# 23/11/2026: c001–c003 escritos pelo Claude como exemplo; g001–g044 gerados por
+# um LLM (prompt sem acesso às fichas), anotação proposta pelo Claude, a revisar.
+# Um segundo lote de 100 descrições geradas foi descartado: erros de fato demais
+# (cores trocadas, outra espécie descrita) e ids malformados.
+# Inalcançáveis (incompletas, sem documento de busca): sp_crotophaga_ani,
+# sp_coragyps_atratus, sp_megarynchus_pitangua.
 versao: "1.0"
-casos: []
+casos:
+  - id: c001
+    descricao: "Vi no quintal uma ave um pouco maior que um pardal, com a barriga amarelona e uma listra branca em cima do olho. Ficava pousada no fio e de vez em quando voava pra pegar inseto no ar."
+    esperada: sp_pitangus_sulphuratus # bem-te-vi
+    autoria: claude
+    origem: memoria
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno, medio]
+      cores_por_parte: [{ parte: barriga, cor: amarelo }]
+      marcas: [sobrancelha]
+      ambiente: [parque_jardim]
+      o_que_fazia: [pousada, cacando_em_voo]
+
+  - id: c002
+    descricao: "De noite ouvi um pio tremido vindo da árvore da frente de casa. Com a lanterna vi uma corujinha cinza, pequena, com uns tufinhos na cabeça e o olho laranja."
+    esperada: sp_megascops_choliba # corujinha-do-mato
+    autoria: claude
+    origem: memoria
+    uso: teste
+    atributos:
+      tamanho: [pequeno]
+      cores: [cinza]
+      cores_por_parte: [{ parte: olho, cor: laranja }]
+      marcas: [topete]
+      ambiente: [area_urbana]
+      atividade: [noturna]
+
+  - id: c003
+    descricao: "Um passarinho todo marrom andando no chão do gramado da praça, sempre junto com outro igual. De repente os dois começaram a cantar juntos, bem alto."
+    esperada: sp_furnarius_rufus # joão-de-barro
+    autoria: claude
+    origem: memoria
+    uso: calibracao
+    atributos:
+      cores: [marrom]
+      ambiente: [parque_jardim]
+      onde_estava: [chao]
+      o_que_fazia: [andando_no_chao]
+      grupo: [casal]
+
+  - id: g001
+    descricao: "Um passarinho marrom meio avermelhado andando no chão do quintal, perto de uma poça. Depois voou pra cima de um poste onde tem uma casinha de barro, redondinha."
+    esperada: sp_furnarius_rufus # joão-de-barro
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      cores: [marrom]
+      ambiente: [parque_jardim]
+      onde_estava: [chao]
+      o_que_fazia: [andando_no_chao]
+
+  - id: g002
+    descricao: "Passarinho do tamanho de um sabiá, peito bem amarelo, cabeça preta com uma listra branca e as costas marrons. Pousou na cerca do quintal."
+    esperada: sp_pitangus_sulphuratus # bem-te-vi
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      tamanho: [medio]
+      cores_por_parte:
+        - { parte: peito, cor: amarelo }
+        - { parte: cabeca, cor: preto }
+        - { parte: cabeca, cor: branco }
+        - { parte: dorso, cor: marrom }
+      ambiente: [parque_jardim]
+      o_que_fazia: [pousada]
+
+  - id: g003
+    descricao: "Vi um bicho enorme num pé de manga lá na chácara, preto com um bico laranja gigante, quase do tamanho do corpo dele. Tinha uma mancha branca na garganta."
+    esperada: sp_ramphastos_toco # tucanuçu
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      tamanho: [grande]
+      cores: [preto]
+      cores_por_parte: [{ parte: bico, cor: laranja }, { parte: garganta, cor: branco }]
+      marcas: [garganta_contrastante]
+      bico: { comprimento: muito_longo }
+      ambiente: [pasto_plantacao]
+
+  - id: g004
+    descricao: "Pássaro todo preto, magrinho, de rabo comprido e um bico meio grosso e curvado em cima. Parecia um corvo pequeno."
+    esperada: sp_crotophaga_ani # anu-preto (incompleta: inalcançável)
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      cores: [preto]
+      cauda: [longa]
+      bico: { espessura: grosso, curvatura: curvo }
+
+  - id: g005
+    descricao: "Ave de perna comprida no gramado da praça, branca e cinza, com o peito preto e um pontinho preto saindo atrás da cabeça. Gritava muito alto e ficou voando em cima de mim quando cheguei perto do ninho dela no chão."
+    esperada: sp_vanellus_chilensis # quero-quero
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      cores: [branco, cinza, preto]
+      cores_por_parte: [{ parte: peito, cor: preto }]
+      marcas: [topete]
+      ambiente: [parque_jardim]
+      onde_estava: [chao]
+
+  - id: g006
+    descricao: "Passarinho meio azulado-acinzentado, com as asas de um azul mais forte. Do tamanho de um pardal grandinho."
+    esperada: sp_thraupis_sayaca # sanhaço-cinzento
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [azul, cinza]
+      cores_por_parte: [{ parte: asas, cor: azul }]
+
+  - id: g007
+    descricao: "Coruja pequena de perna comprida, marrom toda manchada de branco, com uma sobrancelha branca e uns olhos amarelos arregalados que me encaravam."
+    esperada: sp_athene_cunicularia # coruja-buraqueira
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [marrom, branco]
+      cores_por_parte: [{ parte: olho, cor: amarelo }]
+      marcas: [pintado, sobrancelha]
+
+  - id: g008
+    descricao: "Passarinho minúsculo que ficava parado no ar batendo asa muito rápido, azul-escuro brilhante, com um rabo bem comprido que abria e fechava. Bico fino e comprido."
+    esperada: sp_eupetomena_macroura # beija-flor-tesoura
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [azul]
+      cauda: [longa]
+      bico: { comprimento: longo, espessura: fino }
+      onde_estava: [no_ar]
+      o_que_fazia: [parada_no_ar]
+
+  - id: g009
+    descricao: "Pombinha pequena no chão da estrada de terra. Quando levantou voo apareceu um clarão marrom-avermelhado nas asas. Ouvi um canto de duas notinhas tristes, repetidas."
+    esperada: sp_columbina_squammata # fogo-apagou
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores_por_parte: [{ parte: asas, cor: marrom }]
+      onde_estava: [chao]
+
+  - id: g010
+    descricao: "Ave de rapina pousada no fio de luz perto do pasto, olhando pro chão. Marrom, peito riscadinho de claro. De vez em quando soltava um grito agudo e repetido."
+    esperada: sp_rupornis_magnirostris # gavião-carijó
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      cores: [marrom]
+      marcas: [listrado]
+      ambiente: [pasto_plantacao]
+      o_que_fazia: [pousada]
+
+  - id: g011
+    descricao: "Passarinho pequenininho, peito amarelo e costas escuras, com uma listrinha branca em cima do olho e o bico fino e curvado. Mexendo nas flores do hibisco do quintal."
+    esperada: sp_coereba_flaveola # cambacica
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      tamanho: [pequeno]
+      cores_por_parte: [{ parte: peito, cor: amarelo }]
+      marcas: [sobrancelha]
+      bico: { espessura: fino, curvatura: curvo }
+      ambiente: [parque_jardim]
+      onde_estava: [vegetacao_baixa]
+
+  - id: g012
+    descricao: "Um monte de ave preta grande, de cabeça pelada escura, rodando no céu perto do aterro e depois pousadas juntas na cerca."
+    esperada: sp_coragyps_atratus # urubu-preto (incompleta: inalcançável)
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      tamanho: [grande]
+      cores: [preto]
+      cores_por_parte: [{ parte: cabeca, cor: preto }]
+      onde_estava: [no_ar]
+      o_que_fazia: [planando, pousada]
+      grupo: [bando]
+
+  - id: g013
+    descricao: "Na lagoa do parque tinha uma ave marrom-avermelhada, de cabeça preta e uma plaquinha amarela na testa, andando em cima das folhas boiando. Os dedos dela eram enormes, compridos. Parecia uma galinha-d'água, só que mais colorida."
+    esperada: sp_jacana_jacana # jaçanã
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      cores: [marrom, preto, amarelo]
+      cores_por_parte: [{ parte: cabeca, cor: preto }]
+      ambiente: [beira_de_agua]
+      onde_estava: [na_agua]
+
+  - id: g014
+    descricao: "Passarinho de cabeça cinza, costas meio esverdeadas e a barriga bem amarela. Bem grande, uns 30 centímetros, achei."
+    esperada: sp_tyrannus_melancholicus # suiriri
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      tamanho: [medio]
+      cores_por_parte:
+        - { parte: cabeca, cor: cinza }
+        - { parte: dorso, cor: verde }
+        - { parte: barriga, cor: amarelo }
+
+  - id: g015
+    descricao: "Num fio de luz da avenida, ficava de olho e saía voando atrás de inseto e voltava pro mesmo lugar. No fim da tarde tinha vários juntos, gritando agudinho."
+    esperada: sp_tyrannus_melancholicus # suiriri
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      ambiente: [area_urbana]
+      o_que_fazia: [pousada, cacando_em_voo]
+      grupo: [bando]
+
+  - id: g016
+    descricao: "Ave de perna comprida e vermelha, corpo cinza-claro e um tufo de penas em cima do bico. Andava no pasto e fugiu correndo em vez de voar."
+    esperada: sp_cariama_cristata # seriema
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      cores: [cinza, vermelho]
+      cores_por_parte: [{ parte: pernas, cor: vermelho }]
+      marcas: [topete]
+      ambiente: [pasto_plantacao]
+      onde_estava: [chao]
+      o_que_fazia: [andando_no_chao]
+
+  - id: g017
+    descricao: "Passarinho amarelo bem vivo, com a cabeça meio alaranjada, comendo semente de capim no terreno baldio. Achei que era todo laranja."
+    esperada: sp_sicalis_flaveola # canário-da-terra
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      cores: [amarelo, laranja]
+      cores_por_parte: [{ parte: cabeca, cor: laranja }]
+      ambiente: [area_urbana]
+      onde_estava: [vegetacao_baixa]
+
+  - id: g018
+    descricao: "Bando barulhento atrás do gado no pasto, ave de cor creme com preto e rabo muito comprido. Voavam de poste em poste, um atrás do outro, desengonçados, e depois ficavam juntos tomando sol na cerca."
+    esperada: sp_guira_guira # anu-branco
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      cores: [bege, preto]
+      cauda: [longa]
+      ambiente: [pasto_plantacao]
+      o_que_fazia: [pousada]
+      grupo: [bando]
+
+  - id: g019
+    descricao: "Passarinho marrom nas costas e barriga cor de laranja, bico amarelo-alaranjado, pulando no gramado do quintal depois da chuva. De manhã cedinho cantava lindo no pé de jabuticaba."
+    esperada: sp_turdus_rufiventris # sabiá-laranjeira
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      cores_por_parte:
+        - { parte: dorso, cor: marrom }
+        - { parte: barriga, cor: laranja }
+        - { parte: bico, cor: amarelo }
+      ambiente: [parque_jardim]
+      onde_estava: [chao]
+      o_que_fazia: [andando_no_chao]
+
+  - id: g020
+    descricao: "Ave que ficava no chão do pasto perto dos cupinzeiros, bicando, e quando me viu voou pro mourão da cerca. Dava um grito alto e esquisito."
+    esperada: sp_colaptes_campestris # pica-pau-do-campo
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      ambiente: [pasto_plantacao]
+      onde_estava: [chao]
+      o_que_fazia: [andando_no_chao, pousada]
+
+  - id: g021
+    descricao: "Bando de papagaiinhos todo verdes, com a testa meio laranja e a ponta das asas azulada, passando bem rápido sobre a avenida, fazendo uma barulheira."
+    esperada: sp_eupsittula_aurea # periquito-rei
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      cores: [verde, laranja, azul]
+      cores_por_parte: [{ parte: cabeca, cor: laranja }, { parte: asas, cor: azul }]
+      ambiente: [area_urbana]
+      onde_estava: [no_ar]
+      grupo: [bando]
+
+  - id: g022
+    descricao: "Passarinho grande, de peito amarelo, cabeça preta com uma faixa branca e um bicão grosso e comprido, no ipê da praça."
+    esperada: sp_megarynchus_pitangua # neinei (incompleta: inalcançável)
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      tamanho: [medio]
+      cores_por_parte:
+        - { parte: peito, cor: amarelo }
+        - { parte: cabeca, cor: preto }
+        - { parte: cabeca, cor: branco }
+      bico: { comprimento: longo, espessura: grosso }
+      ambiente: [parque_jardim]
+
+  - id: g023
+    descricao: "Menorzinho que aquele amarelão de listra branca na cabeça, com a garganta bem branca. Um casal ficava de olho na água, numa árvore na beira da lagoa, e quando abriu as penas da cabeça apareceu uma coisinha vermelha."
+    esperada: sp_myiozetetes_similis # bentevizinho-de-penacho-vermelho
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      cores_por_parte: [{ parte: garganta, cor: branco }, { parte: cabeca, cor: vermelho }]
+      marcas: [garganta_contrastante]
+      ambiente: [beira_de_agua]
+      grupo: [casal]
+
+  - id: g024
+    descricao: "Passarinho cor de verde-azeitona, meio acinzentado, com as asas e o rabo azulados, comendo a fruta de uma palmeira no jardim da praça."
+    esperada: sp_thraupis_palmarum # sanhaço-do-coqueiro
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      cores: [verde, cinza, azul]
+      cores_por_parte: [{ parte: asas, cor: azul }, { parte: cauda, cor: azul }]
+      ambiente: [parque_jardim]
+
+  - id: g025
+    descricao: "Passarinho esverdeado com riscos pretos nas costas e um pouco de vermelho na cabeça, subindo no tronco de uma árvore da praça e bicando a casca."
+    esperada: sp_colaptes_melanochloros # pica-pau-verde-barrado
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      cores: [verde, preto, vermelho]
+      cores_por_parte: [{ parte: cabeca, cor: vermelho }]
+      marcas: [listrado]
+      ambiente: [parque_jardim]
+      o_que_fazia: [escalando_tronco]
+
+  - id: g026
+    descricao: "Pombinho miúdo cor de tijolo, quase ferrugem, com pintinhas pretas nas asas, andando no chão do quintal catando farelo. Eram um casal."
+    esperada: sp_columbina_talpacoti # rolinha-roxa
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [marrom, preto]
+      cores_por_parte: [{ parte: asas, cor: preto }]
+      marcas: [pintado]
+      ambiente: [parque_jardim]
+      onde_estava: [chao]
+      o_que_fazia: [andando_no_chao]
+      grupo: [casal]
+
+  - id: g027
+    descricao: "Ave grande andando no chão do pasto perto da estrada de terra, de cara alaranjada, boné preto, peito meio riscado e barriga escura. Comia um bicho atropelado."
+    esperada: sp_caracara_plancus # carcará
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      tamanho: [grande]
+      cores_por_parte: [{ parte: cabeca, cor: laranja }, { parte: cabeca, cor: preto }]
+      marcas: [listrado]
+      ambiente: [pasto_plantacao]
+      onde_estava: [chao]
+      o_que_fazia: [andando_no_chao]
+
+  - id: g028
+    descricao: "Passarinho pequeno marrom-acinzentado com um topetinho e uma coleirinha cor de ferrugem na nuca, pulando no terreiro de casa."
+    esperada: sp_zonotrichia_capensis # tico-tico
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      tamanho: [pequeno]
+      cores: [marrom, cinza]
+      marcas: [topete, coleira]
+      ambiente: [parque_jardim]
+      onde_estava: [chao]
+      o_que_fazia: [andando_no_chao]
+
+  - id: g029
+    descricao: "À noite, no quintal, ouvi um canto de sons rápidos que vai acelerando e depois fica mais devagar. Era uma coruja pequena cinza na mangueira, com dois tufinhos de pena na cabeça tipo chifrinhos. Do tamanho de um gavião, achei."
+    esperada: sp_megascops_choliba # corujinha-do-mato
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      tamanho: [medio]
+      cores: [cinza]
+      marcas: [topete]
+      ambiente: [parque_jardim]
+      atividade: [noturna]
+
+  - id: g030
+    descricao: "Na estrada de terra à noite, uma ave parecida com folha seca ficou parada no chão na frente do carro, os olhos brilhando vermelhos no farol. Depois voou baixo e sumiu."
+    esperada: sp_nyctidromus_albicollis # bacurau
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      cores: [marrom]
+      onde_estava: [chao]
+      atividade: [noturna]
+
+  - id: g031
+    descricao: "Ave toda branca, bem grande, com pescoço comprido dobrado em S, bico amarelo e perna preta, parada na beira da lagoa do parque."
+    esperada: sp_ardea_alba # garça-branca-grande
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      tamanho: [grande]
+      cores: [branco]
+      cores_por_parte: [{ parte: bico, cor: amarelo }, { parte: pernas, cor: preto }]
+      ambiente: [beira_de_agua]
+
+  - id: g032
+    descricao: "Bando de patos marrons com a cara branca e o pescoço comprido, dormindo na beira da lagoa. À noite passavam voando e assoviavam fininho. Pareciam ter o bico vermelho."
+    esperada: sp_dendrocygna_viduata # irerê
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      cores: [marrom, branco]
+      cores_por_parte: [{ parte: cabeca, cor: branco }, { parte: bico, cor: vermelho }]
+      ambiente: [beira_de_agua]
+      grupo: [bando]
+
+  - id: g033
+    descricao: "Ave grande azul-acinzentada, peito cor de ferrugem, cabeção e bico grande e pontudo, pousada num galho sobre o rio. Mergulhou, pegou um peixe e voou gritando."
+    esperada: sp_megaceryle_torquata # martim-pescador-grande
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      tamanho: [grande]
+      cores: [azul, cinza]
+      cores_por_parte: [{ parte: peito, cor: marrom }]
+      bico: { comprimento: longo, extra: [pontiagudo] }
+      ambiente: [beira_de_agua]
+      o_que_fazia: [pousada, mergulhando]
+
+  - id: g034
+    descricao: "Bando de passarões azul-escuro com a barriga branca e um topete espetado, bem barulhentos, pulando entre as árvores do cerrado. Achei que tinham uma parte roxa."
+    esperada: sp_cyanocorax_cristatellus # gralha-do-campo
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      cores: [azul, branco, roxo]
+      cores_por_parte: [{ parte: barriga, cor: branco }]
+      marcas: [topete]
+      ambiente: [cerrado_campo]
+      grupo: [bando]
+
+  - id: g035
+    descricao: "Passarinho todo branquinho com uma faixa preta nos olhos, tipo máscara, e as asas e o rabo pretos. Andava na beira da lagoa balançando o rabo."
+    esperada: sp_fluvicola_nengeta # lavadeira-mascarada
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      cores: [branco, preto]
+      cores_por_parte: [{ parte: asas, cor: preto }, { parte: cauda, cor: preto }]
+      marcas: [mascara]
+      ambiente: [beira_de_agua]
+      o_que_fazia: [andando_no_chao, balancando_a_cauda]
+
+  - id: g036
+    descricao: "No quintal, descia na água do chafariz pra pegar peixinho e voltava pra goiabeira gritando bem alto, sem parar. Me acordou às cinco da manhã."
+    esperada: sp_pitangus_sulphuratus # bem-te-vi
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      ambiente: [parque_jardim]
+      o_que_fazia: [cacando_em_voo]
+
+  - id: g037
+    descricao: "Um bando pequeno vem todo dia no mamoeiro do quintal beliscar o mamão maduro, uns passarinhos azulados. Também comem a banana que deixo no pé."
+    esperada: sp_thraupis_sayaca # sanhaço-cinzento
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      cores: [azul]
+      ambiente: [parque_jardim]
+      grupo: [bando]
+
+  - id: g038
+    descricao: "Toda manhã ficava de guarda na flor do quintal, expulsando qualquer outro passarinho que chegasse perto, e saía voando zumbindo."
+    esperada: sp_eupetomena_macroura # beija-flor-tesoura
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      ambiente: [parque_jardim]
+
+  - id: g039
+    descricao: "Bando de pássaros pretos juntos no arame da cerca, perto do gado, catando carrapato nas costas das vacas. Quando voam, ficam desajeitados e dão um assobio longo e choroso."
+    esperada: sp_crotophaga_ani # anu-preto (incompleta: inalcançável)
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      cores: [preto]
+      ambiente: [pasto_plantacao]
+      o_que_fazia: [pousada]
+      grupo: [bando]
+
+  - id: g040
+    descricao: "De dia, ficava de pé em cima de um montinho de terra na frente de um buraco no terreno baldio, olhando pra todo lado e balançando a cabeça de um jeito engraçado. Eram dois."
+    esperada: sp_athene_cunicularia # coruja-buraqueira
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      ambiente: [area_urbana]
+      onde_estava: [chao]
+      grupo: [casal]
+      atividade: [diurna]
+
+  - id: g041
+    descricao: "Um pombinho bem pequeno, cinza-amarronzado, com o peito parecendo escamado e a cara meio rosada. Do tamanho de um pardal, achei."
+    esperada: sp_columbina_squammata # fogo-apagou
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [cinza, rosa]
+      cores_por_parte: [{ parte: cabeca, cor: rosa }]
+
+  - id: g042
+    descricao: "Ave de rapina de tamanho médio, marrom em cima e peito riscado de marrom e branco, com olhos e pés amarelos. Ficou pousada bem calma no galho."
+    esperada: sp_rupornis_magnirostris # gavião-carijó
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      tamanho: [medio]
+      cores: [marrom, branco, amarelo]
+      cores_por_parte:
+        - { parte: dorso, cor: marrom }
+        - { parte: olho, cor: amarelo }
+        - { parte: pernas, cor: amarelo }
+      marcas: [listrado]
+      o_que_fazia: [pousada]
+
+  - id: g043
+    descricao: "Passarinho de bico fino meio comprido, bege-amarelado com pintas pretas pelo corpo, pescoço claro e um pouco de vermelho na bochecha. O rabo parecia duro."
+    esperada: sp_colaptes_campestris # pica-pau-do-campo
+    autoria: llm
+    origem: llm
+    uso: calibracao
+    atributos:
+      cores: [bege, preto, vermelho]
+      cores_por_parte: [{ parte: cabeca, cor: vermelho }]
+      marcas: [pintado]
+      bico: { comprimento: medio, espessura: fino }
+
+  - id: g044
+    descricao: "Ave de rabo muito comprido, cor de creme com riscas escuras no peito, asas e rabo mais escuros, penas da cabeça bagunçadas e olho amarelo."
+    esperada: sp_guira_guira # anu-branco
+    autoria: llm
+    origem: llm
+    uso: teste
+    atributos:
+      cores: [bege]
+      cores_por_parte: [{ parte: olho, cor: amarelo }]
+      marcas: [listrado, topete]
+      cauda: [longa]
