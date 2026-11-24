@@ -1,0 +1,45 @@
+# Regras da conversa (plano_assistant2.md §4 e §5). Validado ao carregar, contra o
+# vocabulário do builder. O ajuste é feito só com os casos de calibração (`simular`)
+# e registrado aqui, com a data e o resultado.
+versao: "1.0"
+
+busca:
+  modo: hibrido            # modo do retriever na conversa e na simulação
+
+perguntas:
+  maximo: 3                # perguntas por conversa, no máximo
+  candidatas: 10           # a pergunta separa estas primeiras candidatas
+  temperatura: 1.0         # peso de cada candidata: softmax(nota_final / temperatura)
+  ganho_minimo: 0.05       # massa eliminada esperada abaixo disso: nenhuma pergunta é útil
+  # Atributos que uma pessoa leiga consegue responder, na ordem de desempate.
+  # `cores_por_parte` vira uma pergunta por parte; `bico`, uma por dimensão.
+  perguntaveis: [cores_por_parte, tamanho, marcas, cauda, bico, onde_estava, ambiente]
+  partes: [cabeca, garganta, peito, barriga, dorso, asas, cauda, bico, pernas, olho]
+
+apresentacao:
+  minimo_visuais: 2        # atributos visuais informados para mostrar as candidatas
+  visuais: [tamanho, cores, cores_por_parte, marcas, bico, cauda]
+
+confirmacao:
+  rodadas: 2               # rodadas de "não" antes de encerrar
+
+simulacao:                 # usuário simulado (avaliacao/simulacao.py)
+  # Atributos em que a pessoa viu um valor só: a resposta é um valor sorteado entre
+  # os da ficha (ela viu a ave num lugar, não em todos os que a espécie usa). Nos
+  # outros, a resposta traz todos (as cores da parte, as marcas, a cauda).
+  um_valor: [onde_estava, ambiente, bico, tamanho]
+  # Cores que as pessoas trocaram nos formulários (plano_assistant1.md §13.4): com
+  # ruído, a resposta de cor troca por uma vizinha; nos outros atributos, vira "não sei".
+  vizinhas:
+    - [vermelho, laranja]
+    - [laranja, amarelo]
+    - [amarelo, bege]
+    - [bege, marrom]
+    - [preto, cinza]
+
+# Resultado da 1.0 (24/11, `simular --uso calibracao`, ranking 1.4; plano_assistant2.md §13.3):
+#   top 3 das pessoas depois de 0 / 1 / 2 / 3 perguntas
+#   sem sugestões            10% / 32% / 46% / 58%   (ruído 0.2: 10% / 28% / 42% / 54%)
+#   sugestões, bônus 2.0     46% / 52% / 54% / 54%   (ruído 0.2: 46% / 50% / 50% / 52%)
+#   sugestões, bônus 1.0     44% / 52% / 62% / 70%   (ruído 0.2: 44% / 50% / 58% / 64%)
+#   → ranking 1.5 com o bônus 1.0 (decisão da usuária, 24/11)

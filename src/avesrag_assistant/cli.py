@@ -3,9 +3,11 @@
 Assistant 1: `buscar` (uma consulta ao retriever) e `avaliar` (o conjunto de
 avaliação nos modos de busca). Assistant 2: `extrair` (o `c01_extrator` numa
 mensagem) e a opção `--sugestoes` do `buscar` e do `avaliar` (as espécies
-sugeridas pelo `c04_candidatas` como candidatas com bônus).
+sugeridas pelo `c04_candidatas` como candidatas com bônus); `simular` (as
+perguntas medidas com um usuário simulado que responde pela ficha).
 """
 
+import csv
 import json
 from pathlib import Path
 
@@ -20,12 +22,15 @@ from avesrag_assistant.avaliacao.casos import CasosInvalidos, carregar_casos, co
 from avesrag_assistant.avaliacao.relatorio import gravar_tsv, tabela
 from avesrag_assistant.avaliacao.relatorio import inalcancaveis as relatorio_inalcancaveis
 from avesrag_assistant.avaliacao.rodar import DEGRADADO, MODOS_AVALIACAO, rodar
+from avesrag_assistant.avaliacao.simulacao import linhas_tsv, resumo_perguntas, simular
+from avesrag_assistant.avaliacao.simulacao import tabela as tabela_simulacao
 from avesrag_assistant.busca.cache import criar_cache
 from avesrag_assistant.busca.degradado import buscar_degradado
 from avesrag_assistant.busca.modelos import Candidata, validar_consulta
 from avesrag_assistant.busca.pontuacao import RankingInvalido, carregar_ranking
 from avesrag_assistant.busca.retriever import MODOS, TOP
 from avesrag_assistant.busca.retriever import buscar as buscar_especies
+from avesrag_assistant.conversa.config import ConversaInvalida, carregar_conversa
 from avesrag_assistant.db import get_db
 from avesrag_assistant.llm.cache import ErroLLM
 from avesrag_assistant.llm.extrator import criar_extrator
@@ -270,3 +275,73 @@ def extrair(
         "atributos: "
         + json.dumps(extracao.atributos.model_dump(exclude_none=True), ensure_ascii=False)
     )
+
+
+@app.command(name="simular")
+def simular_perguntas(
+    uso: str | None = typer.Option(
+        None, "--uso", help="Só os casos de um uso: calibracao ou teste."
+    ),
+    ruido: float = typer.Option(
+        0.0,
+        "--ruido",
+        min=0.0,
+        max=1.0,
+        help="Probabilidade de a resposta trocar a cor por uma vizinha ou virar 'não sei'.",
+    ),
+    semente: int = typer.Option(0, "--semente", help="Semente do ruído."),
+    sugestoes: bool = typer.Option(False, "--sugestoes", help=AJUDA_SUGESTOES),
+    tsv: Path | None = typer.Option(
+        None, "--tsv", help="Onde gravar o relatório por caso (padrão: reports/simulacao.tsv)."
+    ),
+) -> None:
+    """Mede as perguntas: top 1, 3 e 10 depois de 0, 1, 2 e 3 respostas tiradas da ficha."""
+    if uso not in (None, "calibracao", "teste"):
+        falhar(f"uso desconhecido: {uso!r} (use calibracao ou teste)", 2)
+    settings = get_settings()
+    try:
+        voc, regras = vocabulario.carregar()
+        ranking = carregar_ranking(settings.CONFIG_DIR / "ranking.yaml")
+        conversa = carregar_conversa(settings.CONFIG_DIR / "conversa.yaml", voc)
+        casos = carregar_casos(settings.AVALIACAO_DIR / "casos.yaml", voc, regras)
+    except (VocabularioInvalido, RankingInvalido, ConversaInvalida, CasosInvalidos) as e:
+        falhar(str(e), 2)
+    if uso:
+        casos = [c for c in casos if c.uso == uso]
+
+    try:
+        db = get_db()
+        conferencia = conferir_no_banco(db, casos)
+        if conferencia.inexistentes:
+            falhar(f"espécies esperadas fora do registry: {', '.join(conferencia.inexistentes)}", 2)
+        casos = [c for c in casos if c.esperada not in conferencia.inalcancaveis]
+        cache = criar_cache(settings)
+        sugeridas = None
+        if sugestoes:
+            sugestor = criar_sugestor(settings, voc, regras)
+            indice = indice_da_base(db)
+            sugeridas = {c.id: sugestor.especies(c.descricao, indice) for c in casos}
+        sims = simular(db, casos, cache, ranking, voc, regras, conversa, sugeridas, ruido, semente)
+    except (PromptInvalido, MissingSettingError) as e:
+        falhar(str(e), 2)
+    except ErroLLM as e:
+        falhar(f"falha no LLM: {e}")
+    except ErroFornecedor as e:
+        falhar(f"falha no embedding ou no LLM: {e}")
+    except PyMongoError as e:
+        falhar(f"falha no MongoDB ({settings.MONGODB_URI}): {e}")
+
+    typer.echo(
+        f"{len(casos)} casos alcançáveis · ranking {ranking.versao} · conversa {conversa.versao} · "
+        f"modo {conversa.busca.modo} · sugestões {'sim' if sugestoes else 'não'} · "
+        f"ruído {ruido:g} · posições até {ranking.vetor.especies}"
+    )
+    for linha in tabela_simulacao(sims):
+        typer.echo(linha)
+    for linha in resumo_perguntas(sims):
+        typer.echo(linha)
+    caminho = tsv or settings.REPORTS_DIR / "simulacao.tsv"
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    with caminho.open("w", encoding="utf-8", newline="") as fh:
+        csv.writer(fh, delimiter="\t", lineterminator="\n").writerows(linhas_tsv(sims))
+    typer.echo(f"relatório: {caminho}")

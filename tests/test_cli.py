@@ -149,7 +149,7 @@ def test_avaliar(avaliacao_falsa):
     assert resultado.exit_code == 0, resultado.output
     linhas = resultado.output.splitlines()
     assert linhas[0].startswith(
-        "3 casos · ranking 1.4 · sugestões não · posições até 40 · embedding: 1 chamada(s)"
+        "3 casos · ranking 1.5 · sugestões não · posições até 40 · embedding: 1 chamada(s)"
     )
     assert linhas[1].split()[:3] == ["modo", "grupo", "n"]
     assert len(linhas) == 2 + 5 * 4 + 2  # 5 modos × 4 grupos
@@ -224,7 +224,7 @@ def test_buscar_com_sugestoes(ambiente, sugestor):
     assert resultado.exit_code == 0, resultado.output
     linhas = resultado.output.splitlines()
     assert "sugeridas pelo LLM: sp_cinza" in linhas
-    assert "Ave cinza" in linhas[2] and "+ sugerida +2.00" in linhas[2]  # sobe para o 1º
+    assert "Ave cinza" in linhas[2] and "+ sugerida +1.00" in linhas[2]  # sobe para o 1º
     assert sugestor.mensagens == ["ave cinza"]
 
 
@@ -234,3 +234,18 @@ def test_avaliar_com_sugestoes(avaliacao_falsa, sugestor):
     assert "sugestões: 1 chamada(s) ao LLM, 10 + 5 tokens" in resultado.output
     assert "sugestões sim" in resultado.output
     assert len(sugestor.mensagens) == 3
+
+
+def test_simular(avaliacao_falsa):
+    tmp_path, _ = avaliacao_falsa
+    resultado = runner.invoke(app, ["simular", "--ruido", "0.2"])
+    assert resultado.exit_code == 0, resultado.output
+    linhas = resultado.output.splitlines()
+    assert linhas[0].startswith("2 casos alcançáveis · ranking 1.5 · conversa 1.0 · modo hibrido")
+    assert linhas[1].split()[:3] == ["grupo", "n", "perguntas"]
+    assert (tmp_path / "reports" / "simulacao.tsv").exists()
+
+
+def test_simular_uso_invalido(avaliacao_falsa):
+    resultado = runner.invoke(app, ["simular", "--uso", "x"])
+    assert resultado.exit_code == 2

@@ -19,7 +19,7 @@ def test_usa_o_builder_dir_do_assistant(monkeypatch, tmp_path):
 def test_ranking_do_assistant_e_valido():
     # O casos.yaml real é conferido em tests/test_casos.py.
     ranking = carregar_ranking(ROOT_DIR / "config" / "ranking.yaml")
-    assert ranking.versao == "1.4"
+    assert ranking.versao == "1.5"
     assert ranking.hibrido.atributos == 40
-    assert (ranking.sugestoes.bonus, ranking.sugestoes.maximo) == (2.0, 10)
+    assert (ranking.sugestoes.bonus, ranking.sugestoes.maximo) == (1.0, 10)
     assert [n.nome for n in ranking.hibrido.niveis] == ["completo", "aparencia", "cores"]

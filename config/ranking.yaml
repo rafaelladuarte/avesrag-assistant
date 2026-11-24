@@ -16,7 +16,11 @@
 #       entram como candidatas e ganham bônus pela posição na lista
 #       (plano_assistant2.md §13.2). Bônus 2.0 escolhido na calibração entre
 #       0.25, 0.5, 1, 2 e 4.
-versao: "1.4"
+#   1.5 (24/11) sugestoes.bonus de 2.0 para 1.0: com as perguntas, o bônus de 2.0
+#       trava a lista (a 1ª sugestão errada não sai com 3 respostas); com 1.0, o
+#       top 3 das pessoas vai a 70% depois de 3 perguntas no usuário simulado
+#       (plano_assistant2.md §13.3). Decisão da usuária.
+versao: "1.5"
 
 vetor:
   peso: 0.4          # peso da nota do vetor, normalizada entre a menor e a maior das candidatas
@@ -50,7 +54,7 @@ hibrido:             # modo `hibrido`: buscas extras com os atributos como filtr
     - nome: cores
       atributos: [cores, cores_por_parte]
 sugestoes:           # espécies sugeridas pelo LLM; sem a seção, a busca as ignora
-  bonus: 2.0         # bônus da 1ª sugerida; a da posição i (a partir de 0) ganha bonus × (1 − i/maximo)
+  bonus: 1.0         # bônus da 1ª sugerida; a da posição i (a partir de 0) ganha bonus × (1 − i/maximo)
   maximo: 10         # sugestões consideradas, no máximo
 
 # Resultado da 1.1 (23/11, calibração, 32 casos; o teste ainda não foi rodado):
@@ -63,6 +67,9 @@ sugestoes:           # espécies sugeridas pelo LLM; sem a seção, a busca as i
 # até a próxima rodada dos formulários):
 #   hibrido  pessoas  top1 8%   top3 10%  top10 36%  (1.2: 4% / 12% / 26%)
 #   hibrido  outros   top1 47%  top3 62%  top10 75%  (1.2: 50% / 66% / 78%)
+# Resultado da 1.5 (24/11, calibração, `avaliar --sugestoes`; com as perguntas, ver conversa.yaml):
+#   hibrido  pessoas  top1 28%  top3 44%  top10 54%
+#   hibrido  outros   top1 81%  top3 88%  top10 94%
 # Resultado da 1.4 (24/11, calibração, `avaliar --sugestoes`, c04_candidatas 1.0):
 #   hibrido  pessoas  top1 32%  top3 46%  top10 54%  (experimento: 30% / 38% / 46%)
 #   hibrido  outros   top1 84%  top3 94%  top10 97%  (inflado: descrições geradas por LLM)

@@ -330,6 +330,9 @@ RARA_DOC = {"species_id": "sp_rara", "dominio": "aparencia", "nota": 0.30}
 def test_sugeridas_entram_com_bonus(consulta, ranking, vocab_regras, modo):
     db = _banco_sugeridas()
     c = consulta(cores=["amarelo"])
+    # Bônus fixo no teste, para não depender da calibração do ranking.yaml.
+    sugestoes = ranking.sugestoes.model_copy(update={"bonus": 2.0})
+    ranking = ranking.model_copy(update={"sugestoes": sugestoes})
     saida = buscar(db, c, [0.1], ranking, vocab_regras[1], modo, sugeridas=["sp_rara", "sp_verde"])
     primeira = saida[0]
     assert (primeira.species_id, primeira.origem, primeira.bonus) == ("sp_rara", "llm", 2.0)
