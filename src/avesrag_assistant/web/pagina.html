@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AvesRAG · sessão moderada</title>
+<style>
+  :root {
+    --fundo: #f6f5f1; --cartao: #ffffff; --texto: #1d2320; --suave: #5f6a64;
+    --borda: #dcdcd4; --acento: #2f6b4f; --acento-texto: #ffffff;
+    --usuario: #e3efe8; --assistente: #ffffff; --aviso: #8a5a00; --erro: #a33a2b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fundo: #161a18; --cartao: #1f2421; --texto: #e7ece9; --suave: #9aa7a0;
+      --borda: #323a36; --acento: #6fbf95; --acento-texto: #0f1311;
+      --usuario: #23382d; --assistente: #1f2421; --aviso: #e0b25a; --erro: #ef8a7a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fundo); color: var(--texto);
+         font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 14px 20px; border-bottom: 1px solid var(--borda); display: flex;
+           justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  header h1 { font-size: 18px; margin: 0; }
+  header small { color: var(--suave); }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+  .cartao { background: var(--cartao); border: 1px solid var(--borda); border-radius: 10px; padding: 16px; }
+  .inicio { max-width: 520px; margin: 40px auto; display: grid; gap: 14px; }
+  .inicio label { display: grid; gap: 6px; font-weight: 600; }
+  select, input[type=text], textarea {
+    font: inherit; color: var(--texto); background: var(--fundo); border: 1px solid var(--borda);
+    border-radius: 8px; padding: 10px; width: 100%; }
+  button { font: inherit; border: 0; border-radius: 8px; padding: 10px 16px; cursor: pointer;
+           background: var(--acento); color: var(--acento-texto); font-weight: 600; }
+  button.secundario { background: transparent; color: var(--texto); border: 1px solid var(--borda); }
+  button:disabled { opacity: .5; cursor: wait; }
+  .sessao { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 20px; }
+  .sessao.sem-foto { grid-template-columns: minmax(0, 1fr); max-width: 720px; margin: 0 auto; }
+  @media (max-width: 760px) { .sessao { grid-template-columns: minmax(0, 1fr); } }
+  .foto img { width: 100%; border-radius: 8px; display: block; }
+  .credito { color: var(--suave); font-size: 13px; margin-top: 6px; }
+  .conversa { display: flex; flex-direction: column; gap: 12px; }
+  .mensagens { display: flex; flex-direction: column; gap: 10px; max-height: 55vh; overflow-y: auto; }
+  .msg { padding: 10px 14px; border-radius: 10px; white-space: pre-wrap; max-width: 90%;
+         border: 1px solid var(--borda); }
+  .msg.usuario { align-self: flex-end; background: var(--usuario); }
+  .msg.assistente { align-self: flex-start; background: var(--assistente); }
+  .pensando { color: var(--suave); font-style: italic; }
+  .envio { display: flex; gap: 8px; }
+  .envio textarea { min-height: 48px; resize: vertical; }
+  .candidatas { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .candidata { border: 1px solid var(--borda); border-radius: 10px; padding: 10px; display: grid; gap: 6px; }
+  .candidata img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; }
+  .candidata .nome { font-weight: 600; }
+  .candidata .cientifico { font-style: italic; color: var(--suave); font-size: 14px; }
+  .acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+  .revelada { border-left: 4px solid var(--acento); }
+  .erro { color: var(--erro); }
+  .oculto { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>AvesRAG · sessão moderada</h1>
+  <small id="rotulo-sessao"></small>
+</header>
+<main>
+  <!-- Para quem modera: escolher a ave antes de passar o teclado. -->
+  <section id="inicio" class="cartao inicio">
+    <label>Ave da sessão
+      <select id="ave">
+        <option value="">Livre: sem foto (a pessoa conta de uma ave que viu)</option>
+      </select>
+    </label>
+    <button id="iniciar">Iniciar sessão</button>
+    <label>Retomar uma sessão
+      <input id="retomar-id" type="text" placeholder="id da sessão" autocomplete="off">
+    </label>
+    <button id="retomar" class="secundario">Retomar</button>
+    <p id="erro-inicio" class="erro"></p>
+  </section>
+
+  <section id="sessao" class="sessao oculto">
+    <div id="foto" class="foto">
+      <div class="cartao">
+        <img id="foto-img" alt="Foto da ave da sessão">
+        <div id="foto-credito" class="credito"></div>
+      </div>
+    </div>
+    <div class="conversa">
+      <div class="cartao mensagens" id="mensagens" aria-live="polite"></div>
+      <div id="bloco-candidatas" class="cartao oculto">
+        <div class="candidatas" id="candidatas"></div>
+        <div class="acoes" style="margin-top:12px">
+          <button class="secundario" data-resposta="não">Nenhuma delas</button>
+        </div>
+      </div>
+      <div id="bloco-revelada" class="cartao revelada oculto"></div>
+      <div class="envio" id="envio">
+        <textarea id="texto" placeholder="Escreva aqui…" maxlength="1000"></textarea>
+        <button id="enviar">Enviar</button>
+      </div>
+      <p id="erro" class="erro"></p>
+      <div class="acoes"><button id="nova" class="secundario">Nova sessão</button></div>
+    </div>
+  </section>
+</main>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+let sessao = null;
+let ocupado = false;
+
+async function chamar(metodo, url, corpo) {
+  const r = await fetch(url, {
+    method: metodo,
+    headers: corpo ? { "Content-Type": "application/json" } : {},
+    body: corpo ? JSON.stringify(corpo) : undefined,
+  });
+  const dados = await r.json();
+  if (!r.ok) throw new Error(dados.erro || r.statusText);
+  return dados;
+}
+
+function el(tag, classe, texto) {
+  const e = document.createElement(tag);
+  if (classe) e.className = classe;
+  if (texto !== undefined) e.textContent = texto;
+  return e;
+}
+
+function mostrar(v) {
+  sessao = v;
+  $("inicio").classList.add("oculto");
+  $("sessao").classList.remove("oculto");
+  $("rotulo-sessao").textContent = `sessão ${v.id}` + (v.ave ? ` · ave ${v.ave}` : " · livre");
+  const temFoto = Boolean(v.foto_url);
+  $("foto").classList.toggle("oculto", !temFoto);
+  $("sessao").classList.toggle("sem-foto", !temFoto);
+  if (temFoto) {
+    $("foto-img").src = v.foto_url;
+    $("foto-credito").textContent = v.foto_credito || "";
+  }
+  const caixa = $("mensagens");
+  caixa.replaceChildren(...v.mensagens.map((m) => el("div", `msg ${m.papel}`, m.texto)));
+  caixa.scrollTop = caixa.scrollHeight;
+
+  const lista = $("candidatas");
+  lista.replaceChildren(...v.candidatas.map((c) => {
+    const card = el("div", "candidata");
+    if (c.foto_url) {
+      const img = el("img");
+      img.src = c.foto_url;
+      img.alt = c.nome;
+      card.append(img);
+    }
+    card.append(el("div", "nome", `${c.numero}. ${c.nome}`));
+    card.append(el("div", "cientifico", c.nome_cientifico));
+    if (c.foto_credito) card.append(el("div", "credito", c.foto_credito));
+    const b = el("button", "", `É esta (${c.numero})`);
+    b.dataset.resposta = String(c.numero);
+    card.append(b);
+    return card;
+  }));
+  $("bloco-candidatas").classList.toggle("oculto", v.candidatas.length === 0);
+
+  const fim = v.etapa === "fim";
+  $("envio").classList.toggle("oculto", fim);
+  const rev = $("bloco-revelada");
+  rev.classList.toggle("oculto", !(fim && v.revelada));
+  if (fim && v.revelada) {
+    rev.replaceChildren(
+      el("div", "", "A ave da foto era:"),
+      el("div", "nome", `${v.revelada.nome}`),
+      el("div", "cientifico", v.revelada.nome_cientifico),
+      el("div", "", v.revelada.acertou ? "O assistente acertou." : "O assistente não acertou."),
+    );
+  }
+  if (!fim) $("texto").focus();
+}
+
+async function enviar(texto) {
+  texto = texto.trim();
+  if (!texto || !sessao || ocupado) return;
+  ocupado = true;
+  $("erro").textContent = "";
+  $("enviar").disabled = true;
+  const caixa = $("mensagens");
+  caixa.append(el("div", "msg usuario", texto), el("div", "msg assistente pensando", "pensando…"));
+  caixa.scrollTop = caixa.scrollHeight;
+  $("texto").value = "";
+  try {
+    mostrar(await chamar("POST", `/api/sessoes/${sessao.id}/mensagens`, { texto }));
+  } catch (e) {
+    $("erro").textContent = `Erro: ${e.message}`;
+    mostrar(await chamar("GET", `/api/sessoes/${sessao.id}`));
+  } finally {
+    ocupado = false;
+    $("enviar").disabled = false;
+  }
+}
+
+async function iniciar() {
+  $("erro-inicio").textContent = "";
+  try {
+    mostrar(await chamar("POST", "/api/sessoes", { ave: $("ave").value || null }));
+  } catch (e) { $("erro-inicio").textContent = `Erro: ${e.message}`; }
+}
+
+async function retomar() {
+  $("erro-inicio").textContent = "";
+  const id = $("retomar-id").value.trim();
+  if (!id) return;
+  try { mostrar(await chamar("GET", `/api/sessoes/${encodeURIComponent(id)}`)); }
+  catch (e) { $("erro-inicio").textContent = `Erro: ${e.message}`; }
+}
+
+$("iniciar").addEventListener("click", iniciar);
+$("retomar").addEventListener("click", retomar);
+$("enviar").addEventListener("click", () => enviar($("texto").value));
+$("texto").addEventListener("keydown", (ev) => {
+  if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); enviar($("texto").value); }
+});
+document.addEventListener("click", (ev) => {
+  const r = ev.target.closest("[data-resposta]");
+  if (r) enviar(r.dataset.resposta);
+});
+$("nova").addEventListener("click", () => {
+  sessao = null;
+  $("sessao").classList.add("oculto");
+  $("inicio").classList.remove("oculto");
+  $("rotulo-sessao").textContent = "";
+});
+
+chamar("GET", "/api/aves").then((aves) => {
+  for (const a of aves) $("ave").append(new Option(`Ave ${a.codigo}`, a.codigo));
+}).catch((e) => { $("erro-inicio").textContent = `Erro: ${e.message}`; });
+</script>
+</body>
+</html>

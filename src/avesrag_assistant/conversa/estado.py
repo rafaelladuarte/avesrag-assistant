@@ -46,6 +46,10 @@ class CandidataApresentada(_Base):
 class EstadoConversa(_Base):
     id: str
     etapa: Etapa = "coleta"
+    # Sessão moderada (`moderar`): a ave da foto mostrada e a espécie dela. Vazios
+    # numa conversa livre.
+    ave: str | None = None
+    esperada: str | None = None
     descricoes: list[str] = Field(default_factory=list)  # o que vira embedding e sugestões
     atributos: dict[str, Any] = Field(default_factory=dict)  # AtributosObservados
     descricao_para_busca: str | None = None  # do c01; guardada, mas não vai para a busca
@@ -57,6 +61,7 @@ class EstadoConversa(_Base):
     perguntas_na_rodada: int = 0
     sugeridas: list[str] = Field(default_factory=list)  # species_id do c04
     candidatas: list[CandidataApresentada] = Field(default_factory=list)
+    buscas: list[list[str]] = Field(default_factory=list)  # as 10 primeiras de cada busca
     recusadas: list[str] = Field(default_factory=list)
     rodada_confirmacao: int = 0
     modo_busca: str | None = None  # o modo da última apresentação

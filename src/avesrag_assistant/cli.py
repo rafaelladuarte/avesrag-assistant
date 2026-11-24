@@ -5,7 +5,9 @@ avaliação nos modos de busca). Assistant 2: `extrair` (o `c01_extrator` numa
 mensagem) e a opção `--sugestoes` do `buscar` e do `avaliar` (as espécies
 sugeridas pelo `c04_candidatas` como candidatas com bônus); `simular` (as
 perguntas medidas com um usuário simulado que responde pela ficha) e
-`conversar` (a conversa inteira no terminal, com o estado em JSON por sessão).
+`conversar` (a conversa inteira no terminal, com o estado em JSON por sessão),
+`moderar` (a mesma conversa numa página local, para as sessões moderadas) e
+`sessoes` (o relatório dessas sessões).
 """
 
 import csv
@@ -23,6 +25,8 @@ from avesrag_assistant.avaliacao.casos import CasosInvalidos, carregar_casos, co
 from avesrag_assistant.avaliacao.relatorio import gravar_tsv, tabela
 from avesrag_assistant.avaliacao.relatorio import inalcancaveis as relatorio_inalcancaveis
 from avesrag_assistant.avaliacao.rodar import DEGRADADO, MODOS_AVALIACAO, rodar
+from avesrag_assistant.avaliacao.sessoes import carregar_moderadas, resumir
+from avesrag_assistant.avaliacao.sessoes import linhas as linhas_sessoes
 from avesrag_assistant.avaliacao.simulacao import (
     entradas_e_saidas,
     linhas_tsv,
@@ -370,6 +374,26 @@ def simular_perguntas(
 SAIR = ("sair", "fim", "tchau")
 
 
+def _servicos(settings, voc, regras) -> Servicos:
+    """Os serviços da conversa: Mongo, ranking, regras e os três prompts do chat."""
+    ranking = carregar_ranking(settings.CONFIG_DIR / "ranking.yaml")
+    conversa = carregar_conversa(settings.CONFIG_DIR / "conversa.yaml", voc)
+    db = get_db()
+    cache = criar_cache(settings)
+    return Servicos(
+        db=db,
+        ranking=ranking,
+        conversa=conversa,
+        vocabulario=voc,
+        regras_bico=regras,
+        extrator=criar_extrator(settings, voc, regras),
+        redator=criar_redator(settings, voc, regras),
+        vetor=cache.vetor,
+        sugestor=criar_sugestor(settings, voc, regras),
+        indice=indice_da_base(db),
+    )
+
+
 @app.command()
 def conversar(
     sessao: str | None = typer.Option(None, "--sessao", help="Retoma a sessão com este id."),
@@ -384,28 +408,12 @@ def conversar(
     diretorio = settings.REPORTS_DIR / "sessoes"
     try:
         voc, regras = vocabulario.carregar()
-        ranking = carregar_ranking(settings.CONFIG_DIR / "ranking.yaml")
-        conversa = carregar_conversa(settings.CONFIG_DIR / "conversa.yaml", voc)
         estado = (
             sessoes.carregar(diretorio, sessao)
             if sessao
             else sessoes.EstadoConversa(id=sessoes.novo_id())
         )
-        db = get_db()
-        cache = criar_cache(settings)
-        servicos = Servicos(
-            db=db,
-            ranking=ranking,
-            conversa=conversa,
-            vocabulario=voc,
-            regras_bico=regras,
-            extrator=criar_extrator(settings, voc, regras),
-            redator=criar_redator(settings, voc, regras),
-            vetor=cache.vetor,
-            sugestor=criar_sugestor(settings, voc, regras),
-            indice=indice_da_base(db),
-        )
-        orquestrador = Orquestrador(servicos, estado)
+        orquestrador = Orquestrador(_servicos(settings, voc, regras), estado)
     except (VocabularioInvalido, RankingInvalido, ConversaInvalida, PromptInvalido) as e:
         falhar(str(e), 2)
     except (FileNotFoundError, ValueError, MissingSettingError) as e:
@@ -442,3 +450,46 @@ def conversar(
             break
         turno(texto)
     typer.echo(f"sessão salva: {sessoes.caminho(diretorio, estado.id)}")
+
+
+@app.command()
+def moderar(
+    porta: int = typer.Option(8765, "--porta", min=1, max=65535, help="Porta local."),
+    host: str = typer.Option(
+        "127.0.0.1", "--host", help="Endereço; o padrão só aceita conexões desta máquina."
+    ),
+) -> None:
+    """Página local para as sessões moderadas: a pessoa vê a foto e conversa com o assistente."""
+    from avesrag_assistant.web.servidor import Moderacao, carregar_aves, criar_servidor
+
+    settings = get_settings()
+    try:
+        voc, regras = vocabulario.carregar()
+        aves = carregar_aves(settings.AVALIACAO_DIR / "especies_formulario.csv")
+        moderacao = Moderacao(
+            _servicos(settings, voc, regras), aves, settings.REPORTS_DIR / "sessoes"
+        )
+        servidor = criar_servidor(moderacao, host, porta)
+    except (VocabularioInvalido, RankingInvalido, ConversaInvalida, PromptInvalido) as e:
+        falhar(str(e), 2)
+    except (FileNotFoundError, MissingSettingError, OSError) as e:
+        falhar(str(e), 2)
+    except PyMongoError as e:
+        falhar(f"falha no MongoDB ({settings.MONGODB_URI}): {e}")
+    typer.echo(f"sessões moderadas em http://{host}:{porta}/ ({len(aves)} aves; Ctrl+C para sair)")
+    try:
+        servidor.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        servidor.server_close()
+    typer.echo(f"sessões salvas em {settings.REPORTS_DIR / 'sessoes'}")
+
+
+@app.command(name="sessoes")
+def relatorio_sessoes() -> None:
+    """Relatório das sessões moderadas: acerto, apresentação, posição e perguntas."""
+    settings = get_settings()
+    estados = carregar_moderadas(settings.REPORTS_DIR / "sessoes")
+    for linha in linhas_sessoes([resumir(e) for e in estados]):
+        typer.echo(linha)

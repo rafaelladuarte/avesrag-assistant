@@ -210,6 +210,7 @@ class Orquestrador:
         cfg = self.s.conversa.perguntas
         e = self.estado
         candidatas = self._buscar(cfg.candidatas)
+        e.buscas.append([c.species_id for c in candidatas])
         if e.perguntas_na_rodada < cfg.maximo and len(candidatas) > 1:
             fichas = carregar_fichas(self.s.db, [c.species_id for c in candidatas])
             escolha = escolher(
@@ -242,6 +243,7 @@ class Orquestrador:
                 self.s.db, self._consulta(), self.s.ranking, self.s.regras_bico, APRESENTADAS
             )
             e.modo_busca = DEGRADADO
+            e.buscas.append([c.species_id for c in candidatas])
         else:
             e.modo_busca = self.s.conversa.busca.modo
         primeiras = list(candidatas)[:APRESENTADAS]
