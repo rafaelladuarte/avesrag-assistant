@@ -148,7 +148,9 @@ def test_avaliar(avaliacao_falsa):
     resultado = runner.invoke(app, ["avaliar"])
     assert resultado.exit_code == 0, resultado.output
     linhas = resultado.output.splitlines()
-    assert linhas[0].startswith("3 casos · ranking 1.3 · posições até 40 · embedding: 1 chamada(s)")
+    assert linhas[0].startswith(
+        "3 casos · ranking 1.4 · sugestões não · posições até 40 · embedding: 1 chamada(s)"
+    )
     assert linhas[1].split()[:3] == ["modo", "grupo", "n"]
     assert len(linhas) == 2 + 5 * 4 + 2  # 5 modos × 4 grupos
     assert "inalcançáveis (sem documento de busca): c003 sp_incompleta" in resultado.output
@@ -196,3 +198,39 @@ def test_avaliar_casos_invalidos(avaliacao_falsa):
     resultado = runner.invoke(app, ["avaliar"])
     assert resultado.exit_code == 2
     assert "casos.0.origem" in resultado.output
+
+
+class SugestorFalso:
+    """Sugere sempre a sp_cinza, a última no vetor."""
+
+    def __init__(self):
+        self.mensagens = []
+        self.cache = type("C", (), {"chamadas": 1, "tokens_entrada": 10, "tokens_saida": 5})()
+
+    def especies(self, mensagem, indice):
+        self.mensagens.append(mensagem)
+        return ["sp_cinza"]
+
+
+@pytest.fixture
+def sugestor(monkeypatch):
+    falso = SugestorFalso()
+    monkeypatch.setattr(cli, "criar_sugestor", lambda settings, voc, regras: falso)
+    return falso
+
+
+def test_buscar_com_sugestoes(ambiente, sugestor):
+    resultado = runner.invoke(app, ["buscar", "ave cinza", "--sugestoes"])
+    assert resultado.exit_code == 0, resultado.output
+    linhas = resultado.output.splitlines()
+    assert "sugeridas pelo LLM: sp_cinza" in linhas
+    assert "Ave cinza" in linhas[2] and "+ sugerida +2.00" in linhas[2]  # sobe para o 1º
+    assert sugestor.mensagens == ["ave cinza"]
+
+
+def test_avaliar_com_sugestoes(avaliacao_falsa, sugestor):
+    resultado = runner.invoke(app, ["avaliar", "--sugestoes", "--modo", "hibrido"])
+    assert resultado.exit_code == 0, resultado.output
+    assert "sugestões: 1 chamada(s) ao LLM, 10 + 5 tokens" in resultado.output
+    assert "sugestões sim" in resultado.output
+    assert len(sugestor.mensagens) == 3

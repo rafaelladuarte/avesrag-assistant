@@ -36,6 +36,8 @@ class Settings(BaseSettings):
 
     # Embeddings: tem de ser o mesmo modelo que o builder usou nos documentos de busca
     EMBEDDING_MODEL: str = "text-embedding-3-large"
+    # Modelo dos prompts do chat que não fixam o seu (Modelo de Dados > Modelo de linguagem)
+    LLM_MODEL: str = "gpt-6-luna"
 
     # Caminhos
     BUILDER_DIR: Path = ROOT_DIR.parent / "avesrag-dataset-builder"

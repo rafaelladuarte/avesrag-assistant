@@ -10,6 +10,10 @@ comparados com a ficha da espécie (`Atributos` do builder):
 O atributo bate se algum item bateu, e ganha `peso × soma / itens com dado`.
 Só conflita se nenhum item bateu, e perde `peso × penalidade_conflito`. Os
 pesos e a penalidade vêm de `config/ranking.yaml`, validado ao carregar.
+
+As espécies sugeridas pelo LLM (`c04_candidatas`) ganham um bônus pela posição
+na lista (`ranking.sugestoes`), somado à nota final: é um ponto a mais, nunca um
+filtro, como o eBird.
 """
 
 from __future__ import annotations
@@ -136,12 +140,18 @@ class ConfigHibrido(_Base):
         return v
 
 
+class ConfigSugestoes(_Base):
+    bonus: PositiveFloat  # bônus da primeira sugerida
+    maximo: PositiveInt  # sugestões consideradas; a da posição i ganha bonus × (1 − i/maximo)
+
+
 class Ranking(_Base):
     versao: str = Field(min_length=1)
     vetor: ConfigVetor
     penalidade_conflito: float = Field(ge=0)
     pesos: dict[str, PositiveFloat]
     hibrido: ConfigHibrido | None = None  # só o modo `hibrido` usa
+    sugestoes: ConfigSugestoes | None = None  # sem a seção, as sugestões do LLM são ignoradas
 
     @field_validator("pesos")
     @classmethod
@@ -315,6 +325,15 @@ def normalizar(notas: dict[str, float]) -> dict[str, float]:
     return {chave: (n - menor) / (maior - menor) for chave, n in notas.items()}
 
 
+def bonus_das_sugeridas(sugeridas: Sequence[str], ranking: Ranking) -> dict[str, float]:
+    """species_id → bônus, pela posição na lista sem repetidas; vazio sem `ranking.sugestoes`."""
+    config = ranking.sugestoes
+    if config is None:
+        return {}
+    unicas = list(dict.fromkeys(sugeridas))[: config.maximo]
+    return {sid: config.bonus * (1 - i / config.maximo) for i, sid in enumerate(unicas)}
+
+
 @dataclass(frozen=True)
 class Entrada:
     species_id: str
@@ -330,6 +349,7 @@ class Pontuada:
     pontos: float
     nota_final: float
     detalhes: list[DetalheAtributo] = field(default_factory=list)
+    bonus: float = 0.0
 
 
 def reordenar(
@@ -337,8 +357,11 @@ def reordenar(
     atributos: AtributosObservados,
     ranking: Ranking,
     regras_bico: RegrasBico,
+    bonus: Mapping[str, float] | None = None,
 ) -> list[Pontuada]:
-    """`nota_final = peso_vetor × nota normalizada + Σ pontos`, da maior para a menor.
+    """`nota_final = peso_vetor × nota normalizada + Σ pontos + bônus`, da maior para a menor.
+
+    `bonus`: species_id → bônus de sugerida (`bonus_das_sugeridas`).
 
     O empate é desfeito pelo `species_id`, para o resultado ser estável.
     """
@@ -348,14 +371,16 @@ def reordenar(
         detalhes = pontuar(atributos, e.ficha, ranking, regras_bico)
         pontos = sum(d.pontos for d in detalhes)
         norm = normalizadas[e.species_id]
+        extra = (bonus or {}).get(e.species_id, 0.0)
         pontuadas.append(
             Pontuada(
                 species_id=e.species_id,
                 nota_vetor=e.nota_vetor,
                 nota_vetor_normalizada=norm,
                 pontos=pontos,
-                nota_final=ranking.vetor.peso * norm + pontos,
+                nota_final=ranking.vetor.peso * norm + pontos + extra,
                 detalhes=detalhes,
+                bonus=extra,
             )
         )
     return sorted(pontuadas, key=lambda p: (-p.nota_final, p.species_id))

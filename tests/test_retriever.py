@@ -301,3 +301,56 @@ def test_hibrido_sem_atributos_nao_carrega_o_universo(consulta, ranking, vocab_r
     )
     buscar(db, consulta(), [0.1], pelos, vocab_regras[1], modo="hibrido")
     assert len(db[SPECIES_RETRIEVAL_DOCS].pipelines) == 1
+
+
+# ---------------------------------------------------------------------------
+# Sugestões do LLM
+# ---------------------------------------------------------------------------
+
+
+def _banco_sugeridas():
+    """Banco em que a sp_rara só aparece quando a busca pede por species_id."""
+
+    def responder(pipeline):
+        filtro = _filtro(pipeline)
+        if filtro and "$in" in filtro.get("species_id", {}):
+            ids = filtro["species_id"]["$in"]
+            return [d for d in [*DOCS, RARA_DOC] if d["species_id"] in ids]
+        return DOCS
+
+    db = BancoFalso(DOCS, [*FICHAS, RARA])
+    db[SPECIES_RETRIEVAL_DOCS].responder = responder
+    return db
+
+
+RARA_DOC = {"species_id": "sp_rara", "dominio": "aparencia", "nota": 0.30}
+
+
+@pytest.mark.parametrize("modo", ["reordenado", "hibrido"])
+def test_sugeridas_entram_com_bonus(consulta, ranking, vocab_regras, modo):
+    db = _banco_sugeridas()
+    c = consulta(cores=["amarelo"])
+    saida = buscar(db, c, [0.1], ranking, vocab_regras[1], modo, sugeridas=["sp_rara", "sp_verde"])
+    primeira = saida[0]
+    assert (primeira.species_id, primeira.origem, primeira.bonus) == ("sp_rara", "llm", 2.0)
+    verde = next(x for x in saida if x.species_id == "sp_verde")
+    assert verde.origem == "vetor"  # já vinha do vetor: mantém a origem, ganha o bônus
+    assert verde.bonus == pytest.approx(2.0 * 0.9)
+    assert all(x.bonus == 0 for x in saida if x.species_id not in ("sp_rara", "sp_verde"))
+
+
+def test_sugeridas_ignoradas_no_modo_vetor_e_sem_a_secao(consulta, ranking, vocab_regras):
+    db = _banco_sugeridas()
+    saida = buscar(db, consulta(), [0.1], ranking, vocab_regras[1], "vetor", sugeridas=["sp_rara"])
+    assert "sp_rara" not in [x.species_id for x in saida]
+    sem = ranking.model_copy(update={"sugestoes": None})
+    saida = buscar(db, consulta(), [0.1], sem, vocab_regras[1], sugeridas=["sp_rara"])
+    assert "sp_rara" not in [x.species_id for x in saida]
+    assert len(db[SPECIES_RETRIEVAL_DOCS].pipelines) == 2  # nenhuma busca extra
+
+
+def test_sugerida_recusada_nao_volta(consulta, ranking, vocab_regras):
+    db = _banco_sugeridas()
+    c = consulta().model_copy(update={"recusadas": ["sp_rara"]})
+    saida = buscar(db, c, [0.1], ranking, vocab_regras[1], sugeridas=["sp_rara"])
+    assert "sp_rara" not in [x.species_id for x in saida]

@@ -7,6 +7,7 @@ from avesrag_builder.core.models import Atributos
 from avesrag_assistant.busca.pontuacao import (
     Entrada,
     RankingInvalido,
+    bonus_das_sugeridas,
     carregar_ranking,
     melhores_por_atributos,
     normalizar,
@@ -242,6 +243,44 @@ def test_reordenar_desempata_pelo_species_id(obs, ranking, vocab_regras):
     entradas = [Entrada(sid, 0.7, Atributos()) for sid in ("sp_c", "sp_a", "sp_b")]
     saida = reordenar(entradas, obs(), ranking, vocab_regras[1])
     assert [p.species_id for p in saida] == ["sp_a", "sp_b", "sp_c"]
+
+
+# ---------------------------------------------------------------------------
+# Sugestões do LLM
+# ---------------------------------------------------------------------------
+
+SUGESTOES = {"bonus": 2.0, "maximo": 4}
+
+
+def test_bonus_das_sugeridas_pela_posicao(tmp_path):
+    r = carregar_ranking(_gravar(tmp_path, {**RANKING, "sugestoes": SUGESTOES}))
+    bonus = bonus_das_sugeridas(["sp_a", "sp_b", "sp_a", "sp_c", "sp_d", "sp_e"], r)
+    # Sem repetidas e só as 4 primeiras: 2 × (1 − i/4).
+    assert bonus == pytest.approx({"sp_a": 2.0, "sp_b": 1.5, "sp_c": 1.0, "sp_d": 0.5})
+
+
+def test_bonus_sem_a_secao_e_vazio(ranking):
+    assert ranking.sugestoes is None
+    assert bonus_das_sugeridas(["sp_a"], ranking) == {}
+
+
+def test_reordenar_soma_o_bonus_a_nota_final(obs, ranking, vocab_regras):
+    entradas = [
+        Entrada("sp_a", 0.80, Atributos(cores=["amarelo"])),
+        Entrada("sp_b", 0.70, Atributos(cores=["verde"])),
+    ]
+    saida = reordenar(entradas, obs(cores=["amarelo"]), ranking, vocab_regras[1], {"sp_b": 2.0})
+    assert [p.species_id for p in saida] == ["sp_b", "sp_a"]
+    assert (saida[0].bonus, saida[0].nota_final) == (2.0, pytest.approx(0.0 - 0.2 + 2.0))
+    assert (saida[1].bonus, saida[1].nota_final) == (0.0, pytest.approx(1.0 + 0.4))
+
+
+@pytest.mark.parametrize(
+    "sugestoes", [{"bonus": 0, "maximo": 10}, {"bonus": 1.0, "maximo": 0}, {"bonus": 1.0}]
+)
+def test_sugestoes_invalidas(tmp_path, sugestoes):
+    with pytest.raises(RankingInvalido, match="sugestoes"):
+        carregar_ranking(_gravar(tmp_path, {**RANKING, "sugestoes": sugestoes}))
 
 
 # ---------------------------------------------------------------------------

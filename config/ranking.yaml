@@ -12,7 +12,11 @@
 #       com mais pontos nos atributos entre todas as fichas, sem depender do
 #       vetor (plano_assistant1.md §13.4 e §13.5). A raridade e as cores
 #       vizinhas foram testadas e descartadas: não melhoraram o top 3.
-versao: "1.3"
+#   1.4 (24/11) seção `sugestoes`: as espécies que o LLM sugere (`c04_candidatas`)
+#       entram como candidatas e ganham bônus pela posição na lista
+#       (plano_assistant2.md §13.2). Bônus 2.0 escolhido na calibração entre
+#       0.25, 0.5, 1, 2 e 4.
+versao: "1.4"
 
 vetor:
   peso: 0.4          # peso da nota do vetor, normalizada entre a menor e a maior das candidatas
@@ -45,6 +49,10 @@ hibrido:             # modo `hibrido`: buscas extras com os atributos como filtr
       atributos: [cores, cores_por_parte, marcas, tamanho, cauda]
     - nome: cores
       atributos: [cores, cores_por_parte]
+sugestoes:           # espécies sugeridas pelo LLM; sem a seção, a busca as ignora
+  bonus: 2.0         # bônus da 1ª sugerida; a da posição i (a partir de 0) ganha bonus × (1 − i/maximo)
+  maximo: 10         # sugestões consideradas, no máximo
+
 # Resultado da 1.1 (23/11, calibração, 32 casos; o teste ainda não foi rodado):
 #   reordenado  top1 41%  top3 47%  top10 62%  mediana 5
 #   hibrido     top1 44%  top3 59%  top10 75%  mediana 2   (~49 espécies reordenadas)
@@ -55,3 +63,6 @@ hibrido:             # modo `hibrido`: buscas extras com os atributos como filtr
 # até a próxima rodada dos formulários):
 #   hibrido  pessoas  top1 8%   top3 10%  top10 36%  (1.2: 4% / 12% / 26%)
 #   hibrido  outros   top1 47%  top3 62%  top10 75%  (1.2: 50% / 66% / 78%)
+# Resultado da 1.4 (24/11, calibração, `avaliar --sugestoes`, c04_candidatas 1.0):
+#   hibrido  pessoas  top1 32%  top3 46%  top10 54%  (experimento: 30% / 38% / 46%)
+#   hibrido  outros   top1 84%  top3 94%  top10 97%  (inflado: descrições geradas por LLM)

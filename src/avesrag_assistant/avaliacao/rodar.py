@@ -3,12 +3,13 @@
 A posição é medida até `ranking.vetor.especies` (as 40 que vão para a
 reordenação), para a mediana ter sentido; fora disso, `None` (">40"). Os
 embeddings de todas as descrições saem numa chamada só, pelo cache: a segunda
-avaliação não chama a API.
+avaliação não chama a API. Com `sugeridas` (caso → species_id sugeridos pelo
+LLM), os modos que reordenam recebem as sugestões, como na conversa.
 """
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
 from avesrag_builder.core.vocabulario import RegrasBico
@@ -58,6 +59,7 @@ def rodar(
     regras_bico: RegrasBico,
     modos: Sequence[str] = MODOS_AVALIACAO,
     inalcancaveis: frozenset[str] = frozenset(),
+    sugeridas: Mapping[str, Sequence[str]] | None = None,
 ) -> Avaliacao:
     desconhecidos = [m for m in modos if m not in MODOS_AVALIACAO]
     if desconhecidos:
@@ -83,7 +85,16 @@ def rodar(
             if modo == DEGRADADO:
                 candidatas = buscar_degradado(db, consulta, ranking, regras_bico, k=ate)
             else:
-                candidatas = buscar(db, consulta, vetor, ranking, regras_bico, modo, k=ate)
+                candidatas = buscar(
+                    db,
+                    consulta,
+                    vetor,
+                    ranking,
+                    regras_bico,
+                    modo,
+                    k=ate,
+                    sugeridas=(sugeridas or {}).get(caso.id, ()),
+                )
             res.posicoes[modo] = posicao(candidatas, caso.esperada)
             res.primeiras[modo] = [c.species_id for c in candidatas[:PRIMEIRAS]]
         av.resultados.append(res)

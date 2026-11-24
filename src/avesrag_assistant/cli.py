@@ -1,7 +1,9 @@
 """CLI `avesrag-assistant`.
 
-No Assistant 1 há dois comandos: `buscar` (uma consulta ao retriever) e
-`avaliar` (o conjunto de avaliação nos três modos de busca).
+Assistant 1: `buscar` (uma consulta ao retriever) e `avaliar` (o conjunto de
+avaliação nos modos de busca). Assistant 2: `extrair` (o `c01_extrator` numa
+mensagem) e a opção `--sugestoes` do `buscar` e do `avaliar` (as espécies
+sugeridas pelo `c04_candidatas` como candidatas com bônus).
 """
 
 import json
@@ -25,10 +27,18 @@ from avesrag_assistant.busca.pontuacao import RankingInvalido, carregar_ranking
 from avesrag_assistant.busca.retriever import MODOS, TOP
 from avesrag_assistant.busca.retriever import buscar as buscar_especies
 from avesrag_assistant.db import get_db
+from avesrag_assistant.llm.cache import ErroLLM
+from avesrag_assistant.llm.extrator import criar_extrator
+from avesrag_assistant.llm.prompts import PromptInvalido
+from avesrag_assistant.llm.sugestor import criar_sugestor, indice_da_base
 from avesrag_assistant.settings import MissingSettingError, get_settings
 
 MODO_DEGRADADO = DEGRADADO
 AJUDA_MODOS_AVALIACAO = f"Modos a avaliar (pode repetir; padrão: {', '.join(MODOS_AVALIACAO)})."
+AJUDA_SUGESTOES = (
+    "Pede ao LLM (c04_candidatas) espécies para a descrição; nos modos que reordenam, "
+    "elas entram como candidatas com o bônus de ranking.sugestoes."
+)
 
 app = typer.Typer(
     name="avesrag-assistant",
@@ -67,6 +77,7 @@ def formatar_candidatas(candidatas: list[Candidata]) -> list[str]:
             f"{i:2}. {c.nome} ({c.nome_cientifico})  final {c.nota_final:+.2f} = "
             f"busca {c.nota_vetor:.3f} (norm. {c.nota_vetor_normalizada:.2f}) "
             f"+ pontos {c.pontos:+.2f}  [{c.dominio}]"
+            + (f" + sugerida {c.bonus:+.2f}" if c.bonus else "")
             + (f"  (via {c.origem})" if c.origem not in ("vetor", "texto") else "")
         )
         bateram = [f"{d.atributo} {','.join(d.bateram)}" for d in c.detalhes if d.bateram]
@@ -98,6 +109,7 @@ def buscar(
         [], "--recusar", help="species_id já recusado (pode repetir)."
     ),
     k: int = typer.Option(TOP, "--k", min=1, help="Quantas candidatas mostrar."),
+    sugestoes: bool = typer.Option(False, "--sugestoes", help=AJUDA_SUGESTOES),
 ) -> None:
     """Busca as espécies candidatas para uma descrição."""
     if modo not in (*MODOS, MODO_DEGRADADO):
@@ -137,11 +149,20 @@ def buscar(
                 if cache.chamadas
                 else "embedding do cache"
             )
-            candidatas = buscar_especies(db, consulta, vetor, ranking, regras, modo, k)
-    except MissingSettingError as e:
+            sugeridas: list[str] = []
+            if sugestoes:
+                sugestor = criar_sugestor(settings, voc, regras)
+                sugeridas = sugestor.especies(descricao, indice_da_base(db))
+                typer.echo(f"sugeridas pelo LLM: {', '.join(sugeridas) or 'nenhuma da base'}")
+            candidatas = buscar_especies(
+                db, consulta, vetor, ranking, regras, modo, k, sugeridas=sugeridas
+            )
+    except (PromptInvalido, MissingSettingError) as e:
         falhar(str(e), 2)
+    except ErroLLM as e:
+        falhar(f"falha no LLM: {e}")
     except ErroFornecedor as e:
-        falhar(f"falha no embedding: {e}")
+        falhar(f"falha no embedding ou no LLM: {e}")
     except PyMongoError as e:
         falhar(f"falha no MongoDB ({settings.MONGODB_URI}): {e}")
 
@@ -163,6 +184,7 @@ def avaliar(
     tsv: Path | None = typer.Option(
         None, "--tsv", help="Onde gravar o relatório por caso (padrão: reports/avaliacao.tsv)."
     ),
+    sugestoes: bool = typer.Option(False, "--sugestoes", help=AJUDA_SUGESTOES),
 ) -> None:
     """Roda o conjunto de avaliação nos modos de busca e mostra top 1, top 3 e top 10."""
     modos = tuple(modo) or MODOS_AVALIACAO
@@ -186,16 +208,29 @@ def avaliar(
         if conferencia.inexistentes:
             falhar(f"espécies esperadas fora do registry: {', '.join(conferencia.inexistentes)}", 2)
         cache = criar_cache(settings) if any(m != DEGRADADO for m in modos) else None
-        av = rodar(db, casos, cache, ranking, regras, modos, conferencia.inalcancaveis)
-    except MissingSettingError as e:
+        sugeridas = None
+        if sugestoes:
+            sugestor = criar_sugestor(settings, voc, regras)
+            indice = indice_da_base(db)
+            sugeridas = {c.id: sugestor.especies(c.descricao, indice) for c in casos}
+            llm = sugestor.cache
+            typer.echo(
+                f"sugestões: {llm.chamadas} chamada(s) ao LLM, "
+                f"{llm.tokens_entrada} + {llm.tokens_saida} tokens"
+            )
+        av = rodar(db, casos, cache, ranking, regras, modos, conferencia.inalcancaveis, sugeridas)
+    except (PromptInvalido, MissingSettingError) as e:
         falhar(str(e), 2)
+    except ErroLLM as e:
+        falhar(f"falha no LLM: {e}")
     except ErroFornecedor as e:
-        falhar(f"falha no embedding: {e}")
+        falhar(f"falha no embedding ou no LLM: {e}")
     except PyMongoError as e:
         falhar(f"falha no MongoDB ({settings.MONGODB_URI}): {e}")
 
     typer.echo(
-        f"{len(casos)} casos · ranking {ranking.versao} · posições até {av.ate} · "
+        f"{len(casos)} casos · ranking {ranking.versao} · "
+        f"sugestões {'sim' if sugestoes else 'não'} · posições até {av.ate} · "
         f"embedding: {av.chamadas} chamada(s), {av.tokens} tokens"
     )
     for linha in tabela(av):
@@ -204,3 +239,34 @@ def avaliar(
         typer.echo(f"inalcançáveis (sem documento de busca): {', '.join(fora)}")
     caminho = gravar_tsv(av, tsv or settings.REPORTS_DIR / "avaliacao.tsv")
     typer.echo(f"relatório: {caminho}")
+
+
+@app.command()
+def extrair(
+    mensagem: str = typer.Argument(..., help="Mensagem da pessoa, em texto livre."),
+) -> None:
+    """Roda o extrator (c01) numa mensagem e mostra os atributos e a descrição reescrita."""
+    settings = get_settings()
+    try:
+        voc, regras = vocabulario.carregar()
+        extrator = criar_extrator(settings, voc, regras)
+        extracao = extrator.extrair(mensagem)
+    except (VocabularioInvalido, PromptInvalido) as e:
+        falhar(str(e), 2)
+    except MissingSettingError as e:
+        falhar(str(e), 2)
+    except (ErroFornecedor, ErroLLM) as e:
+        falhar(f"falha no extrator: {e}")
+    cache = extrator.cache
+    origem = (
+        f"LLM ({cache.tokens_entrada} + {cache.tokens_saida} tokens)" if cache.chamadas else "cache"
+    )
+    typer.echo(f"extrator {extrator.prompt.id} {extrator.prompt.versao} · {origem}")
+    if extracao.fora_de_escopo:
+        typer.echo("fora de escopo")
+    typer.echo(f"local: {extracao.local or '-'} · data: {extracao.data_observacao or '-'}")
+    typer.echo(f"descricao_para_busca: {extracao.descricao_para_busca}")
+    typer.echo(
+        "atributos: "
+        + json.dumps(extracao.atributos.model_dump(exclude_none=True), ensure_ascii=False)
+    )

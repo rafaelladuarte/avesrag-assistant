@@ -16,12 +16,16 @@ ao mais solto (`ranking.hibrido`), e reordena tudo como o `reordenado`. Com
 `ranking.hibrido.atributos`, entram ainda as espécies com mais pontos nos
 atributos entre todas as fichas da busca, sem depender do vetor: quando a
 descrição não se parece com o texto da ficha, é por aí que a espécie chega.
+
+Nos modos que reordenam, as espécies sugeridas pelo LLM (`sugeridas`, já casadas
+com a base) entram como candidatas (origem `llm`) e ganham o bônus de
+`ranking.sugestoes`. Sem essa seção, as sugestões são ignoradas.
 """
 
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Literal
 
@@ -41,6 +45,7 @@ from avesrag_assistant.busca.modelos import (
 from avesrag_assistant.busca.pontuacao import (
     Entrada,
     Ranking,
+    bonus_das_sugeridas,
     melhores_por_atributos,
     reordenar,
 )
@@ -51,6 +56,7 @@ Modo = Literal["vetor", "filtros_duros", "reordenado", "hibrido"]
 MODOS: tuple[Modo, ...] = ("vetor", "filtros_duros", "reordenado", "hibrido")
 VETOR = "vetor"  # origem das espécies da busca vetorial sem filtro
 ATRIBUTOS = "atributos"  # origem das espécies que entram pelos pontos dos atributos
+SUGERIDAS = "llm"  # origem das espécies que entram pela sugestão do LLM
 TOP = 10
 
 
@@ -232,6 +238,21 @@ def buscar_hibrido(
     return acertos
 
 
+def buscar_sugeridas(
+    db: Database,
+    vetor: list[float],
+    ranking: Ranking,
+    sugeridas: Sequence[str],
+    recusadas: Sequence[str] = (),
+) -> list[Acerto]:
+    """As sugeridas que têm documento de busca, com a nota do vetor de cada uma."""
+    ids = [s for s in bonus_das_sugeridas(sugeridas, ranking) if s not in set(recusadas)]
+    if not ids:
+        return []
+    filtro = {"species_id": {"$in": ids}}
+    return buscar_vetor(db, vetor, ranking, (), filtro, len(ids), SUGERIDAS)
+
+
 def carregar_fichas(db: Database, species_ids: Sequence[str]) -> dict[str, Ficha]:
     cursor = db[SPECIES].find(
         {"species_id": {"$in": list(species_ids)}},
@@ -261,10 +282,11 @@ def montar_candidatas(
     ranking: Ranking,
     regras_bico: RegrasBico,
     k: int = TOP,
+    bonus: Mapping[str, float] | None = None,
 ) -> list[Candidata]:
     """Acertos da busca → fichas → reordenação → as `k` primeiras como `Candidata`.
 
-    Sem atributos, a ordem é a da nota da busca, com o mesmo desempate.
+    Sem atributos nem bônus, a ordem é a da nota da busca, com o mesmo desempate.
     """
     fichas = carregar_fichas(db, [a.species_id for a in acertos])
     sem_ficha = [a.species_id for a in acertos if a.species_id not in fichas]
@@ -275,7 +297,7 @@ def montar_candidatas(
     entradas = [Entrada(a.species_id, a.nota, fichas[a.species_id].atributos) for a in acertos]
     por_id = {a.species_id: a for a in acertos}
     candidatas = []
-    for p in reordenar(entradas, atributos, ranking, regras_bico)[:k]:
+    for p in reordenar(entradas, atributos, ranking, regras_bico, bonus)[:k]:
         ficha = fichas[p.species_id]
         candidatas.append(
             Candidata(
@@ -287,6 +309,7 @@ def montar_candidatas(
                 dominio=por_id[p.species_id].dominio,
                 origem=por_id[p.species_id].origem,
                 pontos=p.pontos,
+                bonus=p.bonus,
                 nota_final=p.nota_final,
                 detalhes=p.detalhes,
             )
@@ -302,8 +325,13 @@ def buscar(
     regras_bico: RegrasBico,
     modo: Modo = "reordenado",
     k: int = TOP,
+    sugeridas: Sequence[str] = (),
 ) -> list[Candidata]:
-    """As `k` espécies candidatas para a consulta, no modo pedido."""
+    """As `k` espécies candidatas para a consulta, no modo pedido.
+
+    `sugeridas`: species_id sugeridos pelo LLM, do mais provável para o menos; só
+    os modos que reordenam os usam.
+    """
     if modo not in MODOS:
         raise ValueError(f"modo desconhecido: {modo!r} (use {', '.join(MODOS)})")
     reordena = modo in ("reordenado", "hibrido")
@@ -318,4 +346,9 @@ def buscar(
     else:
         filtro = filtro_duro(consulta.atributos) if modo == "filtros_duros" else None
         acertos = buscar_vetor(db, vetor, ranking, consulta.recusadas, filtro)
-    return montar_candidatas(db, acertos, atributos, ranking, regras_bico, k)
+    bonus: dict[str, float] = {}
+    if reordena and sugeridas:
+        extras = buscar_sugeridas(db, vetor, ranking, sugeridas, consulta.recusadas)
+        acertos = unir(acertos, extras)
+        bonus = bonus_das_sugeridas(sugeridas, ranking)
+    return montar_candidatas(db, acertos, atributos, ranking, regras_bico, k, bonus)

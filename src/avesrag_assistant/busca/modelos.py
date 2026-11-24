@@ -205,7 +205,10 @@ class Candidata(Modelo):
     nota_vetor: float
     nota_vetor_normalizada: float
     dominio: Dominio  # domínio do documento com a melhor nota
-    origem: str = "vetor"  # a busca que trouxe a espécie: vetor, um nível do híbrido ou texto
+    origem: str = (
+        "vetor"  # a busca que trouxe a espécie: vetor, um nível do híbrido, atributos, llm ou texto
+    )
     pontos: float
+    bonus: float = 0.0  # bônus de espécie sugerida pelo LLM (ranking.sugestoes)
     nota_final: float
     detalhes: list[DetalheAtributo] = Field(default_factory=list)
