@@ -108,8 +108,9 @@ def test_prompt_real_carrega_e_injeta_vocabulario_e_bico(prompt, vocab_regras):
     system = prompt.render_system(*vocab_regras)
     assert "{vocabulario}" not in system and "{bico}" not in system
     assert "sobrancelha" in system and "levemente_curvo" in system
-    entrada = prompt.render_entrada(estado="{}", mensagem="ave amarela")
+    entrada = prompt.render_entrada(estado="{}", pergunta="nenhuma", mensagem="ave amarela")
     assert "<mensagem_usuario>\nave amarela\n</mensagem_usuario>" in entrada
+    assert "<pergunta>\nnenhuma\n</pergunta>" in entrada
 
 
 def _gravar(tmp_path, nome, **mudancas):
@@ -207,6 +208,14 @@ def test_extrator_valida_e_converte_para_atributos_observados(tmp_path, prompt, 
     assert pedido.schema["strict"] is True
 
 
+def test_extrator_leva_a_pergunta_na_entrada(tmp_path, prompt, vocab_regras):
+    extrator, falso = _extrator(tmp_path, prompt, vocab_regras, _saida(), _saida())
+    extrator.extrair("amarela", pergunta="De que cor era a barriga?")
+    assert "<pergunta>\nDe que cor era a barriga?\n</pergunta>" in falso.pedidos[0].entrada
+    extrator.extrair("amarela")  # sem pergunta: outra entrada, outra chamada
+    assert "<pergunta>\nnenhuma\n</pergunta>" in falso.pedidos[1].entrada
+
+
 def test_extrator_tenta_de_novo_com_valor_fora_do_vocabulario(tmp_path, prompt, vocab_regras):
     extrator, falso = _extrator(
         tmp_path, prompt, vocab_regras, _saida(cores=["amarela"]), _saida(cores=["amarelo"])
@@ -291,3 +300,22 @@ def test_indice_da_base_so_com_especies_com_documento():
     assert indice["ave amarela"] == "sp_amarela"
     assert indice["outra"] == "sp_amarela"
     assert "ave fora" not in indice
+
+
+# ---------------------------------------------------------------------------
+# Redator da pergunta (c02_pergunta)
+# ---------------------------------------------------------------------------
+
+
+def test_redator_redige_e_recusa_sem_interrogacao(tmp_path, vocab_regras, obs):
+    from avesrag_assistant.llm.pergunta import RedatorPergunta, reserva
+
+    prompt = carregar_prompt(ROOT_DIR / "config" / "prompts" / "c02_pergunta.yaml", vocab_regras[0])
+    falso = Falso({"pergunta": "Qual era a cor da barriga"}, {"pergunta": "E a barriga, que cor?"})
+    redator = RedatorPergunta(prompt, CacheLLM(tmp_path / "llm.json", falso), *vocab_regras, "m")
+    assert redator.redigir("a cor da barriga", obs(cores=["amarelo"])) == "E a barriga, que cor?"
+    assert len(falso.pedidos) == 2  # a primeira, sem "?", foi pedida de novo
+    entrada = falso.pedidos[0].entrada
+    assert "<pedido>\na cor da barriga\n</pedido>" in entrada
+    assert '"cores": ["amarelo"]' in entrada
+    assert reserva("a cor da barriga") == "Você lembra a cor da barriga?"

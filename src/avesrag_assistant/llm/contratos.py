@@ -104,7 +104,7 @@ def schema_do_contrato(nome: str, voc: Vocabulario, regras: RegrasBico) -> dict[
 
 # Nome do schema → placeholders que a `entrada` do prompt tem de ter.
 ENTRADAS = {
-    "C01Extrator": {"estado", "mensagem"},
+    "C01Extrator": {"estado", "pergunta", "mensagem"},
     "C02Pergunta": {"pedido", "estado"},
     "C04Candidatas": {"mensagem"},
 }

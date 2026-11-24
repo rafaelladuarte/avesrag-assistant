@@ -249,3 +249,33 @@ def test_simular(avaliacao_falsa):
 def test_simular_uso_invalido(avaliacao_falsa):
     resultado = runner.invoke(app, ["simular", "--uso", "x"])
     assert resultado.exit_code == 2
+
+
+def test_conversar_com_mensagens(ambiente, monkeypatch, tmp_path, vocab_regras):
+    from test_orquestrador import ExtratorFalso, RedatorFalso, SugestorFalso
+
+    monkeypatch.setenv("REPORTS_DIR", str(tmp_path / "reports"))
+    monkeypatch.setattr(cli, "criar_extrator", lambda s, v, r: ExtratorFalso(vocab_regras))
+    monkeypatch.setattr(cli, "criar_redator", lambda s, v, r: RedatorFalso())
+    monkeypatch.setattr(cli, "criar_sugestor", lambda s, v, r: SugestorFalso())
+    resultado = runner.invoke(app, ["conversar", "--mensagem", "uma ave pequena"])
+    assert resultado.exit_code == 0, resultado.output
+    linhas = resultado.output.splitlines()
+    assert linhas[0].startswith("sessão ")
+    sessao = linhas[0].split()[1]
+    assert linhas[1] == "você: uma ave pequena"
+    assert linhas[2].startswith("assistente: ")
+    assert (tmp_path / "reports" / "sessoes" / f"{sessao}.json").exists()
+
+    de_novo = runner.invoke(app, ["conversar", "--sessao", sessao, "--mensagem", "amarela"])
+    assert de_novo.exit_code == 0, de_novo.output
+    # Retomou a mesma sessão, já na confirmação (nenhuma pergunta separava as fichas).
+    assert de_novo.output.startswith(f"sessão {sessao} (etapa confirmacao)")
+    assert "você: amarela\nassistente: É alguma delas?" in de_novo.output
+
+
+def test_conversar_sessao_inexistente(ambiente, monkeypatch, tmp_path):
+    monkeypatch.setenv("REPORTS_DIR", str(tmp_path / "reports"))
+    resultado = runner.invoke(app, ["conversar", "--sessao", "naoexiste"])
+    assert resultado.exit_code == 2
+    assert "não encontrada" in resultado.output

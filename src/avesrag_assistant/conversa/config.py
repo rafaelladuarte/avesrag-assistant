@@ -69,6 +69,34 @@ class ConfigPerguntas(_Base):
     ganho_minimo: float = Field(ge=0, le=1)
     perguntaveis: list[str] = Field(min_length=1)
     partes: list[str] = Field(min_length=1)
+    pedidos: dict[str, str]  # chave da pergunta → o que perguntar, para o c02
+    nomes_partes: dict[str, str]  # parte → "da barriga", para o pedido de cor
+
+    @model_validator(mode="after")
+    def _pedidos_cobrem_as_perguntas(self) -> Self:
+        esperadas = set()
+        for nome in self.perguntaveis:
+            if nome == "bico":
+                esperadas |= {f"bico:{d}" for d in ("comprimento", "espessura", "curvatura")}
+            else:
+                esperadas.add(nome)
+        erros = []
+        if faltando := sorted(esperadas - set(self.pedidos)):
+            erros.append(f"pedidos: faltam {faltando}")
+        if "{parte}" not in self.pedidos.get("cores_por_parte", "{parte}"):
+            erros.append("pedidos.cores_por_parte: falta {parte}")
+        if faltando := sorted(set(self.partes) - set(self.nomes_partes)):
+            erros.append(f"nomes_partes: faltam {faltando}")
+        if erros:
+            raise ValueError("; ".join(erros))
+        return self
+
+    def pedido(self, chave: str) -> str:
+        """O que perguntar para a chave `atributo[:parte]`."""
+        atributo, _, parte = chave.partition(":")
+        if atributo == "cores_por_parte":
+            return self.pedidos[atributo].format(parte=self.nomes_partes[parte])
+        return self.pedidos[chave]
 
     @field_validator("perguntaveis")
     @classmethod

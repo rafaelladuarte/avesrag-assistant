@@ -77,9 +77,13 @@ class Extrator:
         mensagem: str,
         atributos: AtributosObservados | None = None,
         descricao: str | None = None,
+        pergunta: str | None = None,
     ) -> Extracao:
+        """`pergunta`: o texto da última pergunta feita à pessoa, se a mensagem responde a ela."""
         entrada = self.prompt.render_entrada(
-            estado=estado_para_prompt(atributos, descricao), mensagem=mensagem.strip()
+            estado=estado_para_prompt(atributos, descricao),
+            pergunta=(pergunta or "nenhuma").strip(),
+            mensagem=mensagem.strip(),
         )
         pedido = Pedido(
             id=f"chat:{self.prompt.id}",

@@ -4,7 +4,8 @@ Assistant 1: `buscar` (uma consulta ao retriever) e `avaliar` (o conjunto de
 avaliação nos modos de busca). Assistant 2: `extrair` (o `c01_extrator` numa
 mensagem) e a opção `--sugestoes` do `buscar` e do `avaliar` (as espécies
 sugeridas pelo `c04_candidatas` como candidatas com bônus); `simular` (as
-perguntas medidas com um usuário simulado que responde pela ficha).
+perguntas medidas com um usuário simulado que responde pela ficha) e
+`conversar` (a conversa inteira no terminal, com o estado em JSON por sessão).
 """
 
 import csv
@@ -30,10 +31,13 @@ from avesrag_assistant.busca.modelos import Candidata, validar_consulta
 from avesrag_assistant.busca.pontuacao import RankingInvalido, carregar_ranking
 from avesrag_assistant.busca.retriever import MODOS, TOP
 from avesrag_assistant.busca.retriever import buscar as buscar_especies
+from avesrag_assistant.conversa import estado as sessoes
 from avesrag_assistant.conversa.config import ConversaInvalida, carregar_conversa
+from avesrag_assistant.conversa.orquestrador import Orquestrador, Servicos
 from avesrag_assistant.db import get_db
 from avesrag_assistant.llm.cache import ErroLLM
 from avesrag_assistant.llm.extrator import criar_extrator
+from avesrag_assistant.llm.pergunta import criar_redator
 from avesrag_assistant.llm.prompts import PromptInvalido
 from avesrag_assistant.llm.sugestor import criar_sugestor, indice_da_base
 from avesrag_assistant.settings import MissingSettingError, get_settings
@@ -345,3 +349,80 @@ def simular_perguntas(
     with caminho.open("w", encoding="utf-8", newline="") as fh:
         csv.writer(fh, delimiter="\t", lineterminator="\n").writerows(linhas_tsv(sims))
     typer.echo(f"relatório: {caminho}")
+
+
+SAIR = ("sair", "fim", "tchau")
+
+
+@app.command()
+def conversar(
+    sessao: str | None = typer.Option(None, "--sessao", help="Retoma a sessão com este id."),
+    mensagem: list[str] = typer.Option(
+        [],
+        "--mensagem",
+        help="Processa esta mensagem e sai, sem o modo interativo (pode repetir).",
+    ),
+) -> None:
+    """Conversa no terminal: descrição, perguntas, 3 candidatas e confirmação."""
+    settings = get_settings()
+    diretorio = settings.REPORTS_DIR / "sessoes"
+    try:
+        voc, regras = vocabulario.carregar()
+        ranking = carregar_ranking(settings.CONFIG_DIR / "ranking.yaml")
+        conversa = carregar_conversa(settings.CONFIG_DIR / "conversa.yaml", voc)
+        estado = (
+            sessoes.carregar(diretorio, sessao)
+            if sessao
+            else sessoes.EstadoConversa(id=sessoes.novo_id())
+        )
+        db = get_db()
+        cache = criar_cache(settings)
+        servicos = Servicos(
+            db=db,
+            ranking=ranking,
+            conversa=conversa,
+            vocabulario=voc,
+            regras_bico=regras,
+            extrator=criar_extrator(settings, voc, regras),
+            redator=criar_redator(settings, voc, regras),
+            vetor=cache.vetor,
+            sugestor=criar_sugestor(settings, voc, regras),
+            indice=indice_da_base(db),
+        )
+        orquestrador = Orquestrador(servicos, estado)
+    except (VocabularioInvalido, RankingInvalido, ConversaInvalida, PromptInvalido) as e:
+        falhar(str(e), 2)
+    except (FileNotFoundError, ValueError, MissingSettingError) as e:
+        falhar(str(e), 2)
+    except PyMongoError as e:
+        falhar(f"falha no MongoDB ({settings.MONGODB_URI}): {e}")
+
+    def turno(texto: str) -> None:
+        try:
+            resposta = orquestrador.processar(texto)
+        except ErroFornecedor as e:
+            falhar(f"falha no LLM ou no embedding: {e}")
+        except PyMongoError as e:
+            falhar(f"falha no MongoDB ({settings.MONGODB_URI}): {e}")
+        sessoes.salvar(orquestrador.estado, diretorio)
+        typer.echo(f"assistente: {resposta}")
+
+    typer.echo(f"sessão {estado.id} (etapa {estado.etapa}) · retome com --sessao {estado.id}")
+    if mensagem:
+        for texto in mensagem:
+            typer.echo(f"você: {texto}")
+            turno(texto)
+        return
+    if not estado.mensagens:
+        typer.echo("assistente: Olá! Me conte como era a ave que você viu.")
+    while orquestrador.estado.etapa != "fim":
+        try:
+            texto = input("você: ").strip()
+        except EOFError:
+            break
+        if not texto:
+            continue
+        if texto.lower() in SAIR:
+            break
+        turno(texto)
+    typer.echo(f"sessão salva: {sessoes.caminho(diretorio, estado.id)}")

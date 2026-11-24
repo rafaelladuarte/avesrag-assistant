@@ -15,6 +15,31 @@ perguntas:
   # `cores_por_parte` vira uma pergunta por parte; `bico`, uma por dimensão.
   perguntaveis: [cores_por_parte, tamanho, marcas, cauda, bico, onde_estava, ambiente]
   partes: [cabeca, garganta, peito, barriga, dorso, asas, cauda, bico, pernas, olho]
+  # O que perguntar, em português, para o c02_pergunta redigir (e a pergunta de
+  # reserva, "Você lembra <pedido>?", se o LLM falhar). Sem listar cores: a cor
+  # sugerida induz a resposta. O bico vai com os dois extremos, porque "como era o
+  # bico" sozinho não diz o que se quer saber.
+  pedidos:
+    tamanho: o tamanho da ave
+    marcas: se a ave tinha alguma marca ou detalhe diferente no corpo ou na cabeça
+    cauda: como era a cauda (o rabo), no tamanho e no formato
+    onde_estava: onde a ave estava quando foi vista
+    ambiente: como era o lugar ao redor de onde a ave foi vista
+    bico:comprimento: se o bico era curto ou comprido
+    bico:espessura: se o bico era fino ou grosso
+    bico:curvatura: se o bico era reto ou curvo
+    cores_por_parte: a cor {parte}
+  nomes_partes:
+    cabeca: da cabeça
+    garganta: da garganta
+    peito: do peito
+    barriga: da barriga
+    dorso: das costas
+    asas: das asas
+    cauda: da cauda (o rabo)
+    bico: do bico
+    pernas: das pernas
+    olho: dos olhos
 
 apresentacao:
   minimo_visuais: 2        # atributos visuais informados para mostrar as candidatas
