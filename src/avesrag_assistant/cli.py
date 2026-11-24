@@ -23,7 +23,12 @@ from avesrag_assistant.avaliacao.casos import CasosInvalidos, carregar_casos, co
 from avesrag_assistant.avaliacao.relatorio import gravar_tsv, tabela
 from avesrag_assistant.avaliacao.relatorio import inalcancaveis as relatorio_inalcancaveis
 from avesrag_assistant.avaliacao.rodar import DEGRADADO, MODOS_AVALIACAO, rodar
-from avesrag_assistant.avaliacao.simulacao import linhas_tsv, resumo_perguntas, simular
+from avesrag_assistant.avaliacao.simulacao import (
+    entradas_e_saidas,
+    linhas_tsv,
+    resumo_perguntas,
+    simular,
+)
 from avesrag_assistant.avaliacao.simulacao import tabela as tabela_simulacao
 from avesrag_assistant.busca.cache import criar_cache
 from avesrag_assistant.busca.degradado import buscar_degradado
@@ -293,6 +298,12 @@ def simular_perguntas(
         max=1.0,
         help="Probabilidade de a resposta trocar a cor por uma vizinha ou virar 'não sei'.",
     ),
+    calibrado: bool = typer.Option(
+        False,
+        "--calibrado",
+        help="Ruído calibrado pelos formulários: respostas que conflitam com a ficha "
+        "(simulacao.conflito) e 'não sei' (simulacao.nao_sei); ignora --ruido.",
+    ),
     semente: int = typer.Option(0, "--semente", help="Semente do ruído."),
     sugestoes: bool = typer.Option(False, "--sugestoes", help=AJUDA_SUGESTOES),
     tsv: Path | None = typer.Option(
@@ -325,7 +336,9 @@ def simular_perguntas(
             sugestor = criar_sugestor(settings, voc, regras)
             indice = indice_da_base(db)
             sugeridas = {c.id: sugestor.especies(c.descricao, indice) for c in casos}
-        sims = simular(db, casos, cache, ranking, voc, regras, conversa, sugeridas, ruido, semente)
+        sims = simular(
+            db, casos, cache, ranking, voc, regras, conversa, sugeridas, ruido, semente, calibrado
+        )
     except (PromptInvalido, MissingSettingError) as e:
         falhar(str(e), 2)
     except ErroLLM as e:
@@ -338,12 +351,15 @@ def simular_perguntas(
     typer.echo(
         f"{len(casos)} casos alcançáveis · ranking {ranking.versao} · conversa {conversa.versao} · "
         f"modo {conversa.busca.modo} · sugestões {'sim' if sugestoes else 'não'} · "
-        f"ruído {ruido:g} · posições até {ranking.vetor.especies}"
+        f"ruído {'calibrado' if calibrado else f'{ruido:g}'} · semente {semente} · "
+        f"posições até {ranking.vetor.especies}"
     )
     for linha in tabela_simulacao(sims):
         typer.echo(linha)
     for linha in resumo_perguntas(sims):
         typer.echo(linha)
+    entraram, sairam = entradas_e_saidas(sims)
+    typer.echo(f"com as perguntas: {entraram} caso(s) entraram no top 3 e {sairam} saíram")
     caminho = tsv or settings.REPORTS_DIR / "simulacao.tsv"
     caminho.parent.mkdir(parents=True, exist_ok=True)
     with caminho.open("w", encoding="utf-8", newline="") as fh:

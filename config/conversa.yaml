@@ -11,6 +11,7 @@ perguntas:
   candidatas: 10           # a pergunta separa estas primeiras candidatas
   temperatura: 1.0         # peso de cada candidata: softmax(nota_final / temperatura)
   ganho_minimo: 0.05       # massa eliminada esperada abaixo disso: nenhuma pergunta é útil
+  parar_com_peso: null     # se a 1ª candidata tiver mais que este peso, não pergunta (null: sempre)
   # Atributos que uma pessoa leiga consegue responder, na ordem de desempate.
   # `cores_por_parte` vira uma pergunta por parte; `bico`, uma por dimensão.
   perguntaveis: [cores_por_parte, tamanho, marcas, cauda, bico, onde_estava, ambiente]
@@ -53,6 +54,17 @@ simulacao:                 # usuário simulado (avaliacao/simulacao.py)
   # os da ficha (ela viu a ave num lugar, não em todos os que a espécie usa). Nos
   # outros, a resposta traz todos (as cores da parte, as marcas, a cauda).
   um_valor: [onde_estava, ambiente, bico, tamanho]
+  # Ruído calibrado (`simular --calibrado`): a chance de a resposta CONFLITAR com a
+  # ficha da espécie certa, medida nos 50 casos de pessoas (plano_assistant2.md
+  # §13.4). Mistura o erro da pessoa e o da ficha, que têm o mesmo efeito na busca.
+  # Atributos com menos de 10 casos usam `padrao`, a taxa de todos juntos.
+  conflito:
+    cores_por_parte: 0.14  # 36 casos
+    marcas: 0.25           # 20
+    bico: 0.12             # 16
+    tamanho: 0.21          # 14
+    padrao: 0.15           # 144 itens (cauda: 8 casos; onde_estava: 3; ambiente: 0)
+  nao_sei: 0.10            # chance de "não sei" mesmo com o dado na ficha (não medida)
   # Cores que as pessoas trocaram nos formulários (plano_assistant1.md §13.4): com
   # ruído, a resposta de cor troca por uma vizinha; nos outros atributos, vira "não sei".
   vizinhas:
@@ -68,3 +80,6 @@ simulacao:                 # usuário simulado (avaliacao/simulacao.py)
 #   sugestões, bônus 2.0     46% / 52% / 54% / 54%   (ruído 0.2: 46% / 50% / 50% / 52%)
 #   sugestões, bônus 1.0     44% / 52% / 62% / 70%   (ruído 0.2: 44% / 50% / 58% / 64%)
 #   → ranking 1.5 com o bônus 1.0 (decisão da usuária, 24/11)
+# Com o ruído calibrado (`simular --calibrado`, ranking 1.5, 5 sementes; §13.5):
+#   todas as perguntáveis   44% / 47% / 52% / 56%   (top 10 com 3: 73%)
+#   sem bico, sem lugar ou só visuais: igual ou pior; parar_com_peso nunca dispara

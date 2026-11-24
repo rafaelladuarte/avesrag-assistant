@@ -115,12 +115,15 @@ def escolher(
 ) -> Escolha | None:
     """A pergunta de maior ganho sobre as primeiras candidatas (nota final, ficha).
 
-    None se nenhuma chega ao `ganho_minimo`. No empate, vale a ordem de `opcoes`.
+    None se nenhuma chega ao `ganho_minimo`, ou se a 1ª tem mais peso que
+    `parar_com_peso`. No empate, vale a ordem de `opcoes`.
     """
     primeiras = list(candidatas)[: config.candidatas]
     if len(primeiras) < 2:
         return None
     w = pesos([nota for nota, _ in primeiras], config.temperatura)
+    if config.parar_com_peso is not None and w[0] > config.parar_com_peso:
+        return None  # a 1ª já domina: uma resposta só pode atrapalhar
     fichas = [ficha for _, ficha in primeiras]
     melhor: Escolha | None = None
     for p in opcoes(config, atributos, feitas):

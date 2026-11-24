@@ -8,10 +8,12 @@ from avesrag_builder.core.models import Atributos, CorPorParte
 
 from avesrag_assistant.avaliacao.simulacao import (
     Simulado,
+    entradas_e_saidas,
     linhas_tsv,
     responder,
     resumo_perguntas,
     tabela,
+    valor_conflitante,
 )
 from avesrag_assistant.conversa.config import ConversaInvalida, carregar_conversa
 from avesrag_assistant.conversa.perguntas import (
@@ -194,10 +196,10 @@ def test_responder_pela_ficha(conversa, vocab_regras):
     rng = random.Random(0)
     sim = conversa.simulacao
     barriga = Pergunta("cores_por_parte", "barriga")
-    assert responder(barriga, ficha, regras, sim, rng) == (["amarelo", "branco"], False)
+    assert responder(barriga, ficha, regras, sim, rng) == (["amarelo", "branco"], "")
     resposta, ruido = responder(Pergunta("onde_estava"), ficha, regras, sim, rng)
     assert len(resposta) == 1 and resposta[0] in ("chao", "copa") and not ruido  # um valor só
-    assert responder(Pergunta("marcas"), ficha, regras, sim, rng) == ([], False)  # não sei
+    assert responder(Pergunta("marcas"), ficha, regras, sim, rng) == ([], "")  # sem dado
 
 
 def test_responder_com_ruido(conversa, vocab_regras):
@@ -206,8 +208,8 @@ def test_responder_com_ruido(conversa, vocab_regras):
     sim = conversa.simulacao
     rng = random.Random(0)
     cor, ruido = responder(Pergunta("cores_por_parte", "barriga"), ficha, regras, sim, rng, 1.0)
-    assert ruido and cor[0] in ("amarelo", "vermelho")
-    assert responder(Pergunta("cauda"), ficha, regras, sim, rng, 1.0) == ([], True)
+    assert ruido == "vizinha" and cor[0] in ("amarelo", "vermelho")
+    assert responder(Pergunta("cauda"), ficha, regras, sim, rng, 1.0) == ([], "nao_sei")
     # Mesma semente, mesma resposta.
     a = responder(Pergunta("cores_por_parte", "barriga"), ficha, regras, sim, random.Random(7), 1.0)
     b = responder(Pergunta("cores_por_parte", "barriga"), ficha, regras, sim, random.Random(7), 1.0)
@@ -231,9 +233,83 @@ def test_relatorio_da_simulacao():
     assert linhas[1].split() == ["pessoas", "1", "0", "0%", "0%", "100%"]
     assert linhas[3].split() == ["pessoas", "1", "2", "100%", "100%", "100%"]
     assert resumo_perguntas(sims) == [
-        "cores_por_parte: 1 pergunta(s), 0 não sei",
-        "marcas: 1 pergunta(s), 1 não sei",
+        "cores_por_parte: 1 pergunta(s), 0 não sei, 0 conflitando; ajudou 1, atrapalhou 0",
+        "marcas: 1 pergunta(s), 1 não sei, 0 conflitando; ajudou 0, atrapalhou 0",
     ]
+    assert entradas_e_saidas(sims) == (2, 0)
+    piorou = Simulado(C("p2", "foto"), [1, 1, 5, 5], [])
+    assert entradas_e_saidas([piorou]) == (0, 1)
     tsv = linhas_tsv(sims)
     assert tsv[0] == ["caso", "esperada", "origem", "pos_0", "pos_1", "pos_2", "pos_3", "perguntas"]
     assert tsv[2][3:] == ["", "", "12", "3", "marcas=não sei"]
+
+
+def _calibrado(conversa, conflito, nao_sei=0.0):
+    sim = conversa.simulacao.model_copy(
+        update={"conflito": {"padrao": conflito}, "nao_sei": nao_sei}
+    )
+    return sim
+
+
+def test_responder_calibrado_conflita_com_a_ficha(conversa, vocab_regras):
+    voc, regras = vocab_regras
+    ficha = _ficha(
+        cores_por_parte=[("barriga", "vermelho")],
+        tamanho=["pequeno"],
+        marcas=["mascara"],
+        bico_tipo="insetivoro",
+    )
+    sim = _calibrado(conversa, 1.0)
+    rng = random.Random(0)
+    cor, tipo = responder(
+        Pergunta("cores_por_parte", "barriga"), ficha, regras, sim, rng, 0, True, voc
+    )
+    assert tipo == "conflito" and cor == ["laranja"]  # a vizinha que a ficha não tem
+    tam, _ = responder(Pergunta("tamanho"), ficha, regras, sim, rng, 0, True, voc)
+    assert tam == ["medio"]  # a faixa ao lado
+    marca, _ = responder(Pergunta("marcas"), ficha, regras, sim, rng, 0, True, voc)
+    assert marca and marca[0] != "mascara"
+    perfil = regras.perfil("insetivoro").comprimento
+    bico, _ = responder(Pergunta("bico", "comprimento"), ficha, regras, sim, rng, 0, True, voc)
+    assert bico[0] not in perfil
+
+
+def test_responder_calibrado_nao_sei_e_sem_ruido(conversa, vocab_regras):
+    voc, regras = vocab_regras
+    ficha = _ficha(cores_por_parte=[("barriga", "vermelho")])
+    barriga = Pergunta("cores_por_parte", "barriga")
+    rng = random.Random(0)
+    sim = _calibrado(conversa, 0.0, nao_sei=1.0)
+    assert responder(barriga, ficha, regras, sim, rng, 0, True, voc) == ([], "nao_sei")
+    sim = _calibrado(conversa, 0.0)
+    assert responder(barriga, ficha, regras, sim, rng, 0, True, voc) == (["vermelho"], "")
+    with pytest.raises(ValueError, match="vocabulário"):
+        responder(barriga, ficha, regras, sim, rng, 0, True)
+
+
+def test_valor_conflitante_sem_saida(conversa, vocab_regras):
+    voc, regras = vocab_regras
+    tamanhos = voc.valores("tamanho")
+    rng = random.Random(0)
+    sim = conversa.simulacao
+    assert valor_conflitante(Pergunta("tamanho"), tamanhos, voc, regras, sim, rng) is None
+
+
+def test_taxa_de_conflito_e_config_invalida(conversa, tmp_path, vocab_regras):
+    assert conversa.simulacao.taxa_conflito("marcas") == 0.25
+    assert conversa.simulacao.taxa_conflito("cauda") == conversa.simulacao.conflito["padrao"]
+    with pytest.raises(ConversaInvalida, match="padrao"):
+        carregar_conversa(_gravar(tmp_path, simulacao__conflito={"marcas": 0.2}), vocab_regras[0])
+    with pytest.raises(ConversaInvalida, match="fora de 0 a 1"):
+        carregar_conversa(_gravar(tmp_path, simulacao__conflito={"padrao": 1.5}), vocab_regras[0])
+
+
+def test_parar_com_peso(obs, perguntas, vocab_regras):
+    regras = vocab_regras[1]
+    candidatas = [
+        (2.0, _ficha(cores_por_parte=[("barriga", "amarelo")])),
+        (0.0, _ficha(cores_por_parte=[("barriga", "branco")])),
+    ]
+    assert escolher(candidatas, obs(), perguntas, regras) is not None
+    parar = perguntas.model_copy(update={"parar_com_peso": 0.8})
+    assert escolher(candidatas, obs(), parar, regras) is None  # a 1ª tem 88% do peso

@@ -69,6 +69,7 @@ class ConfigPerguntas(_Base):
     ganho_minimo: float = Field(ge=0, le=1)
     perguntaveis: list[str] = Field(min_length=1)
     partes: list[str] = Field(min_length=1)
+    parar_com_peso: float | None = Field(default=None, gt=0, le=1)  # 1ª com mais peso: não pergunta
     pedidos: dict[str, str]  # chave da pergunta → o que perguntar, para o c02
     nomes_partes: dict[str, str]  # parte → "da barriga", para o pedido de cor
 
@@ -142,6 +143,25 @@ class ConfigConfirmacao(_Base):
 class ConfigSimulacao(_Base):
     um_valor: list[str] = Field(default_factory=list)  # a resposta é um valor sorteado
     vizinhas: list[tuple[str, str]] = Field(default_factory=list)
+    conflito: dict[str, float] = Field(default_factory=lambda: {"padrao": 0.0})
+    nao_sei: float = Field(default=0.0, ge=0, le=1)
+
+    @field_validator("conflito")
+    @classmethod
+    def _conflito(cls, v: dict[str, float]) -> dict[str, float]:
+        erros = []
+        if "padrao" not in v:
+            erros.append("falta a taxa `padrao`")
+        if desconhecidos := sorted(set(v) - set(AtributosObservados.model_fields) - {"padrao"}):
+            erros.append(f"atributos desconhecidos: {desconhecidos}")
+        if fora := sorted(k for k, x in v.items() if not 0 <= x <= 1):
+            erros.append(f"taxas fora de 0 a 1: {fora}")
+        if erros:
+            raise ValueError("; ".join(erros))
+        return v
+
+    def taxa_conflito(self, atributo: str) -> float:
+        return self.conflito.get(atributo, self.conflito["padrao"])
 
     @field_validator("um_valor")
     @classmethod
