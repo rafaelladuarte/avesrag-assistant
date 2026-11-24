@@ -8,6 +8,7 @@ from avesrag_assistant.busca.pontuacao import (
     Entrada,
     RankingInvalido,
     carregar_ranking,
+    melhores_por_atributos,
     normalizar,
     pontuar,
     reordenar,
@@ -323,3 +324,32 @@ def test_hibrido_niveis_com_o_mesmo_nome(tmp_path):
     hibrido = {"especies": 20, "niveis": [nivel, nivel]}
     with pytest.raises(RankingInvalido, match="mesmo nome"):
         carregar_ranking(_gravar(tmp_path, {**RANKING, "hibrido": hibrido}))
+
+
+# ---------------------------------------------------------------------------
+# Espécies pelos atributos (fonte do modo hibrido)
+# ---------------------------------------------------------------------------
+
+UNIVERSO = {
+    "sp_a": Atributos(cores=["preto", "vermelho"]),
+    "sp_b": Atributos(cores=["preto"]),
+    "sp_c": Atributos(cores=["preto", "branco"]),
+    "sp_d": Atributos(cores=["preto"], marcas=["topete"]),
+}
+
+
+def test_melhores_por_atributos(obs, ranking, vocab_regras):
+    a = obs(cores=["preto"], marcas=["topete"])
+    # sp_d bate as duas; as outras, só a cor (a marca é sem_dado); desempate pelo id.
+    assert melhores_por_atributos(UNIVERSO, a, ranking, vocab_regras[1], 2) == ["sp_d", "sp_a"]
+    assert melhores_por_atributos(UNIVERSO, obs(), ranking, vocab_regras[1], 2) == []
+    assert melhores_por_atributos(UNIVERSO, a, ranking, vocab_regras[1], 0) == []
+    # Só entram espécies com pontos > 0.
+    assert melhores_por_atributos(UNIVERSO, obs(cores=["azul"]), ranking, vocab_regras[1], 4) == []
+
+
+def test_hibrido_atributos_padrao_e_invalido(tmp_path):
+    r = carregar_ranking(_gravar(tmp_path, {**RANKING, "hibrido": HIBRIDO}))
+    assert r.hibrido.atributos == 0
+    with pytest.raises(RankingInvalido, match="atributos"):
+        carregar_ranking(_gravar(tmp_path, {**RANKING, "hibrido": {**HIBRIDO, "atributos": -1}}))

@@ -5,10 +5,17 @@
 #   1.0 (23/11) linha de base: plano_assistant1.md §13.
 #   1.1 (23/11) seção `hibrido` (modo novo; os pesos não mudaram). Resultado na
 #       calibração logo abaixo da seção.
-versao: "1.1"
+#   1.2 (24/11) vetor.peso de 1.0 para 0.4, por varredura na calibração
+#       (plano_assistant1.md §13.2). A penalidade do conflito ficou em 0.5:
+#       baixá-la piorou o top 3 em todos os pesos testados.
+#   1.3 (24/11) `hibrido.atributos: 40`: o híbrido traz também as 40 espécies
+#       com mais pontos nos atributos entre todas as fichas, sem depender do
+#       vetor (plano_assistant1.md §13.4 e §13.5). A raridade e as cores
+#       vizinhas foram testadas e descartadas: não melhoraram o top 3.
+versao: "1.3"
 
 vetor:
-  peso: 1.0          # peso da nota do vetor, normalizada entre a menor e a maior das candidatas
+  peso: 0.4          # peso da nota do vetor, normalizada entre a menor e a maior das candidatas
   candidatos: 400    # numCandidates do $vectorSearch
   documentos: 120    # limit do $vectorSearch (documentos, até 3 por espécie)
   especies: 40       # espécies que seguem para a reordenação
@@ -30,6 +37,7 @@ pesos:             # pontos por atributo que bate
 
 hibrido:             # modo `hibrido`: buscas extras com os atributos como filtro
   especies: 20       # espécies que cada nível acrescenta, no máximo
+  atributos: 40      # espécies com mais pontos nos atributos, entre todas as fichas (0 desliga)
   niveis:            # do mais estrito ao mais solto; o bico não entra (o índice não o filtra)
     - nome: completo
       atributos: todos
@@ -40,3 +48,10 @@ hibrido:             # modo `hibrido`: buscas extras com os atributos como filtr
 # Resultado da 1.1 (23/11, calibração, 32 casos; o teste ainda não foi rodado):
 #   reordenado  top1 41%  top3 47%  top10 62%  mediana 5
 #   hibrido     top1 44%  top3 59%  top10 75%  mediana 2   (~49 espécies reordenadas)
+# Resultado da 1.2 (24/11, calibração, 32 casos; o teste ainda não foi rodado):
+#   reordenado  top1 41%  top3 62%  top10 66%  mediana 2
+#   hibrido     top1 50%  top3 66%  top10 78%  mediana 1.5
+# Resultado da 1.3 (24/11, calibração nova: 82 casos, 50 de pessoas; teste: só c002 e f003
+# até a próxima rodada dos formulários):
+#   hibrido  pessoas  top1 8%   top3 10%  top10 36%  (1.2: 4% / 12% / 26%)
+#   hibrido  outros   top1 47%  top3 62%  top10 75%  (1.2: 50% / 66% / 78%)

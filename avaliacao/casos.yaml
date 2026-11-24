@@ -14,8 +14,12 @@
 # um LLM (prompt sem acesso às fichas), anotação proposta pelo Claude, a revisar.
 # Um segundo lote de 100 descrições geradas foi descartado: erros de fato demais
 # (cores trocadas, outra espécie descrita) e ids malformados.
+# 24/11/2026: p001–p050 vêm dos formulários com foto (bloco no fim; teste da 1.2,
+# depois calibração). Os 15 casos
+# gerados que estavam no teste (g010–g015, g018, g024, g025, g028, g029, g031,
+# g034, g042, g044) saíram; os gerados ficam só na calibração.
 # Inalcançáveis (incompletas, sem documento de busca): sp_crotophaga_ani,
-# sp_coragyps_atratus, sp_megarynchus_pitangua.
+# sp_megarynchus_pitangua.
 versao: "1.0"
 casos:
   - id: c001
@@ -172,82 +176,6 @@ casos:
       cores_por_parte: [{ parte: asas, cor: marrom }]
       onde_estava: [chao]
 
-  - id: g010
-    descricao: "Ave de rapina pousada no fio de luz perto do pasto, olhando pro chão. Marrom, peito riscadinho de claro. De vez em quando soltava um grito agudo e repetido."
-    esperada: sp_rupornis_magnirostris # gavião-carijó
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      cores: [marrom]
-      marcas: [listrado]
-      ambiente: [pasto_plantacao]
-      o_que_fazia: [pousada]
-
-  - id: g011
-    descricao: "Passarinho pequenininho, peito amarelo e costas escuras, com uma listrinha branca em cima do olho e o bico fino e curvado. Mexendo nas flores do hibisco do quintal."
-    esperada: sp_coereba_flaveola # cambacica
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      tamanho: [pequeno]
-      cores_por_parte: [{ parte: peito, cor: amarelo }]
-      marcas: [sobrancelha]
-      bico: { espessura: fino, curvatura: curvo }
-      ambiente: [parque_jardim]
-      onde_estava: [vegetacao_baixa]
-
-  - id: g012
-    descricao: "Um monte de ave preta grande, de cabeça pelada escura, rodando no céu perto do aterro e depois pousadas juntas na cerca."
-    esperada: sp_coragyps_atratus # urubu-preto (incompleta: inalcançável)
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      tamanho: [grande]
-      cores: [preto]
-      cores_por_parte: [{ parte: cabeca, cor: preto }]
-      onde_estava: [no_ar]
-      o_que_fazia: [planando, pousada]
-      grupo: [bando]
-
-  - id: g013
-    descricao: "Na lagoa do parque tinha uma ave marrom-avermelhada, de cabeça preta e uma plaquinha amarela na testa, andando em cima das folhas boiando. Os dedos dela eram enormes, compridos. Parecia uma galinha-d'água, só que mais colorida."
-    esperada: sp_jacana_jacana # jaçanã
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      cores: [marrom, preto, amarelo]
-      cores_por_parte: [{ parte: cabeca, cor: preto }]
-      ambiente: [beira_de_agua]
-      onde_estava: [na_agua]
-
-  - id: g014
-    descricao: "Passarinho de cabeça cinza, costas meio esverdeadas e a barriga bem amarela. Bem grande, uns 30 centímetros, achei."
-    esperada: sp_tyrannus_melancholicus # suiriri
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      tamanho: [medio]
-      cores_por_parte:
-        - { parte: cabeca, cor: cinza }
-        - { parte: dorso, cor: verde }
-        - { parte: barriga, cor: amarelo }
-
-  - id: g015
-    descricao: "Num fio de luz da avenida, ficava de olho e saía voando atrás de inseto e voltava pro mesmo lugar. No fim da tarde tinha vários juntos, gritando agudinho."
-    esperada: sp_tyrannus_melancholicus # suiriri
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      ambiente: [area_urbana]
-      o_que_fazia: [pousada, cacando_em_voo]
-      grupo: [bando]
-
   - id: g016
     descricao: "Ave de perna comprida e vermelha, corpo cinza-claro e um tufo de penas em cima do bico. Andava no pasto e fugiu correndo em vez de voar."
     esperada: sp_cariama_cristata # seriema
@@ -273,19 +201,6 @@ casos:
       cores_por_parte: [{ parte: cabeca, cor: laranja }]
       ambiente: [area_urbana]
       onde_estava: [vegetacao_baixa]
-
-  - id: g018
-    descricao: "Bando barulhento atrás do gado no pasto, ave de cor creme com preto e rabo muito comprido. Voavam de poste em poste, um atrás do outro, desengonçados, e depois ficavam juntos tomando sol na cerca."
-    esperada: sp_guira_guira # anu-branco
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      cores: [bege, preto]
-      cauda: [longa]
-      ambiente: [pasto_plantacao]
-      o_que_fazia: [pousada]
-      grupo: [bando]
 
   - id: g019
     descricao: "Passarinho marrom nas costas e barriga cor de laranja, bico amarelo-alaranjado, pulando no gramado do quintal depois da chuva. De manhã cedinho cantava lindo no pé de jabuticaba."
@@ -353,30 +268,6 @@ casos:
       ambiente: [beira_de_agua]
       grupo: [casal]
 
-  - id: g024
-    descricao: "Passarinho cor de verde-azeitona, meio acinzentado, com as asas e o rabo azulados, comendo a fruta de uma palmeira no jardim da praça."
-    esperada: sp_thraupis_palmarum # sanhaço-do-coqueiro
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      cores: [verde, cinza, azul]
-      cores_por_parte: [{ parte: asas, cor: azul }, { parte: cauda, cor: azul }]
-      ambiente: [parque_jardim]
-
-  - id: g025
-    descricao: "Passarinho esverdeado com riscos pretos nas costas e um pouco de vermelho na cabeça, subindo no tronco de uma árvore da praça e bicando a casca."
-    esperada: sp_colaptes_melanochloros # pica-pau-verde-barrado
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      cores: [verde, preto, vermelho]
-      cores_por_parte: [{ parte: cabeca, cor: vermelho }]
-      marcas: [listrado]
-      ambiente: [parque_jardim]
-      o_que_fazia: [escalando_tronco]
-
   - id: g026
     descricao: "Pombinho miúdo cor de tijolo, quase ferrugem, com pintinhas pretas nas asas, andando no chão do quintal catando farelo. Eram um casal."
     esperada: sp_columbina_talpacoti # rolinha-roxa
@@ -407,33 +298,6 @@ casos:
       onde_estava: [chao]
       o_que_fazia: [andando_no_chao]
 
-  - id: g028
-    descricao: "Passarinho pequeno marrom-acinzentado com um topetinho e uma coleirinha cor de ferrugem na nuca, pulando no terreiro de casa."
-    esperada: sp_zonotrichia_capensis # tico-tico
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      tamanho: [pequeno]
-      cores: [marrom, cinza]
-      marcas: [topete, coleira]
-      ambiente: [parque_jardim]
-      onde_estava: [chao]
-      o_que_fazia: [andando_no_chao]
-
-  - id: g029
-    descricao: "À noite, no quintal, ouvi um canto de sons rápidos que vai acelerando e depois fica mais devagar. Era uma coruja pequena cinza na mangueira, com dois tufinhos de pena na cabeça tipo chifrinhos. Do tamanho de um gavião, achei."
-    esperada: sp_megascops_choliba # corujinha-do-mato
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      tamanho: [medio]
-      cores: [cinza]
-      marcas: [topete]
-      ambiente: [parque_jardim]
-      atividade: [noturna]
-
   - id: g030
     descricao: "Na estrada de terra à noite, uma ave parecida com folha seca ficou parada no chão na frente do carro, os olhos brilhando vermelhos no farol. Depois voou baixo e sumiu."
     esperada: sp_nyctidromus_albicollis # bacurau
@@ -444,18 +308,6 @@ casos:
       cores: [marrom]
       onde_estava: [chao]
       atividade: [noturna]
-
-  - id: g031
-    descricao: "Ave toda branca, bem grande, com pescoço comprido dobrado em S, bico amarelo e perna preta, parada na beira da lagoa do parque."
-    esperada: sp_ardea_alba # garça-branca-grande
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      tamanho: [grande]
-      cores: [branco]
-      cores_por_parte: [{ parte: bico, cor: amarelo }, { parte: pernas, cor: preto }]
-      ambiente: [beira_de_agua]
 
   - id: g032
     descricao: "Bando de patos marrons com a cara branca e o pescoço comprido, dormindo na beira da lagoa. À noite passavam voando e assoviavam fininho. Pareciam ter o bico vermelho."
@@ -482,19 +334,6 @@ casos:
       bico: { comprimento: longo, extra: [pontiagudo] }
       ambiente: [beira_de_agua]
       o_que_fazia: [pousada, mergulhando]
-
-  - id: g034
-    descricao: "Bando de passarões azul-escuro com a barriga branca e um topete espetado, bem barulhentos, pulando entre as árvores do cerrado. Achei que tinham uma parte roxa."
-    esperada: sp_cyanocorax_cristatellus # gralha-do-campo
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      cores: [azul, branco, roxo]
-      cores_por_parte: [{ parte: barriga, cor: branco }]
-      marcas: [topete]
-      ambiente: [cerrado_campo]
-      grupo: [bando]
 
   - id: g035
     descricao: "Passarinho todo branquinho com uma faixa preta nos olhos, tipo máscara, e as asas e o rabo pretos. Andava na beira da lagoa balançando o rabo."
@@ -574,22 +413,6 @@ casos:
       cores: [cinza, rosa]
       cores_por_parte: [{ parte: cabeca, cor: rosa }]
 
-  - id: g042
-    descricao: "Ave de rapina de tamanho médio, marrom em cima e peito riscado de marrom e branco, com olhos e pés amarelos. Ficou pousada bem calma no galho."
-    esperada: sp_rupornis_magnirostris # gavião-carijó
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      tamanho: [medio]
-      cores: [marrom, branco, amarelo]
-      cores_por_parte:
-        - { parte: dorso, cor: marrom }
-        - { parte: olho, cor: amarelo }
-        - { parte: pernas, cor: amarelo }
-      marcas: [listrado]
-      o_que_fazia: [pousada]
-
   - id: g043
     descricao: "Passarinho de bico fino meio comprido, bege-amarelado com pintas pretas pelo corpo, pescoço claro e um pouco de vermelho na bochecha. O rabo parecia duro."
     esperada: sp_colaptes_campestris # pica-pau-do-campo
@@ -601,18 +424,6 @@ casos:
       cores_por_parte: [{ parte: cabeca, cor: vermelho }]
       marcas: [pintado]
       bico: { comprimento: medio, espessura: fino }
-
-  - id: g044
-    descricao: "Ave de rabo muito comprido, cor de creme com riscas escuras no peito, asas e rabo mais escuros, penas da cabeça bagunçadas e olho amarelo."
-    esperada: sp_guira_guira # anu-branco
-    autoria: llm
-    origem: llm
-    uso: teste
-    atributos:
-      cores: [bege]
-      cores_por_parte: [{ parte: olho, cor: amarelo }]
-      marcas: [listrado, topete]
-      cauda: [longa]
 
   # Consultas de fumaça do builder (config/consultas_fumaca.yaml). Escritas
   # conhecendo os dados: entram como `memoria`, com autoria `fumaca`.
@@ -667,3 +478,626 @@ casos:
       onde_estava: [chao]
       o_que_fazia: [andando_no_chao]
       grupo: [casal]
+
+  # -------------------------------------------------------------------------
+  # Formulários com foto (BACKLOGS §2), respostas até 24/11/2026 12:52. Foram o
+  # teste da 1.2 (plano_assistant1.md §13.3) e passaram à calibração em 24/11; a
+  # próxima rodada dos formulários é o teste novo.
+  # Descrições copiadas como chegaram (erros de digitação inclusive); anotação
+  # proposta pelo Claude e revisada pela usuária em 24/11 ("pescoço" com cor
+  # própria vira `coleira`; "arrepiado" sozinho fica sem atributo). Autoria: formulário e ordem da
+  # resposta na planilha (form_A_r1 = 1ª resposta do Formulário A).
+  # Fora: C5 (juruva: foto contra a luz, as 4 pessoas descreveram uma ave preta),
+  # as respostas só com o nome (C1, C3 e C4 da form_C_r2) e as que não descrevem
+  # a ave ("Linda", "Engolindo um sapo", "A mãe alimentando o filhote", form_B_r2).
+  # O contexto da foto (comendo sapo, alimentando o filhote, comedouro) fica só
+  # na descrição; onde a ave estava e se estava pousada são anotados, como o
+  # extrator faria.
+  # -------------------------------------------------------------------------
+
+  # A1 gavião-carijó
+  - id: p001
+    descricao: "Marrom, com olhos amarelo arregalados, em cima de um tronco, com garras e bico fortes"
+    esperada: sp_rupornis_magnirostris # gavião-carijó
+    autoria: form_A_r1
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [marrom]
+      cores_por_parte: [{ parte: olho, cor: amarelo }]
+      bico: { extra: [robusto] }
+
+  - id: p002
+    descricao: "Uma ave com bico amarelo e na ponta é preto. E sua coloração tem três tons de marrons, sendo nas costas o marrom médio sólido, enquanto na barriga com marron claro e branco."
+    esperada: sp_rupornis_magnirostris # gavião-carijó
+    autoria: form_A_r2
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [marrom, branco]
+      cores_por_parte:
+        - { parte: bico, cor: amarelo }
+        - { parte: bico, cor: preto }
+        - { parte: dorso, cor: marrom }
+        - { parte: barriga, cor: marrom }
+        - { parte: barriga, cor: branco }
+
+  - id: p003
+    descricao: "Uma ave de rapina bom bico preto e amarelo. As penas são em tons de marrom. Olhos amarelos. Ela parece ter tamanho pequena/média."
+    esperada: sp_rupornis_magnirostris # gavião-carijó
+    autoria: form_A_r3
+    origem: foto
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno, medio]
+      cores: [marrom]
+      cores_por_parte:
+        - { parte: bico, cor: preto }
+        - { parte: bico, cor: amarelo }
+        - { parte: olho, cor: amarelo }
+
+  - id: p004
+    descricao: "Ave média, com olhos grandes e amarelos, pernas longas com garras, acizentada e peitoral rajado de marrom e branco"
+    esperada: sp_rupornis_magnirostris # gavião-carijó
+    autoria: form_A_r4
+    origem: foto
+    uso: calibracao
+    atributos:
+      tamanho: [medio]
+      cores: [cinza, marrom, branco]
+      cores_por_parte:
+        - { parte: olho, cor: amarelo }
+        - { parte: peito, cor: marrom }
+        - { parte: peito, cor: branco }
+      marcas: [listrado]
+
+  # A2 saí-azul
+  - id: p005
+    descricao: "Azul bem nítido, asa manchada de preto e bigo e bigode preto, comendo fruta em um comedouro"
+    esperada: sp_dacnis_cayana # saí-azul
+    autoria: form_A_r1
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [azul, preto]
+      cores_por_parte: [{ parte: asas, cor: preto }, { parte: bico, cor: preto }]
+
+  - id: p006
+    descricao: "Ave pequena, com tons de azul vivo e preto. Bico, região dos olhos e calda pretos. Nas asas apenas as extremidades são preto."
+    esperada: sp_dacnis_cayana # saí-azul
+    autoria: form_A_r2
+    origem: foto
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [azul, preto]
+      cores_por_parte:
+        - { parte: bico, cor: preto }
+        - { parte: cauda, cor: preto }
+        - { parte: asas, cor: preto }
+      marcas: [mascara]
+
+  - id: p007
+    descricao: 'Passarinho com um tom de azul bem vibrante, principalmente na área do peitoral. Tem detalhes pretos nas asas e no rosto. Tem uma "máscara de bandido" preta. Tamanho pequeno.'
+    esperada: sp_dacnis_cayana # saí-azul
+    autoria: form_A_r3
+    origem: foto
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [azul, preto]
+      cores_por_parte: [{ parte: peito, cor: azul }, { parte: asas, cor: preto }]
+      marcas: [mascara]
+
+  - id: p008
+    descricao: "Pássaro azul com detalhes preto nas asas e cauda, bico fino preto, parece um canário."
+    esperada: sp_dacnis_cayana # saí-azul
+    autoria: form_A_r4
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [azul, preto]
+      cores_por_parte:
+        - { parte: asas, cor: preto }
+        - { parte: cauda, cor: preto }
+        - { parte: bico, cor: preto }
+      bico: { espessura: fino }
+
+  # A3 príncipe
+  - id: p009
+    descricao: "Ave vermelho sangue, com asas preta e uma faixa preta nos olhos, pequena"
+    esperada: sp_pyrocephalus_rubinus # príncipe
+    autoria: form_A_r1
+    origem: foto
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [vermelho, preto]
+      cores_por_parte: [{ parte: asas, cor: preto }]
+      marcas: [mascara]
+
+  - id: p010
+    descricao: "Ave pequena. Região da calda, bico, olho e costas é preto. Enquanto o resto do corpo é vermelho."
+    esperada: sp_pyrocephalus_rubinus # príncipe
+    autoria: form_A_r2
+    origem: foto
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [vermelho, preto]
+      cores_por_parte:
+        - { parte: cauda, cor: preto }
+        - { parte: bico, cor: preto }
+        - { parte: olho, cor: preto }
+        - { parte: dorso, cor: preto }
+
+  - id: p011
+    descricao: 'Passarinho com penugem vermelha em destaque, com o dorso/asas pretas. Tem uma "máscara de bandido" preta e bico preto. Cabeça levemente arrepiada. Pequena.'
+    esperada: sp_pyrocephalus_rubinus # príncipe
+    autoria: form_A_r3
+    origem: foto
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [vermelho, preto]
+      cores_por_parte:
+        - { parte: dorso, cor: preto }
+        - { parte: asas, cor: preto }
+        - { parte: bico, cor: preto }
+      marcas: [mascara, topete]
+
+  - id: p012
+    descricao: "cabeça e o peito de um vermelho bem intenso, quase vibrante. As asas e as costas são cinza-escuro, com algumas linhas mais claras nas penas. Tem um bico fino e escuro, olhos pequenos e pretos e uma cauda comprida, também acinzentada."
+    esperada: sp_pyrocephalus_rubinus # príncipe
+    autoria: form_A_r4
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [vermelho, cinza]
+      cores_por_parte:
+        - { parte: cabeca, cor: vermelho }
+        - { parte: peito, cor: vermelho }
+        - { parte: asas, cor: cinza }
+        - { parte: dorso, cor: cinza }
+        - { parte: olho, cor: preto }
+        - { parte: cauda, cor: cinza }
+      bico: { espessura: fino }
+      cauda: [longa]
+
+  # A4 curicaca
+  - id: p013
+    descricao: "Ave escondida atrás de uma árvore com bico longo e curvo"
+    esperada: sp_theristicus_caudatus # curicaca
+    autoria: form_A_r1
+    origem: foto
+    uso: calibracao
+    atributos:
+      bico: { comprimento: longo, curvatura: curvo }
+
+  - id: p014
+    descricao: "Bico bastante alongado, semelhante a língua de tamanduá. Coloração de marrom e bege."
+    esperada: sp_theristicus_caudatus # curicaca
+    autoria: form_A_r2
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [marrom, bege]
+      bico: { comprimento: longo }
+
+  - id: p015
+    descricao: "Ave com bico fino e longo, com uma leve curva para baixo próxima à ponta. Cores escutas. Parece ser de tamanho médio."
+    esperada: sp_theristicus_caudatus # curicaca
+    autoria: form_A_r3
+    origem: foto
+    uso: calibracao
+    atributos:
+      tamanho: [medio]
+      bico: { comprimento: longo, espessura: fino, curvatura: curvo }
+
+  - id: p016
+    descricao: "Uma ave de pernas compridas e rosadas, com pescoço claro, olhos vermelhos, costas acinzentadas e um bico bem longo e curvado para baixo. Tem um jeitinho elegante e curioso!"
+    esperada: sp_theristicus_caudatus # curicaca
+    autoria: form_A_r4
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [cinza]
+      cores_por_parte:
+        - { parte: pernas, cor: rosa }
+        - { parte: olho, cor: vermelho }
+        - { parte: dorso, cor: cinza }
+      marcas: [coleira]
+      bico: { comprimento: longo, curvatura: curvo }
+
+  # A5 urutau
+  - id: p017
+    descricao: "Ave com olhos grande amarelo esbugalhado, em um tronco seco durante a noite. Ela está olhando pra cima imóvel"
+    esperada: sp_nyctibius_griseus # urutau
+    autoria: form_A_r1
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores_por_parte: [{ parte: olho, cor: amarelo }]
+      o_que_fazia: [pousada]
+      atividade: [noturna]
+
+  - id: p018
+    descricao: "Ave com diferentes cor de marrom. Bico curto. Olhos amarelados."
+    esperada: sp_nyctibius_griseus # urutau
+    autoria: form_A_r2
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [marrom]
+      cores_por_parte: [{ parte: olho, cor: amarelo }]
+      bico: { comprimento: curto }
+
+  - id: p019
+    descricao: "Ave com o bico largo e curto. Olhos grandes e bem amarelos. Penas camufladas com cor de madeira. Tamanho médio. Ela fica imóvel quando está empoleirada."
+    esperada: sp_nyctibius_griseus # urutau
+    autoria: form_A_r3
+    origem: foto
+    uso: calibracao
+    atributos:
+      tamanho: [medio]
+      cores: [marrom]
+      cores_por_parte: [{ parte: olho, cor: amarelo }]
+      bico: { comprimento: curto, extra: [largo] }
+      o_que_fazia: [pousada]
+
+  - id: p020
+    descricao: "Uma ave de penas marrons e acinzentadas, toda camuflada, com olhos enormes e amarelos que chamam muita atenção. Tem um bico pequeno, uma cabecinha grande"
+    esperada: sp_nyctibius_griseus # urutau
+    autoria: form_A_r4
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [marrom, cinza]
+      cores_por_parte: [{ parte: olho, cor: amarelo }]
+      bico: { comprimento: curto }
+
+  # B1 sabiá-do-campo
+  - id: p021
+    descricao: "Bico preto. Corpo com amarelado fosco e marrom pelo corpo."
+    esperada: sp_mimus_saturninus # sabiá-do-campo
+    autoria: form_B_r1
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [amarelo, bege, marrom]
+      cores_por_parte: [{ parte: bico, cor: preto }]
+
+  - id: p022
+    descricao: "Um pardal meio amarelado com penas compridas no rabo."
+    esperada: sp_mimus_saturninus # sabiá-do-campo
+    autoria: form_B_r3
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [amarelo]
+      cauda: [longa]
+
+  - id: p023
+    descricao: "Passarinho meio esverdeado com marrom e com detalhes preto nos olhos"
+    esperada: sp_mimus_saturninus # sabiá-do-campo
+    autoria: form_B_r4
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [verde, marrom]
+      marcas: [mascara, pintado]
+
+  # B2 anu-branco
+  - id: p024
+    descricao: "Ave com olhos vermelhos. Região da barriga branco, e nas costas com mechas marrons. Na cabeça é calvo."
+    esperada: sp_guira_guira # anu-branco
+    autoria: form_B_r1
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [branco, marrom]
+      cores_por_parte:
+        - { parte: olho, cor: vermelho }
+        - { parte: barriga, cor: branco }
+        - { parte: dorso, cor: marrom }
+
+  - id: p025
+    descricao: "Um passarinho  de bico afiado e olhos assustadores"
+    esperada: sp_guira_guira # anu-branco
+    autoria: form_B_r3
+    origem: foto
+    uso: calibracao
+    atributos:
+      bico: { extra: [pontiagudo] }
+
+  - id: p026
+    descricao: "Pássaro de olhos vermelhos que come sapo"
+    esperada: sp_guira_guira # anu-branco
+    autoria: form_B_r4
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores_por_parte: [{ parte: olho, cor: vermelho }]
+
+  # B3 alma-de-gato (a foto mostra a ave alimentando um filhote)
+  - id: p027
+    descricao: "Região da barriga branco. Na região costas marrom homogêneo. Olhos vermelhos."
+    esperada: sp_piaya_cayana # alma-de-gato
+    autoria: form_B_r1
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [branco, marrom]
+      cores_por_parte:
+        - { parte: barriga, cor: branco }
+        - { parte: dorso, cor: marrom }
+        - { parte: olho, cor: vermelho }
+
+  - id: p028
+    descricao: "Uma ave de olhos vermelhos e penas vermelhas  com preto"
+    esperada: sp_piaya_cayana # alma-de-gato
+    autoria: form_B_r3
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [vermelho, preto]
+      cores_por_parte: [{ parte: olho, cor: vermelho }]
+
+  - id: p029
+    descricao: "Pássaro marrom que come carne"
+    esperada: sp_piaya_cayana # alma-de-gato
+    autoria: form_B_r4
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [marrom]
+
+  # B4 chora-chuva-preto
+  - id: p030
+    descricao: "Pássaro totalmente preto, apenas bico alaranjado."
+    esperada: sp_monasa_nigrifrons # chora-chuva-preto
+    autoria: form_B_r1
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [preto]
+      cores_por_parte: [{ parte: bico, cor: laranja }]
+
+  - id: p031
+    descricao: "Pássaro preto"
+    esperada: sp_monasa_nigrifrons # chora-chuva-preto
+    autoria: form_B_r2
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [preto]
+
+  - id: p032
+    descricao: "Um pássaro preto cabeçudo de bico vermelho"
+    esperada: sp_monasa_nigrifrons # chora-chuva-preto
+    autoria: form_B_r3
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [preto]
+      cores_por_parte: [{ parte: bico, cor: vermelho }]
+
+  - id: p033
+    descricao: "Passarinho preto com bico laranja"
+    esperada: sp_monasa_nigrifrons # chora-chuva-preto
+    autoria: form_B_r4
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [preto]
+      cores_por_parte: [{ parte: bico, cor: laranja }]
+
+  # B5 choca-barrada
+  - id: p034
+    descricao: "Ave com topete, bico médio gordo, calda com uma faixa reta na horizontal preta, corpo com mesclagem entre preto e branco."
+    esperada: sp_thamnophilus_doliatus # choca-barrada
+    autoria: form_B_r1
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [preto, branco]
+      marcas: [topete, listrado]
+      bico: { comprimento: medio, espessura: grosso }
+
+  - id: p035
+    descricao: "Passarinho arrepiado" # sem atributo no vocabulário: só o vetor
+    esperada: sp_thamnophilus_doliatus # choca-barrada
+    autoria: form_B_r2
+    origem: foto
+    uso: calibracao
+
+  - id: p036
+    descricao: "Um passarinho de moicano"
+    esperada: sp_thamnophilus_doliatus # choca-barrada
+    autoria: form_B_r3
+    origem: foto
+    uso: calibracao
+    atributos:
+      marcas: [topete]
+
+  - id: p037
+    descricao: "Passarinho de topete com corpinho listrado"
+    esperada: sp_thamnophilus_doliatus # choca-barrada
+    autoria: form_B_r4
+    origem: foto
+    uso: calibracao
+    atributos:
+      marcas: [topete, listrado]
+
+  # C1 tesourinha
+  - id: p038
+    descricao: "Calda da ave parecido com alicate em cor preta. Região do crânio preto, região do pescoço brsnca, e região das costas iniciando com cinza, indo para as asas em marron claro, e terminando na calda em preto. Região da barriga branca."
+    esperada: sp_tyrannus_savana # tesourinha
+    autoria: form_C_r1
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [preto, branco, cinza, marrom]
+      cores_por_parte:
+        - { parte: cauda, cor: preto }
+        - { parte: cabeca, cor: preto }
+        - { parte: dorso, cor: cinza }
+        - { parte: asas, cor: marrom }
+        - { parte: barriga, cor: branco }
+      marcas: [coleira]
+      cauda: [bifurcada]
+
+  - id: p039
+    descricao: "Cabecinha preta, pescoço  branco como se fosse  uma coleira, as penas do seu corpo cinza  um pouco amarronzado, caudas longas e preta com pontas finas como uma tesourinha, pousou em um galho bem fino e leve e seco."
+    esperada: sp_tyrannus_savana # tesourinha
+    autoria: form_C_r3
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [preto, branco, cinza, marrom]
+      cores_por_parte: [{ parte: cabeca, cor: preto }, { parte: cauda, cor: preto }]
+      marcas: [coleira]
+      cauda: [longa, bifurcada]
+      onde_estava: [meio_da_arvore]
+      o_que_fazia: [pousada]
+
+  - id: p040
+    descricao: "Uma ave com rabo alongado como uma tesoura. Ela tem a cabeça preta e o pescoço branco, o corpo é meio acinzentado e o rabo preto."
+    esperada: sp_tyrannus_savana # tesourinha
+    autoria: form_C_r4
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [preto, branco, cinza]
+      cores_por_parte: [{ parte: cabeca, cor: preto }, { parte: cauda, cor: preto }]
+      marcas: [coleira]
+      cauda: [longa, bifurcada]
+
+  # C2 gralha-do-campo
+  - id: p041
+    descricao: "Região da cabeça e assa preto. Região do corpo branca."
+    esperada: sp_cyanocorax_cristatellus # gralha-do-campo
+    autoria: form_C_r1
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [preto, branco]
+      cores_por_parte: [{ parte: cabeca, cor: preto }, { parte: asas, cor: preto }]
+
+  - id: p042
+    descricao: "Ave preta e branca"
+    esperada: sp_cyanocorax_cristatellus # gralha-do-campo
+    autoria: form_C_r2
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [preto, branco]
+
+  - id: p043
+    descricao: "Uma ave linda  com cabeça e pescoço  pretos  asas com tons de azul do escuro ao mais claro e corpo todo branquinho, pousada  em uma vegetação  verde com flores pequenas se deliciando com uma fruta"
+    esperada: sp_cyanocorax_cristatellus # gralha-do-campo
+    autoria: form_C_r3
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [preto, azul, branco]
+      cores_por_parte: [{ parte: cabeca, cor: preto }, { parte: asas, cor: azul }]
+      o_que_fazia: [pousada]
+
+  - id: p044
+    descricao: "Uma ave que o bico parece de um corvo, ela é preta até o pescoço e a parte detrás das costas. A parte do peito é branca e tem uma elevação na cabeça que parece uma crista."
+    esperada: sp_cyanocorax_cristatellus # gralha-do-campo
+    autoria: form_C_r4
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [preto, branco]
+      cores_por_parte:
+        - { parte: cabeca, cor: preto }
+        - { parte: dorso, cor: preto }
+        - { parte: peito, cor: branco }
+      marcas: [topete]
+
+  # C3 martim-pescador-verde
+  - id: p045
+    descricao: "Ave pequena. Bico fino e médio. Cabeça preta. Região pescoço branco. Corpo em verde brilhante com preto. Calda pequena com pontas branca."
+    esperada: sp_chloroceryle_amazona # martim-pescador-verde
+    autoria: form_C_r1
+    origem: foto
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [preto, branco, verde]
+      cores_por_parte: [{ parte: cabeca, cor: preto }]
+      marcas: [coleira, cauda_com_branco]
+      bico: { comprimento: medio, espessura: fino }
+      cauda: [curta]
+
+  - id: p046
+    descricao: "Uma ave bem pequena cabeça  e corpo preto com um colar de penas brancas no pescoço, uma cauda pequena quase inexistente pousado no chão  de terra clara."
+    esperada: sp_chloroceryle_amazona # martim-pescador-verde
+    autoria: form_C_r3
+    origem: foto
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [preto, branco]
+      cores_por_parte: [{ parte: cabeca, cor: preto }]
+      marcas: [coleira]
+      cauda: [curta]
+      onde_estava: [chao]
+
+  - id: p047
+    descricao: "Uma ave bem pequena, com bico alongado e rabo bem curto, ela é preta esverdeada e tem um detalhe branco no pescoço"
+    esperada: sp_chloroceryle_amazona # martim-pescador-verde
+    autoria: form_C_r4
+    origem: foto
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [preto, verde, branco]
+      marcas: [coleira]
+      bico: { comprimento: longo }
+      cauda: [curta]
+
+  # C4 rapazinho-dos-velhos
+  - id: p048
+    descricao: "Bico vermelho. Região barriga branca com pontas preta, região costas marrom com preto."
+    esperada: sp_nystalus_maculatus # rapazinho-dos-velhos
+    autoria: form_C_r1
+    origem: foto
+    uso: calibracao
+    atributos:
+      cores: [branco, preto, marrom]
+      cores_por_parte:
+        - { parte: bico, cor: vermelho }
+        - { parte: barriga, cor: branco }
+        - { parte: dorso, cor: marrom }
+      marcas: [pintado]
+
+  - id: p049
+    descricao: "Uma pequena ave de plumagem pintada de branco com cinza, no pescoço um colar laranja  e seu bico bem curtinho de mesma cor em meio as folhas de uma árvore."
+    esperada: sp_nystalus_maculatus # rapazinho-dos-velhos
+    autoria: form_C_r3
+    origem: foto
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [branco, cinza, laranja]
+      cores_por_parte: [{ parte: bico, cor: laranja }]
+      marcas: [pintado, coleira]
+      bico: { comprimento: curto }
+      onde_estava: [meio_da_arvore]
+
+  - id: p050
+    descricao: "Uma ave bem pequena, é clara pintadinha. Tem o bico fino e alongado e detalhe amarronzado no pescoço e no bico"
+    esperada: sp_nystalus_maculatus # rapazinho-dos-velhos
+    autoria: form_C_r4
+    origem: foto
+    uso: calibracao
+    atributos:
+      tamanho: [pequeno]
+      cores: [marrom]
+      cores_por_parte: [{ parte: bico, cor: marrom }]
+      marcas: [pintado, coleira]
+      bico: { comprimento: longo, espessura: fino }

@@ -148,7 +148,7 @@ def test_avaliar(avaliacao_falsa):
     resultado = runner.invoke(app, ["avaliar"])
     assert resultado.exit_code == 0, resultado.output
     linhas = resultado.output.splitlines()
-    assert linhas[0].startswith("3 casos · ranking 1.1 · posições até 40 · embedding: 1 chamada(s)")
+    assert linhas[0].startswith("3 casos · ranking 1.3 · posições até 40 · embedding: 1 chamada(s)")
     assert linhas[1].split()[:3] == ["modo", "grupo", "n"]
     assert len(linhas) == 2 + 5 * 4 + 2  # 5 modos × 4 grupos
     assert "inalcançáveis (sem documento de busca): c003 sp_incompleta" in resultado.output

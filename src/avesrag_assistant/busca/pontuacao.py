@@ -14,7 +14,7 @@ pesos e a penalidade vêm de `config/ranking.yaml`, validado ao carregar.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal, Self
@@ -123,6 +123,9 @@ class NivelHibrido(_Base):
 class ConfigHibrido(_Base):
     especies: PositiveInt  # espécies que cada nível acrescenta, no máximo
     niveis: list[NivelHibrido] = Field(min_length=1)  # do mais estrito ao mais solto
+    # Espécies que entram pelos pontos dos atributos, contados em todas as fichas
+    # da busca, sem passar pelo vetor; 0 desliga.
+    atributos: int = Field(default=0, ge=0)
 
     @field_validator("niveis")
     @classmethod
@@ -274,6 +277,27 @@ def pontuar(
         )
         for nome in atributos.informados()
     ]
+
+
+def melhores_por_atributos(
+    universo: Mapping[str, Atributos],
+    atributos: AtributosObservados,
+    ranking: Ranking,
+    regras_bico: RegrasBico,
+    n: int,
+) -> list[str]:
+    """As `n` espécies do `universo` com mais pontos nos atributos (só as com pontos > 0).
+
+    O empate é desfeito pelo `species_id`.
+    """
+    if n <= 0 or not atributos.informados():
+        return []
+    pontos = {
+        sid: sum(d.pontos for d in pontuar(atributos, ficha, ranking, regras_bico))
+        for sid, ficha in universo.items()
+    }
+    ordem = sorted((sid for sid, p in pontos.items() if p > 0), key=lambda s: (-pontos[s], s))
+    return ordem[:n]
 
 
 # ---------------------------------------------------------------------------

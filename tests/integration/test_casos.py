@@ -27,6 +27,4 @@ def test_casos_reais_contra_o_banco(banco, vocab_regras):
     casos = carregar_casos(ROOT_DIR / "avaliacao" / "casos.yaml", *vocab_regras)
     conf = conferir_no_banco(banco, casos)
     assert conf.inexistentes == []
-    assert conf.inalcancaveis == frozenset(
-        {"sp_crotophaga_ani", "sp_coragyps_atratus", "sp_megarynchus_pitangua"}
-    )
+    assert conf.inalcancaveis == frozenset({"sp_crotophaga_ani", "sp_megarynchus_pitangua"})

@@ -47,6 +47,8 @@ class ColecaoFalsa:
         return iter(d for d in self.docs if d["species_id"] in ids)
 
     def distinct(self, campo, filtro):
+        if not filtro:  # todos os documentos
+            return sorted({d[campo] for d in self.docs})
         ids = set(filtro["species_id"]["$in"])
         return sorted({d[campo] for d in self.docs if d["species_id"] in ids})
 

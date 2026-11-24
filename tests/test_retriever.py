@@ -197,6 +197,13 @@ RARA = {
 }
 
 
+def _so_niveis(ranking):
+    """O ranking sem a fonte por atributos: só os níveis do híbrido."""
+    return ranking.model_copy(
+        update={"hibrido": ranking.hibrido.model_copy(update={"atributos": 0})}
+    )
+
+
 def _filtro(pipeline):
     return pipeline[0]["$vectorSearch"].get("filter")
 
@@ -217,7 +224,7 @@ def _banco_hibrido():
 def test_hibrido_uma_busca_por_nivel_e_a_especie_so_do_filtro(consulta, ranking, vocab_regras):
     db = _banco_hibrido()
     c = consulta(cores=["amarelo"], marcas=["sobrancelha"], ambiente=["mata"])
-    saida = buscar(db, c, [0.1], ranking, vocab_regras[1], modo="hibrido")
+    saida = buscar(db, c, [0.1], _so_niveis(ranking), vocab_regras[1], modo="hibrido")
 
     filtros = [_filtro(p) for p in db[SPECIES_RETRIEVAL_DOCS].pipelines]
     assert filtros == [
@@ -244,7 +251,7 @@ def test_hibrido_pula_nivel_vazio_ou_repetido_e_leva_as_recusadas(consulta, rank
     db = _banco_hibrido()
     c = consulta(cores=["amarelo"])
     c = c.model_copy(update={"recusadas": ["sp_verde"]})
-    buscar(db, c, [0.1], ranking, vocab_regras[1], modo="hibrido")
+    buscar(db, c, [0.1], _so_niveis(ranking), vocab_regras[1], modo="hibrido")
 
     filtros = [_filtro(p) for p in db[SPECIES_RETRIEVAL_DOCS].pipelines]
     nin = {"species_id": {"$nin": ["sp_verde"]}}
@@ -265,3 +272,32 @@ def test_hibrido_sem_a_secao_no_ranking(consulta, ranking, vocab_regras):
         buscar(
             _banco_hibrido(), consulta(cores=["amarelo"]), [0.1], sem, vocab_regras[1], "hibrido"
         )
+
+
+def test_hibrido_traz_as_especies_pelos_atributos(consulta, ranking, vocab_regras):
+    db = _banco_hibrido()
+    pelos = ranking.model_copy(
+        update={"hibrido": ranking.hibrido.model_copy(update={"atributos": 5})}
+    )
+    # O universo (distinct dos documentos) passa a ter a sp_rara.
+    docs = db[SPECIES_RETRIEVAL_DOCS]
+    docs.docs = [*docs.docs, {"species_id": "sp_rara", "dominio": "aparencia", "nota": 0.6}]
+    c = consulta(marcas=["sobrancelha"])
+    c = c.model_copy(update={"recusadas": ["sp_amarela"]})
+    saida = buscar(db, c, [0.1], pelos, vocab_regras[1], modo="hibrido")
+
+    filtros = [_filtro(p) for p in db[SPECIES_RETRIEVAL_DOCS].pipelines]
+    # A última busca pede ao vetor só a nota das espécies que pontuam nos atributos,
+    # sem as recusadas: sp_rara tem sobrancelha; sp_amarela também, mas foi recusada.
+    assert filtros[-1] == {"species_id": {"$in": ["sp_rara"]}}
+    rara = next(x for x in saida if x.species_id == "sp_rara")
+    assert rara.origem in ("completo", "atributos")
+
+
+def test_hibrido_sem_atributos_nao_carrega_o_universo(consulta, ranking, vocab_regras):
+    db = _banco_hibrido()
+    pelos = ranking.model_copy(
+        update={"hibrido": ranking.hibrido.model_copy(update={"atributos": 5})}
+    )
+    buscar(db, consulta(), [0.1], pelos, vocab_regras[1], modo="hibrido")
+    assert len(db[SPECIES_RETRIEVAL_DOCS].pipelines) == 1
