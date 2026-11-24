@@ -1,5 +1,6 @@
 """Página das sessões moderadas e o relatório, com LLM e banco falsos (servidor numa porta livre)."""
 
+import csv
 import json
 import threading
 import urllib.error
@@ -116,6 +117,13 @@ def test_sessao_moderada_ate_revelar(servidor):
     assert (r.primeira, r.ultima) == (1, 1)
     saida = linhas([r])
     assert "acertou" in saida[0]
+
+    # A tabela de todas as sessões foi regravada a cada mensagem.
+    tsv = list(csv.DictReader((diretorio.parent / "sessoes_moderadas.tsv").open(), delimiter="\t"))
+    assert len(tsv) == 1
+    assert (tsv[0]["ave"], tsv[0]["resultado"], tsv[0]["apresentada"]) == ("A1", "acertou", "sim")
+    assert tsv[0]["descricao"] == "uma ave pequena"
+    assert tsv[0]["conversa"].startswith("pessoa: uma ave pequena | assistente: Pergunta sobre")
     assert saida[-1].startswith("1 sessão(ões) concluída(s): 1 acerto(s) (100%)")
 
 

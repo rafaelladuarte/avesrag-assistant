@@ -4,10 +4,17 @@ Lê os JSON de `reports/sessoes/` com uma ave definida (as conversas livres não
 têm espécie esperada) e diz, por sessão: se a pessoa confirmou a espécie certa,
 se ela chegou a ser apresentada, a posição dela nas 10 primeiras da primeira e
 da última busca e quantas perguntas foram feitas.
+
+`gravar_tsv` junta todas as sessões moderadas num arquivo só
+(`reports/sessoes_moderadas.tsv`, uma linha por sessão, com a conversa), que a
+página regrava depois de cada mensagem e o comando `sessoes` também grava.
 """
 
 from __future__ import annotations
 
+import csv
+import os
+import tempfile
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -92,3 +99,71 @@ def linhas(resumos: Sequence[ResumoSessao]) -> list[str]:
             f"perguntas por sessão: {sum(r.perguntas for r in fim) / len(fim):.1f}"
         )
     return saida
+
+
+ARQUIVO_TSV = "sessoes_moderadas.tsv"
+COLUNAS_TSV = [
+    "sessao",
+    "criada_em",
+    "atualizada_em",
+    "ave",
+    "esperada",
+    "etapa",
+    "resultado",
+    "confirmada",
+    "apresentada",
+    "rodadas",
+    "perguntas",
+    "posicao_primeira_busca",
+    "posicao_ultima_busca",
+    "perguntas_feitas",
+    "descricao",
+    "conversa",
+]
+
+
+def _uma_linha(texto: str) -> str:
+    return " ".join(texto.split())
+
+
+def linha_tsv(e: EstadoConversa) -> dict[str, str]:
+    r = resumir(e)
+    resultado = "acertou" if r.acertou else ("em andamento" if r.etapa != "fim" else "errou")
+    conversa = " | ".join(
+        f"{'pessoa' if m.papel == 'usuario' else 'assistente'}: {_uma_linha(m.texto)}"
+        for m in e.mensagens
+    )
+    return {
+        "sessao": e.id,
+        "criada_em": e.criada_em.isoformat(timespec="seconds"),
+        "atualizada_em": e.atualizada_em.isoformat(timespec="seconds"),
+        "ave": r.ave,
+        "esperada": r.esperada,
+        "etapa": r.etapa,
+        "resultado": resultado,
+        "confirmada": e.confirmada or "",
+        "apresentada": "sim" if r.apresentada else "não",
+        "rodadas": str(r.rodadas),
+        "perguntas": str(r.perguntas),
+        "posicao_primeira_busca": "" if r.primeira is None else str(r.primeira),
+        "posicao_ultima_busca": "" if r.ultima is None else str(r.ultima),
+        "perguntas_feitas": ", ".join(e.perguntas_feitas),
+        "descricao": _uma_linha(" ".join(e.descricoes)),
+        "conversa": conversa,
+    }
+
+
+def gravar_tsv(estados: Sequence[EstadoConversa], path: Path) -> Path:
+    """Todas as sessões moderadas num TSV, gravado de forma atômica."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=COLUNAS_TSV, delimiter="\t", lineterminator="\n")
+            w.writeheader()
+            w.writerows(linha_tsv(e) for e in estados)
+        os.replace(tmp, path)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+    return path

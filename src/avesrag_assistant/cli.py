@@ -7,7 +7,8 @@ sugeridas pelo `c04_candidatas` como candidatas com bônus); `simular` (as
 perguntas medidas com um usuário simulado que responde pela ficha) e
 `conversar` (a conversa inteira no terminal, com o estado em JSON por sessão),
 `moderar` (a mesma conversa numa página local, para as sessões moderadas) e
-`sessoes` (o relatório dessas sessões).
+`sessoes` (o relatório dessas sessões) e `sortear-aves` (as aves e as fotos
+dessas sessões).
 """
 
 import csv
@@ -25,7 +26,8 @@ from avesrag_assistant.avaliacao.casos import CasosInvalidos, carregar_casos, co
 from avesrag_assistant.avaliacao.relatorio import gravar_tsv, tabela
 from avesrag_assistant.avaliacao.relatorio import inalcancaveis as relatorio_inalcancaveis
 from avesrag_assistant.avaliacao.rodar import DEGRADADO, MODOS_AVALIACAO, rodar
-from avesrag_assistant.avaliacao.sessoes import carregar_moderadas, resumir
+from avesrag_assistant.avaliacao.sessoes import ARQUIVO_TSV, carregar_moderadas, resumir
+from avesrag_assistant.avaliacao.sessoes import gravar_tsv as gravar_tsv_sessoes
 from avesrag_assistant.avaliacao.sessoes import linhas as linhas_sessoes
 from avesrag_assistant.avaliacao.simulacao import (
     entradas_e_saidas,
@@ -458,6 +460,11 @@ def moderar(
     host: str = typer.Option(
         "127.0.0.1", "--host", help="Endereço; o padrão só aceita conexões desta máquina."
     ),
+    aves_csv: Path | None = typer.Option(
+        None,
+        "--aves",
+        help="CSV das aves (padrão: avaliacao/especies_sessoes.csv, do sortear-aves).",
+    ),
 ) -> None:
     """Página local para as sessões moderadas: a pessoa vê a foto e conversa com o assistente."""
     from avesrag_assistant.web.servidor import Moderacao, carregar_aves, criar_servidor
@@ -465,7 +472,7 @@ def moderar(
     settings = get_settings()
     try:
         voc, regras = vocabulario.carregar()
-        aves = carregar_aves(settings.AVALIACAO_DIR / "especies_formulario.csv")
+        aves = carregar_aves(aves_csv or settings.AVALIACAO_DIR / "especies_sessoes.csv")
         moderacao = Moderacao(
             _servicos(settings, voc, regras), aves, settings.REPORTS_DIR / "sessoes"
         )
@@ -493,3 +500,52 @@ def relatorio_sessoes() -> None:
     estados = carregar_moderadas(settings.REPORTS_DIR / "sessoes")
     for linha in linhas_sessoes([resumir(e) for e in estados]):
         typer.echo(linha)
+    if estados:
+        caminho = gravar_tsv_sessoes(estados, settings.REPORTS_DIR / ARQUIVO_TSV)
+        typer.echo(f"tabela: {caminho}")
+
+
+@app.command(name="sortear-aves")
+def sortear_aves(
+    semente: int = typer.Option(20261124, "--semente", help="Semente do sorteio."),
+    comum: int = typer.Option(8, "--comum", min=0, help="Espécies da faixa comum."),
+    intermediaria: int = typer.Option(7, "--intermediaria", min=0, help="Da faixa intermediária."),
+    pouco: int = typer.Option(5, "--pouco", min=0, help="Da faixa pouco conhecida."),
+    max_familia: int = typer.Option(2, "--max-familia", min=1, help="Máximo por família."),
+    saida: Path | None = typer.Option(
+        None, "--saida", help="CSV de saída (padrão: avaliacao/especies_sessoes.csv)."
+    ),
+    refazer: bool = typer.Option(
+        False, "--refazer", help="Sobrescreve o CSV existente (perde a revisão das fotos)."
+    ),
+) -> None:
+    """Sorteia as aves e as fotos das sessões moderadas, fora da calibração."""
+    from avesrag_assistant.avaliacao import sorteio
+
+    settings = get_settings()
+    destino = saida or settings.AVALIACAO_DIR / "especies_sessoes.csv"
+    if destino.exists() and not refazer:
+        falhar(
+            f"{destino} já existe (com a revisão das fotos); use --refazer para sortear de novo", 2
+        )
+    try:
+        voc, regras = vocabulario.carregar()
+        casos = carregar_casos(settings.AVALIACAO_DIR / "casos.yaml", voc, regras)
+    except (VocabularioInvalido, CasosInvalidos) as e:
+        falhar(str(e), 2)
+    calibracao = {c.esperada for c in casos if c.uso == "calibracao"}
+    try:
+        especies = sorteio.carregar_especies(get_db(), calibracao)
+    except PyMongoError as e:
+        falhar(f"falha no MongoDB ({settings.MONGODB_URI}): {e}")
+    sorteio.tercis(especies)
+    por_faixa = {"comum": comum, "intermediaria": intermediaria, "pouco_conhecida": pouco}
+    escolhidas = sorteio.sortear(especies, por_faixa, semente, max_familia)
+    caminho = sorteio.gravar_csv(escolhidas, destino)
+    typer.echo(
+        f"{len(especies)} espécies elegíveis (fora das {len(calibracao)} da calibração) · "
+        f"semente {semente} · {len(escolhidas)} sorteadas"
+    )
+    for i, e in enumerate(escolhidas, start=1):
+        typer.echo(f"S{i:<3} {e.faixa:<16} {e.fotos_wikiaves:>6}  {e.nome} ({e.nome_cientifico})")
+    typer.echo(f"lista: {caminho}")

@@ -10,7 +10,9 @@ uma ave que a pessoa viu.
 Só a biblioteca padrão (`http.server`): a API de verdade, com FastAPI, é do
 Assistant 4. O servidor escuta só em 127.0.0.1 por padrão, atende uma mensagem
 por vez (as chamadas ao LLM levam alguns segundos e há uma pessoa só) e grava o
-estado de cada sessão em `reports/sessoes/<id>.json`, como o `conversar`.
+estado de cada sessão em `reports/sessoes/<id>.json`, como o `conversar`, e
+regrava o resumo de todas em `reports/sessoes_moderadas.tsv` (uma linha por
+sessão, com a conversa) depois de cada mensagem.
 """
 
 from __future__ import annotations
@@ -28,6 +30,7 @@ from typing import Any
 
 from avesrag_builder.db.collections import SPECIES
 
+from avesrag_assistant.avaliacao.sessoes import ARQUIVO_TSV, carregar_moderadas, gravar_tsv
 from avesrag_assistant.conversa import estado as sessoes
 from avesrag_assistant.conversa.orquestrador import Orquestrador, Servicos
 
@@ -76,7 +79,11 @@ class Moderacao:
         self.servicos = servicos
         self.aves = aves
         self.diretorio = diretorio
+        self.tsv = diretorio.parent / ARQUIVO_TSV
         self.trava = threading.Lock()
+
+    def _gravar_tsv(self) -> None:
+        gravar_tsv(carregar_moderadas(self.diretorio), self.tsv)
 
     # -- leitura -------------------------------------------------------------
 
@@ -138,7 +145,9 @@ class Moderacao:
             ave=ave.codigo if ave else None,
             esperada=ave.species_id if ave else None,
         )
-        sessoes.salvar(e, self.diretorio)
+        with self.trava:
+            sessoes.salvar(e, self.diretorio)
+            self._gravar_tsv()
         return self.visao(e)
 
     def abrir(self, sessao: str) -> dict[str, Any]:
@@ -155,6 +164,7 @@ class Moderacao:
             orquestrador = Orquestrador(self.servicos, e)
             orquestrador.processar(texto)
             sessoes.salvar(orquestrador.estado, self.diretorio)
+            self._gravar_tsv()
             return self.visao(orquestrador.estado)
 
 
