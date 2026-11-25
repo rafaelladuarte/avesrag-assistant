@@ -624,6 +624,51 @@ def convite_revogar(nome: str = typer.Argument(..., help="O nome do convite.")) 
 app.add_typer(convite_app, name="convite")
 
 
+@app.command(name="revisar-fichas")
+def revisar_fichas(
+    saida: Path | None = typer.Option(
+        None, "--saida", help="CSV de saída (padrão: avaliacao/revisao_fichas.csv)."
+    ),
+) -> None:
+    """Lista as fichas para revisão manual (conflitos das avaliações e sessões, coerência, backlog)."""
+    from avesrag_builder.core.regras_fusao import carregar_regras_fusao
+
+    from avesrag_assistant.avaliacao import revisao
+    from avesrag_assistant.busca.modelos import validar_atributos
+
+    settings = get_settings()
+    try:
+        voc, regras_bico = vocabulario.carregar()
+        ranking = carregar_ranking(settings.CONFIG_DIR / "ranking.yaml")
+        casos = carregar_casos(settings.AVALIACAO_DIR / "casos.yaml", voc, regras_bico)
+        regras = carregar_regras_fusao(settings.builder_config_dir / "regras_fusao.yaml", voc)
+        fichas = revisao.reunir_fichas(get_db(), regras)
+    except (VocabularioInvalido, RankingInvalido, CasosInvalidos, FileNotFoundError) as e:
+        falhar(str(e), 2)
+    except PyMongoError as e:
+        falhar(f"falha no MongoDB ({settings.MONGODB_URI}): {e}")
+    observacoes = [
+        revisao.Observacao(c.id, c.esperada, c.atributos, c.autoria != "llm", c.descricao)
+        for c in casos
+        if c.atributos.informados()
+    ]
+    for arquivo in sorted((settings.REPORTS_DIR / "sessoes").glob("*.json")):
+        texto = arquivo.read_text(encoding="utf-8")
+        try:
+            atributos = validar_atributos(
+                json.loads(texto).get("atributos") or {}, voc, regras_bico
+            )
+        except ValidationError:
+            continue  # sessão antiga, com atributo que saiu do vocabulário
+        if obs := revisao.sessao_como_observacoes(texto, atributos):
+            observacoes.append(obs)
+    linhas = revisao.montar_linhas(fichas, observacoes, ranking, regras_bico, regras)
+    destino = revisao.gravar_csv(linhas, saida or settings.AVALIACAO_DIR / "revisao_fichas.csv")
+    for linha in revisao.resumo(linhas):
+        typer.echo(linha)
+    typer.echo(f"arquivo: {destino}")
+
+
 @app.command(name="sessoes")
 def relatorio_sessoes() -> None:
     """Relatório das sessões moderadas: acerto, apresentação, posição e perguntas."""
