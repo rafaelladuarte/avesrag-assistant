@@ -19,6 +19,14 @@
     catalogo: null, // as espécies do "Explorar aves", carregadas uma vez
     busca: "",
     familia: null,
+    papel: null, // "curadoria" libera a edição da ficha
+    editando: false,
+    edicao: null, // os campos editáveis da espécie aberta
+    campoAberto: null, // o caminho do campo com o editor aberto
+    rascunhoValor: null,
+    rascunhoMotivo: "",
+    avisoCuradoria: null,
+    novaFoto: { url: "", autor: "", licenca: "", link: "" },
     todasFamilias: false, // o filtro mostra só as maiores até pedirem todas
     rascunho: "",
     local: "",
@@ -198,6 +206,9 @@
     estado.erro = null;
     api("GET", "/api/especies/" + encodeURIComponent(speciesId))
       .then(function (d) {
+        if (!estado.detalhe || estado.detalhe.species_id !== d.species_id) {
+          estado.edicao = null; estado.editando = false; estado.campoAberto = null; estado.avisoCuradoria = null;
+        }
         estado.detalhe = d;
         estado.tela = "detalhe";
         desenhar();
@@ -507,6 +518,221 @@
         el("button", { class: "botao-contorno", type: "button", onclick: function () { votar("nao_ajudou"); } }, "Não ajudou")));
   }
 
+
+  // -- curadoria da ficha (só convite de curadoria) --------------------------------
+
+  function textoDoValor(c) {
+    var v = c.valor;
+    if (v === null || v === undefined || (Array.isArray(v) && !v.length)) return "sem valor";
+    if (c.tipo === "fotos") return v.length + (v.length === 1 ? " foto" : " fotos") + "; principal: " + v[0].credito;
+    if (c.tipo === "pares") return v.map(function (p) { return rotulo(c, "partes", p.parte) + ": " + rotulo(c, "cores", p.cor); }).join("; ");
+    if (Array.isArray(v)) return v.map(function (x) { return rotulo(c, null, x); }).join(", ");
+    return c.tipo === "numero" ? String(v).replace(".", ",") : String(v);
+  }
+
+  function rotulo(c, grupo, valor) {
+    var opcoes = grupo ? (c.opcoes || {})[grupo] : c.opcoes;
+    var achada = (opcoes || []).find(function (o) { return o.valor === valor; });
+    return achada ? achada.rotulo : valor;
+  }
+
+  function carregarEdicao() {
+    api("GET", "/api/especies/" + encodeURIComponent(estado.detalhe.species_id) + "/edicao")
+      .then(function (e) { estado.edicao = e; desenhar(); })
+      .catch(function (e) { estado.avisoCuradoria = { erro: true, texto: e.message }; desenhar(); });
+  }
+
+  function abrirCampo(c) {
+    estado.campoAberto = c.caminho;
+    estado.rascunhoMotivo = "";
+    estado.avisoCuradoria = null;
+    estado.rascunhoValor = c.valor === null || c.valor === undefined ? (c.tipo === "lista" || c.tipo === "pares" ? [] : "") : JSON.parse(JSON.stringify(c.valor));
+    if (c.tipo === "texto_longo" && !c.valor && c.sugestao) estado.rascunhoValor = c.sugestao; // parte do texto gerado
+    estado.novaFoto = { url: "", autor: "", licenca: "", link: "" };
+    desenhar();
+  }
+
+  function depoisDeSalvar(edicao, texto) {
+    estado.edicao = edicao;
+    estado.campoAberto = null;
+    estado.avisoCuradoria = { erro: false, texto: texto };
+    return api("GET", "/api/especies/" + encodeURIComponent(edicao.species_id)).then(function (d) {
+      estado.detalhe = d; // a ficha pública já mostra o valor novo
+    });
+  }
+
+  function salvarCampo(c, remover) {
+    var valor = remover ? null : estado.rascunhoValor;
+    if (c.tipo === "numero" && !remover) valor = valor === "" ? null : Number(valor);
+    if (c.tipo === "fotos") {
+      valor = estado.rascunhoValor.map(function (f) {
+        return f.novo ? { url: f.novo.url, autor: f.novo.autor, licenca: f.novo.licenca, link: f.novo.link } : { link: f.link };
+      });
+    }
+    estado.avisoCuradoria = null;
+    api("PUT", "/api/especies/" + encodeURIComponent(estado.edicao.species_id) + "/campos/" + encodeURIComponent(c.caminho),
+        { valor: valor, motivo: estado.rascunhoMotivo || null })
+      .then(function (e) { return depoisDeSalvar(e, c.rotulo + ": salvo na ficha e na busca."); })
+      .catch(function (e) { estado.avisoCuradoria = { erro: true, texto: e.message }; })
+      .then(desenhar);
+  }
+
+  function voltarAoAutomatico(c) {
+    api("DELETE", "/api/especies/" + encodeURIComponent(estado.edicao.species_id) + "/campos/" + encodeURIComponent(c.caminho))
+      .then(function (e) { return depoisDeSalvar(e, c.rotulo + ": voltou ao valor das fontes."); })
+      .catch(function (e) { estado.avisoCuradoria = { erro: true, texto: e.message }; })
+      .then(desenhar);
+  }
+
+
+  function editorDeFotos(c) {
+    var lista = estado.rascunhoValor;
+    var usadas = {};
+    lista.forEach(function (f) { usadas[f.link] = true; });
+    var mover = function (i, para) {
+      var item = lista.splice(i, 1)[0];
+      lista.splice(para, 0, item);
+      desenhar();
+    };
+    var miniatura = function (url) {
+      return el("span", { class: "mini-foto" }, el("img", { src: url, alt: "", loading: "lazy", referrerpolicy: "no-referrer" }));
+    };
+    var selecionadas = el("ol", { class: "fotos-escolhidas" }, lista.map(function (f, i) {
+      return el("li", {},
+        miniatura(f.url),
+        el("span", { class: "legenda-foto" }, i === 0 ? el("b", { texto: "Principal · " }) : null, f.credito),
+        el("span", { class: "acoes-foto" },
+          i > 0 ? el("button", { class: "link-botao", type: "button", onclick: function () { mover(i, 0); } }, "Tornar principal") : null,
+          i > 0 ? el("button", { class: "link-botao", type: "button", onclick: function () { mover(i, i - 1); } }, "Subir") : null,
+          i < lista.length - 1 ? el("button", { class: "link-botao", type: "button", onclick: function () { mover(i, i + 1); } }, "Descer") : null,
+          lista.length > 1 ? el("button", { class: "link-botao", type: "button", onclick: function () { lista.splice(i, 1); desenhar(); } }, "Remover") : null));
+    }));
+    var livres = c.opcoes.candidatas.filter(function (o) { return !usadas[o.link]; });
+    var disponiveis = el("div", { class: "fotos-disponiveis" }, livres.map(function (o) {
+      return el("div", { class: "foto-disponivel" },
+        miniatura(o.url),
+        el("span", { class: "legenda-foto", texto: o.origem + " · " + o.credito }),
+        el("button", { class: "botao-contorno botao-mini", type: "button", disabled: lista.length >= 6,
+          onclick: function () { lista.push({ link: o.link, url: o.url, credito: o.credito }); desenhar(); } }, "Adicionar"));
+    }));
+    var n = estado.novaFoto;
+    var campo = function (id, rotuloTexto, chave, tipo) {
+      var i = el("input", { id: id, type: tipo || "text", maxlength: "300", oninput: function () { n[chave] = i.value; } });
+      i.value = n[chave];
+      return el("div", { class: "campo" }, el("label", { for: id, texto: rotuloTexto }), i);
+    };
+    var lic = el("select", { id: "nova-licenca", onchange: function () { n.licenca = lic.value; } },
+      el("option", { value: "" }, "Escolha..."), c.opcoes.licencas.map(function (l) { return el("option", { value: l }, l); }));
+    lic.value = n.licenca;
+    var porEndereco = el("div", { class: "foto-nova" },
+      el("b", { texto: "Adicionar uma foto por endereço" }),
+      el("p", { class: "restantes", texto: "Só fotos com licença aberta. O autor e a licença aparecem junto da foto na ficha." }),
+      campo("nova-url", "Endereço da imagem (https)", "url", "url"),
+      campo("nova-autor", "Autor", "autor"),
+      el("div", { class: "campo" }, el("label", { for: "nova-licenca", texto: "Licença" }), lic),
+      campo("nova-link", "Página de origem da foto (https)", "link", "url"),
+      el("button", { class: "botao-contorno", type: "button", disabled: lista.length >= 6, onclick: function () {
+        if (!n.url || !n.autor.trim() || !n.licenca || !n.link) { estado.avisoCuradoria = { erro: true, texto: "Preencha o endereço, o autor, a licença e a página de origem." }; desenhar(); return; }
+        lista.push({ link: n.link, url: n.url, credito: "Foto: " + n.autor.trim() + " · " + n.licenca, novo: { url: n.url, autor: n.autor, licenca: n.licenca, link: n.link } });
+        estado.novaFoto = { url: "", autor: "", licenca: "", link: "" };
+        estado.avisoCuradoria = null;
+        desenhar();
+      } }, "Adicionar à lista"));
+    return el("div", { class: "editor-fotos" },
+      el("b", { texto: "Fotos da ficha (a primeira é a principal; no máximo 6)" }), selecionadas,
+      livres.length ? el("b", { texto: "Disponíveis nas fontes" }) : null, disponiveis, porEndereco);
+  }
+
+  function editorDoCampo(c) {
+    var corpo;
+    if (c.tipo === "lista") {
+      corpo = el("div", { class: "chips", role: "group", "aria-label": c.rotulo },
+        c.opcoes.map(function (o) {
+          var marcado = estado.rascunhoValor.indexOf(o.valor) !== -1;
+          return el("button", { class: "chip-filtro", type: "button", "aria-pressed": marcado ? "true" : "false",
+            onclick: function () {
+              var i = estado.rascunhoValor.indexOf(o.valor);
+              if (i === -1) estado.rascunhoValor.push(o.valor); else estado.rascunhoValor.splice(i, 1);
+              desenhar();
+            } }, o.rotulo);
+        }));
+    } else if (c.tipo === "escolha") {
+      var sel = el("select", { id: "edit-valor", "data-foco": "1", onchange: function () { estado.rascunhoValor = sel.value; } },
+        el("option", { value: "" }, "Escolha..."), c.opcoes.map(function (o) { return el("option", { value: o.valor }, o.rotulo); }));
+      sel.value = estado.rascunhoValor || "";
+      corpo = el("div", { class: "campo" }, el("label", { for: "edit-valor" }, c.rotulo), sel);
+    } else if (c.tipo === "fotos") {
+      corpo = editorDeFotos(c);
+    } else if (c.tipo === "pares") {
+      var atuais = {};
+      estado.rascunhoValor.forEach(function (p) { atuais[p.parte] = p.cor; });
+      corpo = el("div", { class: "pares" }, c.opcoes.partes.map(function (parte) {
+        var id = "edit-par-" + parte.valor;
+        var s = el("select", { id: id, onchange: function () {
+          estado.rascunhoValor = estado.rascunhoValor.filter(function (p) { return p.parte !== parte.valor; });
+          if (s.value) estado.rascunhoValor.push({ parte: parte.valor, cor: s.value });
+        } }, el("option", { value: "" }, "sem informação"), c.opcoes.cores.map(function (o) { return el("option", { value: o.valor }, o.rotulo); }));
+        s.value = atuais[parte.valor] || "";
+        return el("div", { class: "campo" }, el("label", { for: id }, parte.rotulo), s);
+      }));
+    } else if (c.tipo === "numero") {
+      var n = el("input", { id: "edit-valor", type: "number", step: "0.1", min: "0.1", "data-foco": "1", oninput: function () { estado.rascunhoValor = n.value; } });
+      n.value = estado.rascunhoValor;
+      corpo = el("div", { class: "campo" }, el("label", { for: "edit-valor" }, c.rotulo), n);
+    } else if (c.tipo === "texto_curto") {
+      var tc = el("input", { id: "edit-valor", type: "text", maxlength: "40", "data-foco": "1", oninput: function () { estado.rascunhoValor = tc.value; } });
+      tc.value = estado.rascunhoValor;
+      corpo = el("div", { class: "campo" }, el("label", { for: "edit-valor" }, c.rotulo), tc);
+    } else {
+      var area = el("textarea", { id: "edit-valor", rows: "6", maxlength: "1500", "data-foco": "1",
+        placeholder: "Texto seu, sobre a ave. Ele aparece na ficha como Descrição.",
+        oninput: function () { estado.rascunhoValor = area.value; cont.textContent = area.value.length + " / 1500"; } });
+      area.value = estado.rascunhoValor;
+      var cont = el("div", { class: "contador", texto: area.value.length + " / 1500" });
+      corpo = el("div", { class: "campo" }, el("label", { for: "edit-valor" }, c.rotulo), area, cont,
+        c.sugestao ? el("div", { class: "botoes" },
+          el("p", { class: "restantes", texto: "O texto abaixo parte do resumo gerado por IA; edite o que quiser e salve." }),
+          el("button", { class: "link-botao", type: "button", onclick: function () { estado.rascunhoValor = c.sugestao; desenhar(); } }, "Recomeçar do texto gerado")) : null);
+    }
+    var motivo = el("input", { id: "edit-motivo", type: "text", maxlength: "300", placeholder: "Motivo (opcional)", oninput: function () { estado.rascunhoMotivo = motivo.value; } });
+    motivo.value = estado.rascunhoMotivo;
+    return el("form", { class: "editor", onsubmit: function (ev) { ev.preventDefault(); salvarCampo(c, false); } },
+      corpo,
+      el("div", { class: "campo" }, el("label", { for: "edit-motivo" }, "Motivo da correção"), motivo),
+      el("div", { class: "botoes" },
+        el("button", { class: "botao botao-pequeno", type: "submit" }, "Salvar"),
+        el("button", { class: "botao-contorno", type: "button", onclick: function () { estado.campoAberto = null; desenhar(); } }, "Cancelar"),
+        c.tipo !== "texto_longo" && c.tipo !== "fotos" ? el("button", { class: "link-botao", type: "button", onclick: function () { salvarCampo(c, true); } }, "Remover da ficha") : null,
+        c.manual ? el("button", { class: "link-botao", type: "button", onclick: function () { voltarAoAutomatico(c); } }, "Voltar ao valor das fontes") : null));
+  }
+
+  function painelCuradoria() {
+    if (estado.papel !== "curadoria") return null;
+    var aberto = estado.editando;
+    var topo = el("div", { class: "curadoria-topo" },
+      el("div", {}, el("b", { texto: "Curadoria" }), el("span", { class: "restantes", texto: " Corrija os dados desta ave; a correção vale na ficha e na busca e sobrevive às reconstruções da base." })),
+      el("button", { class: "botao-contorno", type: "button", "aria-expanded": aberto ? "true" : "false",
+        onclick: function () { estado.editando = !estado.editando; estado.campoAberto = null; estado.avisoCuradoria = null; if (estado.editando && !estado.edicao) carregarEdicao(); else desenhar(); } },
+        aberto ? "Fechar edição" : "Editar ficha"));
+    if (!aberto) return el("section", { class: "curadoria" }, topo);
+    var aviso = estado.avisoCuradoria
+      ? el("div", { class: estado.avisoCuradoria.erro ? "erro" : "confirmada", role: estado.avisoCuradoria.erro ? "alert" : "status" }, estado.avisoCuradoria.texto)
+      : null;
+    var linhas = (estado.edicao ? estado.edicao.campos : []).map(function (c) {
+      var abertoAqui = estado.campoAberto === c.caminho;
+      return el("div", { class: "linha-campo" },
+        el("div", { class: "linha-topo" },
+          el("div", {},
+            el("b", { texto: c.rotulo }),
+            c.manual ? el("span", { class: "selo-manual", title: "Por " + c.manual.por + " em " + c.manual.em + (c.manual.motivo ? ": " + c.manual.motivo : ""), texto: "manual" }) : null,
+            el("p", { class: "valor-campo", texto: c.tipo === "texto_longo" ? (c.valor ? (c.valor.length > 140 ? c.valor.slice(0, 140) + "..." : c.valor) : (c.sugestao ? "Resumo gerado por IA (ainda sem texto da curadoria)" : "sem texto")) : textoDoValor(c) }),
+            c.manual && c.automatico !== null && c.automatico !== undefined ? el("p", { class: "restantes", texto: "Das fontes: " + textoDoValor({ valor: c.automatico, tipo: c.tipo, opcoes: c.opcoes }) }) : null),
+          abertoAqui ? null : el("button", { class: "botao-contorno botao-mini", type: "button", onclick: function () { abrirCampo(c); } }, "Editar")),
+        abertoAqui ? editorDoCampo(c) : null);
+    });
+    return el("section", { class: "curadoria" }, topo, aviso, estado.edicao ? el("div", { class: "campos-curadoria" }, linhas) : el("p", { class: "restantes", texto: "Carregando os campos..." }));
+  }
+
   function telaDetalhe() {
     var d = estado.detalhe;
     var v = estado.visao;
@@ -536,12 +762,22 @@
         el("span", { texto: "Identificação confirmada: " + d.nome + "." }),
         el("button", { class: "link-botao", type: "button", onclick: novaConversa }, "Identificar outra ave")) : null,
       blocoErro(),
+      painelCuradoria(),
       el("section", { class: "topo" },
         el("div", { class: "nome" }, el("h1", { texto: d.nome }), cabecaDeNomes),
         deExplorar ? el("button", { class: "botao botao-pequeno", type: "button", onclick: novaConversa }, "Identificar uma ave") : null),
       fotos,
       el("div", { class: "colunas" },
         el("section", {},
+          (d.textos || []).map(function (x) {
+            return el("div", {},
+              el("h2", { texto: x.titulo }),
+              el("p", { class: "descricao", texto: x.texto }),
+              x.origem === "manual"
+                ? el("p", { class: "restantes", texto: "Texto escrito pela equipe do AvesRAG." })
+                : el("p", { class: "restantes" }, "Resumo gerado por IA a partir de textos do ",
+                    d.url_wikiaves ? el("a", { href: d.url_wikiaves, target: "_blank", rel: "noopener noreferrer" }, "WikiAves") : "WikiAves", "."));
+          }),
           d.como_reconhecer.length ? el("div", {}, el("h2", { texto: "Como reconhecer" }), itens(d.como_reconhecer)) : null,
           el("div", { class: "fontes" }, el("h2", { texto: "Fontes" }),
             el("ul", {},
@@ -675,6 +911,9 @@
     location.hash = "explorar";
   });
   window.addEventListener("hashchange", aplicarHash);
+
+  // o papel do convite decide se a ficha mostra a curadoria (o servidor confere de novo)
+  api("GET", "/api/eu").then(function (e) { estado.papel = e.papel; if (estado.tela === "detalhe") desenhar(); }).catch(function () {});
 
   // retoma a sessão ao recarregar a página (e abre a tela do hash, se houver)
   var id = lembrada();

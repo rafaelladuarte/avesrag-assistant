@@ -98,11 +98,13 @@ CAMPOS_ESPECIE = {
     "foto",
     "fotos",
     "ilustracao",
+    "textos",
     "como_reconhecer",
     "ficha",
     "url_wikiaves",
 }
 CAMPOS_CATALOGO = {"species_id", "nome", "nome_cientifico", "familia", "familia_popular", "foto"}
+CAMPOS_TEXTO = {"chave", "titulo", "texto", "origem"}
 CAMPOS_ILUSTRACAO = {"url", "credito", "link", "rotulo"}
 CAMPOS_ITEM = {"rotulo", "valor"}
 
@@ -138,6 +140,8 @@ def conferir_especie(e: dict[str, Any]) -> dict[str, Any]:
         _conferir(e["foto"], CAMPOS_FOTO, "foto")
     for foto in e.get("fotos") or []:
         _conferir(foto, CAMPOS_FOTO, "fotos")
+    for texto in e.get("textos") or []:
+        _conferir(texto, CAMPOS_TEXTO, "texto")
     if e.get("ilustracao"):
         _conferir(e["ilustracao"], CAMPOS_ILUSTRACAO, "ilustração")
     for lista in ("como_reconhecer", "ficha"):
@@ -152,3 +156,26 @@ def conferir_catalogo(itens: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if item.get("foto"):
             _conferir(item["foto"], CAMPOS_FOTO, "foto do catálogo")
     return itens
+
+
+CAMPOS_EDICAO = {"species_id", "campos"}
+CAMPOS_DO_CAMPO = {
+    "caminho",
+    "rotulo",
+    "tipo",
+    "valor",
+    "opcoes",
+    "manual",
+    "automatico",
+    "sugestao",
+}
+CAMPOS_MANUAL = {"por", "em", "motivo"}
+
+
+def conferir_edicao(e: dict[str, Any]) -> dict[str, Any]:
+    _conferir(e, CAMPOS_EDICAO, "edição")
+    for c in e["campos"]:
+        _conferir(c, CAMPOS_DO_CAMPO, "campo de edição")
+        if c.get("manual"):
+            _conferir(c["manual"], CAMPOS_MANUAL, "correção manual")
+    return e

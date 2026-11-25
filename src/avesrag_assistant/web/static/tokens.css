@@ -119,10 +119,10 @@ main { flex: 1; width: 100%; max-width: 1180px; margin: 0 auto; padding: 32px 5%
 form.campos { display: flex; flex-direction: column; gap: 20px; }
 .campo { display: flex; flex-direction: column; gap: 8px; }
 .campo label { font-weight: 500; font-size: 15px; }
-textarea, input[type="text"] { font: inherit; font-size: 17px; line-height: 1.5; color: var(--texto);
+textarea, input[type="text"], input[type="url"] { font: inherit; font-size: 17px; line-height: 1.5; color: var(--texto);
   background: var(--papel); border: 1px solid var(--campo); border-radius: 12px; padding: 14px 16px; width: 100%; }
 textarea { resize: vertical; }
-input[type="text"] { height: 48px; padding: 0 14px; font-size: 16px; }
+input[type="text"], input[type="url"] { height: 48px; padding: 0 14px; font-size: 16px; }
 .exemplos { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .exemplos span { font-size: 14px; color: var(--texto-2); }
 .contador { font-size: 13px; color: var(--texto-2); text-align: right; }
@@ -271,6 +271,37 @@ dl.lista dd { margin: 0; font-size: 15px; }
 .cartao-especie .nome-comum { font: 700 18px/1.2 var(--titulo); }
 .cartao-especie .cient { font-style: italic; font-size: 14px; color: var(--texto-2); }
 .cartao-especie .familia { font-size: 13px; color: var(--texto-2); margin-top: 4px; }
+
+/* curadoria da ficha */
+.curadoria { background: var(--papel); border: 1px dashed var(--terra); border-radius: 14px; padding: 16px 18px;
+  display: flex; flex-direction: column; gap: 14px; }
+.curadoria-topo { display: flex; flex-wrap: wrap; gap: 10px 20px; justify-content: space-between; align-items: center; }
+.campos-curadoria { display: flex; flex-direction: column; }
+.linha-campo { padding: 12px 0; border-top: 1px solid var(--linha); display: flex; flex-direction: column; gap: 12px; }
+.linha-topo { display: flex; gap: 16px; justify-content: space-between; align-items: flex-start; }
+.valor-campo { font-size: 15px; margin-top: 2px; overflow-wrap: anywhere; }
+.selo-manual { margin-left: 8px; background: var(--terra); color: #fff; font-size: 12px; font-weight: 700;
+  padding: 2px 8px; border-radius: 999px; }
+.botao-mini { height: 40px; padding: 0 16px; flex: none; }
+.editor { background: var(--papel-2); border: 1px solid var(--linha); border-radius: 12px; padding: 16px;
+  display: flex; flex-direction: column; gap: 14px; }
+.editor .pares { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+select { font: inherit; font-size: 16px; height: 48px; padding: 0 12px; border-radius: 12px;
+  border: 1px solid var(--campo); background: var(--papel); color: var(--texto); width: 100%; }
+input[type="number"] { font: inherit; font-size: 16px; height: 48px; padding: 0 14px; border-radius: 12px;
+  border: 1px solid var(--campo); background: var(--papel); width: 100%; }
+.descricao { white-space: pre-wrap; font-size: 16px; line-height: 1.6; max-width: 70ch; }
+
+.editor-fotos { display: flex; flex-direction: column; gap: 14px; }
+.fotos-escolhidas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.fotos-escolhidas li, .foto-disponivel { display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  background: var(--papel); border: 1px solid var(--linha); border-radius: 10px; padding: 8px 10px; }
+.mini-foto { flex: none; width: 72px; height: 72px; border-radius: 8px; overflow: hidden; background: var(--areia-2); }
+.mini-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.legenda-foto { flex: 1 1 200px; font-size: 14px; overflow-wrap: anywhere; }
+.acoes-foto { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.fotos-disponiveis { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.foto-nova { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--linha); padding-top: 14px; }
 
 /* páginas fixas */
 .texto-longo { max-width: 70ch; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }

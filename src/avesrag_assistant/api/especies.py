@@ -10,13 +10,19 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from avesrag_builder.db.collections import SPECIES
+from avesrag_builder.db.collections import SPECIES, SPECIES_RETRIEVAL_DOCS
 from pymongo.database import Database
 
 from avesrag_assistant.api.exibicao import exibir as _texto
 from avesrag_assistant.api.exibicao import exibir_iucn, exibir_massa
 from avesrag_assistant.api.guardrails import conferir_catalogo, conferir_especie
 
+# Os textos da ficha: (chave, título, campo manual na ficha, domínio do documento de busca).
+TEXTOS = (
+    ("descricao", "Descrição", "descricao", "aparencia"),
+    ("comportamento", "Comportamento e ambiente", "comportamento", "comportamento_ambiente"),
+    ("voz", "Voz e hábitos", "voz", "voz_habitos"),
+)
 RODAPE_ILUSTRACAO = "Ilustração gerada por IA · Bird Album · CC BY 4.0"
 
 
@@ -89,7 +95,32 @@ def _ficha(doc: dict[str, Any]) -> list[dict[str, str]]:
     return itens
 
 
-def ficha_publica(db: Database, species_id: str) -> dict[str, Any] | None:
+def textos_gerados(db: Database, species_id: str) -> dict[str, str]:
+    """domínio → o texto que foi para o embedding (gerado pelo LLM a partir do WikiAves)."""
+    docs = db[SPECIES_RETRIEVAL_DOCS].find(
+        {"species_id": {"$in": [species_id]}}, {"_id": 0, "dominio": 1, "texto": 1}
+    )
+    return {d["dominio"]: d["texto"] for d in docs if d.get("texto")}
+
+
+def _textos(doc: dict[str, Any], gerados: Mapping[str, str]) -> list[dict[str, str]]:
+    """O texto escrito na curadoria vence o gerado; cada um diz a sua origem."""
+    saida = []
+    for chave, titulo, campo, dominio in TEXTOS:
+        if doc.get(campo):
+            saida.append(
+                {"chave": chave, "titulo": titulo, "texto": doc[campo], "origem": "manual"}
+            )
+        elif gerados.get(dominio):
+            saida.append(
+                {"chave": chave, "titulo": titulo, "texto": gerados[dominio], "origem": "ia"}
+            )
+    return saida
+
+
+def ficha_publica(
+    db: Database, species_id: str, exibir_gerados: bool = True
+) -> dict[str, Any] | None:
     doc = db[SPECIES].find_one(
         {"species_id": species_id},
         {
@@ -101,6 +132,9 @@ def ficha_publica(db: Database, species_id: str) -> dict[str, Any] | None:
             "iucn": 1,
             "atributos": 1,
             "perfil": 1,
+            "descricao": 1,
+            "comportamento": 1,
+            "voz": 1,
             "ocorrencia.biomas": 1,
             "midia": 1,
         },
@@ -128,6 +162,7 @@ def ficha_publica(db: Database, species_id: str) -> dict[str, Any] | None:
             if ilustracao
             else None
         ),
+        "textos": _textos(doc, textos_gerados(db, species_id) if exibir_gerados else {}),
         "como_reconhecer": _como_reconhecer(doc.get("atributos") or {}),
         "ficha": _ficha(doc),
         "url_wikiaves": midia.get("url_wikiaves"),

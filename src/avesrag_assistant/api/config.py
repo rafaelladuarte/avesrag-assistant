@@ -43,6 +43,8 @@ class Textos(_Base):
     erro: str
     sessao_nao_encontrada: str
     especie_nao_encontrada: str
+    sem_permissao: str
+    correcao_falhou: str
 
 
 class ConfigApi(_Base):
@@ -50,6 +52,7 @@ class ConfigApi(_Base):
     historico: list[str] = Field(default_factory=list)
     limites: Limites
     sessoes: ConfigSessoes
+    exibir_textos_gerados: bool = True
     tempo_limite_segundos: float = Field(gt=0)
     textos: Textos
 

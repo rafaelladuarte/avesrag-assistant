@@ -294,8 +294,10 @@ def test_convite_criar_listar_e_revogar(monkeypatch, tmp_path):
     assert token not in (tmp_path / "convites.json").read_text()  # só o hash fica no arquivo
     assert runner.invoke(app, ["convite", "criar", "ana"]).exit_code == 2  # nome repetido
 
+    assert runner.invoke(app, ["convite", "criar", "rafa", "--curadoria"]).exit_code == 0
     listado = runner.invoke(app, ["convite", "listar"])
-    assert "ana" in listado.output and "ativo" in listado.output
+    assert "ana\tconvidado" in listado.output and "ativo" in listado.output
+    assert "rafa\tcuradoria" in listado.output
     assert runner.invoke(app, ["convite", "revogar", "ana"]).exit_code == 0
     assert "revogado" in runner.invoke(app, ["convite", "listar"]).output
     assert runner.invoke(app, ["convite", "revogar", "ninguem"]).exit_code == 2

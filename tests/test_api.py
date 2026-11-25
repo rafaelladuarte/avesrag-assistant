@@ -1,5 +1,6 @@
 """API do beta fechado com LLM, banco e moderação falsos (plano_assistant4.md §7)."""
 
+import copy
 import threading
 
 import pytest
@@ -8,6 +9,7 @@ from fastapi.testclient import TestClient
 from avesrag_assistant.api.app import COOKIE, criar_app
 from avesrag_assistant.api.config import ConfigInvalida, carregar_api
 from avesrag_assistant.api.convites import ConviteInvalido, Convites
+from avesrag_assistant.api.curadoria import Curadoria
 from avesrag_assistant.api.guardrails import (
     EntradaRecusada,
     SaidaInvalida,
@@ -23,6 +25,7 @@ from avesrag_assistant.conversa.config import carregar_conversa
 from avesrag_assistant.conversa.orquestrador import Servicos
 from avesrag_assistant.settings import ROOT_DIR
 from avesrag_assistant.uso import Contador
+from test_curadoria import ColecaoOverridesFalsa, candidatas_falsas, refundir_falso
 from test_orquestrador import ExtratorFalso, RedatorFalso, SugestorFalso, _banco
 
 FOTO = {
@@ -79,6 +82,7 @@ def _config(tmp_path, **limites):
 def montar(tmp_path, vocab_regras):
     def _montar(moderador=None, relogio=None, extrator=None, uso=None, familias=None, **limites):
         banco = _banco()
+        banco.colecoes["species_overrides"] = ColecaoOverridesFalsa()
         for doc in banco["species"].docs:
             doc["_meta"] = {"dq_status": "apta"}
             doc["taxonomia"] = {"familia": "Tyrannidae", "ordem": "Passeriformes"}
@@ -92,6 +96,7 @@ def montar(tmp_path, vocab_regras):
         banco["species"].docs[0]["iucn"] = "LC"
         banco["species"].docs[1]["taxonomia"] = {"familia": "Thraupidae"}
         banco["species"].docs[0]["texto_wikiaves"] = "NUNCA DEVE SAIR"
+        originais = {d["species_id"]: copy.deepcopy(d) for d in banco["species"].docs}
         contador = Contador()
         servicos = Servicos(
             db=banco,
@@ -123,6 +128,13 @@ def montar(tmp_path, vocab_regras):
             dia=lambda: "2026-11-25",
             uso_diario=uso,
             familias=familias,
+            curadoria=Curadoria(
+                banco,
+                vocab_regras[0],
+                vocab_regras[1],
+                refundir=refundir_falso(banco, originais, vocab_regras[0]),
+                candidatas=candidatas_falsas,
+            ),
         )
         cliente = TestClient(app, base_url="http://testserver", client=("127.0.0.1", 50000))
         return Montagem(
@@ -132,8 +144,8 @@ def montar(tmp_path, vocab_regras):
     return _montar
 
 
-def _entrar(m, nome="ana"):
-    token = m.convites.criar(nome)
+def _entrar(m, nome="ana", papel="convidado"):
+    token = m.convites.criar(nome, papel)
     r = m.cliente.get(f"/entrar?c={token}", follow_redirects=False)
     assert r.status_code == 303 and COOKIE in r.cookies
     return token
@@ -593,3 +605,178 @@ def test_familias_yaml_carrega_e_valida(tmp_path):
         carregar_familias(tmp_path / "f.yaml")
     with pytest.raises(ConfigInvalida):
         carregar_familias(tmp_path / "nao-existe.yaml")
+
+
+# -- curadoria ------------------------------------------------------------------
+
+
+def _curador(m):
+    return _entrar(m, "rafa", "curadoria")
+
+
+def test_eu_diz_o_papel(montar):
+    m = montar()
+    assert m.cliente.get("/api/eu").status_code == 401
+    _entrar(m, "ana")
+    assert m.cliente.get("/api/eu").json() == {"papel": "convidado"}
+    m.cliente.cookies.clear()
+    _curador(m)
+    assert m.cliente.get("/api/eu").json() == {"papel": "curadoria"}
+
+
+def test_convidado_nao_corrige_nem_ve_a_edicao(montar):
+    m = montar()
+    _entrar(m, "ana")
+    corpo = {"valor": ["azul"]}
+    assert m.cliente.get("/api/especies/sp_a/edicao").status_code == 403
+    assert m.cliente.put("/api/especies/sp_a/campos/atributos.cores", json=corpo).status_code == 403
+    assert m.cliente.delete("/api/especies/sp_a/campos/atributos.cores").status_code == 403
+    assert m.banco["species_overrides"].docs == {}
+    r = m.cliente.get("/api/especies/sp_a/edicao")
+    assert "curadoria" in r.json()["erro"]
+
+
+def test_sem_convite_a_edicao_e_401(montar):
+    m = montar()
+    assert m.cliente.get("/api/especies/sp_a/edicao").status_code == 401
+    assert (
+        m.cliente.put("/api/especies/sp_a/campos/descricao", json={"valor": "x"}).status_code == 401
+    )
+
+
+def test_curador_corrige_reverte_e_a_ficha_publica_acompanha(montar):
+    m = montar()
+    _curador(m)
+    edicao = m.cliente.get("/api/especies/sp_a/edicao").json()
+    assert "atributos.cores" in [c["caminho"] for c in edicao["campos"]]
+
+    r = m.cliente.put(
+        "/api/especies/sp_a/campos/atributos.cores", json={"valor": ["azul"], "motivo": "foto"}
+    )
+    assert r.status_code == 200
+    cores = next(c for c in r.json()["campos"] if c["caminho"] == "atributos.cores")
+    assert cores["valor"] == ["azul"] and cores["manual"]["por"] == "rafa"
+    ficha = m.cliente.get("/api/especies/sp_a").json()
+    assert {"rotulo": "Cores", "valor": "azul"} in ficha["como_reconhecer"]
+
+    r = m.cliente.put("/api/especies/sp_a/campos/descricao", json={"valor": "Ave comum em fios."})
+    assert r.status_code == 200
+    textos = m.cliente.get("/api/especies/sp_a").json()["textos"]
+    assert textos == [
+        {
+            "chave": "descricao",
+            "titulo": "Descrição",
+            "texto": "Ave comum em fios.",
+            "origem": "manual",
+        }
+    ]
+
+    r = m.cliente.delete("/api/especies/sp_a/campos/atributos.cores")
+    assert r.status_code == 200
+    ficha = m.cliente.get("/api/especies/sp_a").json()
+    assert {"rotulo": "Cores", "valor": "amarelo"} in ficha["como_reconhecer"]
+    historico = m.banco["species_overrides"].docs["sp_a"]["historico"]
+    assert [(h["acao"], h["por"]) for h in historico] == [
+        ("definiu", "rafa"),
+        ("definiu", "rafa"),
+        ("reverteu", "rafa"),
+    ]
+
+
+def test_corpo_sem_valor_nao_remove_o_campo(montar):
+    m = montar()
+    _curador(m)
+    r = m.cliente.put("/api/especies/sp_a/campos/atributos.cores", json={"motivo": "x"})
+    assert r.status_code == 400
+    r = m.cliente.put("/api/especies/sp_a/campos/atributos.cores", json={"valor": None})
+    assert r.status_code == 200  # só o null explícito remove
+    assert m.banco["species"].docs[0]["atributos"].get("cores") is None
+
+
+@pytest.mark.parametrize(
+    ("caminho", "valor"),
+    [("atributos.cores", ["fucsia"]), ("nomes.pt", ["x"]), ("perfil.massa_g", -1)],
+)
+def test_valor_invalido_e_400_com_o_motivo(montar, caminho, valor):
+    m = montar()
+    _curador(m)
+    r = m.cliente.put(f"/api/especies/sp_a/campos/{caminho}", json={"valor": valor})
+    assert r.status_code == 400 and r.json()["erro"]
+    assert m.banco["species_overrides"].docs == {}
+
+
+def test_edicao_de_especie_que_nao_existe(montar):
+    m = montar()
+    _curador(m)
+    assert m.cliente.get("/api/especies/sp_zzz/edicao").status_code == 404
+    assert (
+        m.cliente.put("/api/especies/sp_zzz/campos/descricao", json={"valor": "x"}).status_code
+        == 400
+    )
+
+
+def test_convite_curadoria_e_papel_invalido(tmp_path):
+    convites = Convites(tmp_path / "c.json")
+    token = convites.criar("rafa", "curadoria")
+    assert convites.validar(token) == "rafa" and convites.papel_de("rafa") == "curadoria"
+    assert convites.papel_de("ninguem") == "convidado"
+    with pytest.raises(ConviteInvalido):
+        convites.criar("x", "admin")
+
+
+# -- textos gerados e fotos -----------------------------------------------------
+
+
+def _com_textos_gerados(m):
+    for dominio, texto in (
+        ("aparencia", "Mede 20 cm."),
+        ("voz_habitos", "O canto lembra bem-te-vi."),
+    ):
+        m.banco["species_retrieval_docs"].docs.append(
+            {"species_id": "sp_a", "dominio": dominio, "nota": 0.1, "texto": texto}
+        )
+
+
+def test_a_ficha_mostra_os_textos_gerados_e_a_chave_os_desliga(montar):
+    m = montar()
+    _com_textos_gerados(m)
+    _entrar(m)
+    textos = m.cliente.get("/api/especies/sp_a").json()["textos"]
+    assert [(x["chave"], x["origem"]) for x in textos] == [("descricao", "ia"), ("voz", "ia")]
+    assert textos[0]["texto"] == "Mede 20 cm."
+
+    desligado = montar(exibir_textos_gerados="false")
+    _com_textos_gerados(desligado)
+    _entrar(desligado, "bia")
+    assert desligado.cliente.get("/api/especies/sp_a").json()["textos"] == []
+
+
+def test_curador_escolhe_as_fotos_e_o_catalogo_acompanha(montar):
+    m = montar()
+    _curador(m)
+    assert m.cliente.get("/api/especies").json()[0]["foto"]["link"] == FOTO["link"]
+    edicao = m.cliente.get("/api/especies/sp_a/edicao").json()
+    fotos = next(c for c in edicao["campos"] if c["caminho"] == "midia.fotos")
+    assert len(fotos["opcoes"]["candidatas"]) == 4
+
+    pedido = {"valor": [{"link": "https://www.inaturalist.org/photos/3"}], "motivo": "mais nítida"}
+    r = m.cliente.put("/api/especies/sp_a/campos/midia.fotos", json=pedido)
+    assert r.status_code == 200
+    ficha = m.cliente.get("/api/especies/sp_a").json()
+    assert ficha["foto"]["link"].endswith("/3") and len(ficha["fotos"]) == 1
+    assert (
+        m.cliente.get("/api/especies").json()[0]["foto"]["link"].endswith("/3")
+    )  # catálogo refeito
+
+    r = m.cliente.put("/api/especies/sp_a/campos/midia.fotos", json={"valor": None})
+    assert r.status_code == 400 and "não fica sem foto" in r.json()["erro"]
+    r = m.cliente.delete("/api/especies/sp_a/campos/midia.fotos")
+    assert r.status_code == 200
+    assert m.cliente.get("/api/especies/sp_a").json()["foto"]["link"] == FOTO["link"]
+
+
+def test_convidado_nao_escolhe_fotos(montar):
+    m = montar()
+    _entrar(m, "ana")
+    pedido = {"valor": [{"link": "https://www.inaturalist.org/photos/3"}]}
+    assert m.cliente.put("/api/especies/sp_a/campos/midia.fotos", json=pedido).status_code == 403

@@ -519,6 +519,7 @@ def servir(
     from avesrag_assistant.api.app import criar_app
     from avesrag_assistant.api.config import ConfigInvalida, carregar_api, carregar_familias
     from avesrag_assistant.api.convites import Convites
+    from avesrag_assistant.api.curadoria import Curadoria
     from avesrag_assistant.api.guardrails import ModeradorOpenAI
     from avesrag_assistant.api.limites import Limitador
     from avesrag_assistant.api.sessoes import RepositorioArquivo, RepositorioMongo
@@ -537,6 +538,8 @@ def servir(
             repositorio.garantir_indices()
         else:
             repositorio = RepositorioArquivo(settings.REPORTS_DIR / "sessoes")
+        curadoria = Curadoria(servicos.db, voc, regras, config_dir=settings.builder_config_dir)
+        curadoria.preparar()
         convites = Convites(settings.CONVITES_PATH)
         if not convites.listar():
             falhar("Não há convites. Crie um: avesrag-assistant convite criar <nome>", 2)
@@ -549,6 +552,7 @@ def servir(
             ModeradorOpenAI(settings.OPENAI_API_KEY.get_secret_value()),
             uso_diario=UsoDiario(settings.REPORTS_DIR / "uso.tsv"),
             familias=familias,
+            curadoria=curadoria,
         )
     except (
         VocabularioInvalido,
@@ -571,12 +575,17 @@ def servir(
 @convite_app.command("criar")
 def convite_criar(
     nome: str = typer.Argument(..., help="Quem vai usar (aparece na sessão)."),
+    curadoria: bool = typer.Option(
+        False, "--curadoria", help="Papel de curadoria: pode corrigir as fichas pela página."
+    ),
 ) -> None:
     """Cria um convite e mostra o link; o token não fica guardado."""
     from avesrag_assistant.api.convites import ConviteInvalido, Convites
 
     try:
-        token = Convites(get_settings().CONVITES_PATH).criar(nome)
+        token = Convites(get_settings().CONVITES_PATH).criar(
+            nome, "curadoria" if curadoria else "convidado"
+        )
     except ConviteInvalido as e:
         falhar(str(e), 2)
     typer.echo(f"convite de {nome}: guarde agora, o token não aparece de novo")
@@ -591,9 +600,11 @@ def convite_listar() -> None:
     """Os convites criados e se estão ativos."""
     from avesrag_assistant.api.convites import Convites
 
-    convites = Convites(get_settings().CONVITES_PATH).listar()
+    arquivo = Convites(get_settings().CONVITES_PATH)
+    convites = arquivo.listar()
     for nome, criado, revogado in convites:
-        typer.echo(f"{nome}\t{criado}\t{'revogado' if revogado else 'ativo'}")
+        estado = "revogado" if revogado else "ativo"
+        typer.echo(f"{nome}\t{arquivo.papel_de(nome)}\t{criado}\t{estado}")
     if not convites:
         typer.echo("nenhum convite")
 

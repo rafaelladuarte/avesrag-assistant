@@ -16,6 +16,8 @@ import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 
+PAPEIS = ("convidado", "curadoria")
+
 
 class ConviteInvalido(ValueError):
     """Nome repetido, nome vazio ou convite que não existe."""
@@ -46,8 +48,12 @@ class Convites:
             Path(tmp).unlink(missing_ok=True)
             raise
 
-    def criar(self, nome: str) -> str:
-        """Um convite novo para `nome`; devolve o token, que não fica guardado."""
+    def criar(self, nome: str, papel: str = "convidado") -> str:
+        """Um convite novo para `nome`; devolve o token, que não fica guardado.
+
+        `curadoria` pode corrigir as fichas; `convidado` só usa a página."""
+        if papel not in PAPEIS:
+            raise ConviteInvalido(f"papel inválido: {papel!r} (use {list(PAPEIS)})")
         nome = nome.strip()
         if not nome:
             raise ConviteInvalido("o nome do convite não pode ser vazio")
@@ -58,6 +64,7 @@ class Convites:
         dados[nome] = {
             "hash": _hash(token),
             "criado_em": datetime.now(UTC).isoformat(timespec="seconds"),
+            "papel": papel,
             "revogado": False,
         }
         self._gravar(dados)
@@ -73,6 +80,10 @@ class Convites:
             if hmac.compare_digest(d["hash"], procurado) and not d.get("revogado"):
                 achado = nome
         return achado
+
+    def papel_de(self, nome: str) -> str:
+        """O papel de um convite (os anteriores à curadoria são `convidado`)."""
+        return self._ler().get(nome, {}).get("papel", "convidado")
 
     def listar(self) -> list[tuple[str, str, bool]]:
         return [(n, d["criado_em"], d.get("revogado", False)) for n, d in self._ler().items()]

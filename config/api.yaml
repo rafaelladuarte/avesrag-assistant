@@ -15,6 +15,10 @@ limites:
 sessoes:
   ttl_dias: 14
 
+# Mostra, na ficha, os textos que o LLM gerou a partir do WikiAves (os mesmos que viram embedding).
+# São resumos de texto de terceiros: desligue antes de abrir ao público, até resolver a P5.
+exibir_textos_gerados: true
+
 tempo_limite_segundos: 60       # uma mensagem; passando disso a pessoa vê o erro e tenta de novo
 
 textos:
@@ -31,3 +35,5 @@ textos:
   erro: "Tive um problema agora. Tente de novo em instantes."
   sessao_nao_encontrada: "Não encontrei essa conversa. Comece uma nova."
   especie_nao_encontrada: "Não encontrei essa espécie."
+  sem_permissao: "Só quem faz a curadoria pode corrigir as fichas."
+  correcao_falhou: "Não consegui salvar a correção agora. Tente de novo."

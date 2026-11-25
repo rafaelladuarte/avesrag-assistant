@@ -21,11 +21,12 @@ from fastapi import Depends, FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from avesrag_assistant.api import especies
 from avesrag_assistant.api.config import ConfigApi
 from avesrag_assistant.api.convites import Convites
+from avesrag_assistant.api.curadoria import Curadoria, ErroCuradoria
 from avesrag_assistant.api.guardrails import EntradaRecusada, Moderador, limpar_entrada
 from avesrag_assistant.api.limites import Limitador
 from avesrag_assistant.api.sessoes import RepositorioSessoes
@@ -53,6 +54,11 @@ class CorpoMensagem(BaseModel):
     texto: Any = None
 
 
+class CorpoCorrecao(BaseModel):
+    valor: Any = Field(...)  # obrigatório: null remove o campo da ficha
+    motivo: str | None = None
+
+
 class CorpoVoto(BaseModel):
     voto: str
 
@@ -78,6 +84,7 @@ def criar_app(
     dia: Callable[[], str] | None = None,
     uso_diario: UsoDiario | None = None,
     familias: Mapping[str, str] | None = None,
+    curadoria: Curadoria | None = None,
 ) -> FastAPI:
     app = FastAPI(title="AvesRAG", docs_url=None, redoc_url=None, openapi_url=None)
     textos = config.textos
@@ -124,6 +131,13 @@ def criar_app(
         if nome is None:
             raise ErroApi(401, textos.sem_convite)
         return nome
+
+    def curador_atual(convite: str = Depends(convite_atual)) -> str:
+        if curadoria is None or convites.papel_de(convite) != "curadoria":
+            raise ErroApi(
+                403, textos.sem_permissao
+            )  # o servidor confere: esconder o botão não basta
+        return convite
 
     def _sessao_do_convite(sessao: str, convite: str) -> estados.EstadoConversa:
         try:
@@ -288,10 +302,53 @@ def criar_app(
 
     @app.get("/api/especies/{species_id}")
     def especie(species_id: str, _: str = Depends(convite_atual)) -> dict[str, Any]:
-        ficha = especies.ficha_publica(servicos.db, species_id)
+        ficha = especies.ficha_publica(servicos.db, species_id, config.exibir_textos_gerados)
         if ficha is None:
             raise ErroApi(404, textos.especie_nao_encontrada)
         return ficha
+
+    @app.get("/api/eu")
+    def quem_sou(convite: str = Depends(convite_atual)) -> dict[str, str]:
+        return {"papel": convites.papel_de(convite)}
+
+    @app.get("/api/especies/{species_id}/edicao")
+    def campos_da_ficha(species_id: str, _: str = Depends(curador_atual)) -> dict[str, Any]:
+        try:
+            return curadoria.campos(species_id)  # type: ignore[union-attr]
+        except ErroCuradoria as e:
+            raise ErroApi(404, str(e)) from None
+
+    @app.put("/api/especies/{species_id}/campos/{caminho}")
+    def corrigir_campo(
+        species_id: str, caminho: str, corpo: CorpoCorrecao, quem: str = Depends(curador_atual)
+    ) -> dict[str, Any]:
+        with trava_da(f"especie:{species_id}"):
+            try:
+                resultado = curadoria.definir(  # type: ignore[union-attr]
+                    species_id, caminho, corpo.valor, quem, corpo.motivo
+                )
+                catalogo_pronto.clear()  # a foto principal pode ter mudado
+                return resultado
+            except ErroCuradoria as e:
+                raise ErroApi(400, str(e)) from None
+            except Exception:
+                log.exception("falha ao corrigir %s de %s", caminho, species_id)
+                raise ErroApi(500, textos.correcao_falhou) from None
+
+    @app.delete("/api/especies/{species_id}/campos/{caminho}")
+    def reverter_campo(
+        species_id: str, caminho: str, quem: str = Depends(curador_atual)
+    ) -> dict[str, Any]:
+        with trava_da(f"especie:{species_id}"):
+            try:
+                resultado = curadoria.reverter(species_id, caminho, quem)  # type: ignore[union-attr]
+                catalogo_pronto.clear()
+                return resultado
+            except ErroCuradoria as e:
+                raise ErroApi(400, str(e)) from None
+            except Exception:
+                log.exception("falha ao reverter %s de %s", caminho, species_id)
+                raise ErroApi(500, textos.correcao_falhou) from None
 
     app.mount("/static", StaticFiles(directory=WEB / "static"), name="static")
     return app
