@@ -279,3 +279,33 @@ def test_conversar_sessao_inexistente(ambiente, monkeypatch, tmp_path):
     resultado = runner.invoke(app, ["conversar", "--sessao", "naoexiste"])
     assert resultado.exit_code == 2
     assert "não encontrada" in resultado.output
+
+
+# ---------------------------------------------------------------------------
+# convite e servir (plano_assistant4.md)
+# ---------------------------------------------------------------------------
+
+
+def test_convite_criar_listar_e_revogar(monkeypatch, tmp_path):
+    monkeypatch.setenv("CONVITES_PATH", str(tmp_path / "convites.json"))
+    criado = runner.invoke(app, ["convite", "criar", "ana"])
+    assert criado.exit_code == 0 and "/entrar?c=" in criado.output
+    token = criado.output.split("/entrar?c=")[1].split()[0]
+    assert token not in (tmp_path / "convites.json").read_text()  # só o hash fica no arquivo
+    assert runner.invoke(app, ["convite", "criar", "ana"]).exit_code == 2  # nome repetido
+
+    listado = runner.invoke(app, ["convite", "listar"])
+    assert "ana" in listado.output and "ativo" in listado.output
+    assert runner.invoke(app, ["convite", "revogar", "ana"]).exit_code == 0
+    assert "revogado" in runner.invoke(app, ["convite", "listar"]).output
+    assert runner.invoke(app, ["convite", "revogar", "ninguem"]).exit_code == 2
+
+
+def test_convite_listar_sem_convites(monkeypatch, tmp_path):
+    monkeypatch.setenv("CONVITES_PATH", str(tmp_path / "nenhum.json"))
+    assert "nenhum convite" in runner.invoke(app, ["convite", "listar"]).output
+
+
+def test_servir_recusa_sessoes_desconhecidas():
+    resultado = runner.invoke(app, ["servir", "--sessoes", "redis"])
+    assert resultado.exit_code == 2

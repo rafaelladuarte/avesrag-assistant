@@ -9,13 +9,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 from pathlib import Path
 
 from avesrag_builder.llm.base import Embedder
 
 from avesrag_assistant.settings import Settings
+from avesrag_assistant.uso import CONTADOR
 
 ARQUIVO_PADRAO = "cache_embeddings.json"
+_TRAVA = threading.Lock()
 
 
 class CacheEmbeddings:
@@ -31,12 +34,13 @@ class CacheEmbeddings:
         return f"{self.modelo}:{hashlib.sha256(texto.strip().encode('utf-8')).hexdigest()}"
 
     def _carregar(self) -> dict[str, list[float]]:
-        if self._dados is None:
-            if self.path.exists():
-                self._dados = json.loads(self.path.read_text(encoding="utf-8"))
-            else:
-                self._dados = {}
-        return self._dados
+        with _TRAVA:
+            if self._dados is None:
+                if self.path.exists():
+                    self._dados = json.loads(self.path.read_text(encoding="utf-8"))
+                else:
+                    self._dados = {}
+            return self._dados
 
     def _gravar(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -53,9 +57,11 @@ class CacheEmbeddings:
             texto_de = {c: t.strip() for c, t in zip(chaves, textos, strict=True)}
             resposta = self.embedder.embeddings([texto_de[c] for c in faltando], self.modelo)
             self.chamadas += 1
+            CONTADOR.mais_embedding()
             self.tokens += resposta.tokens
-            dados.update(zip(faltando, resposta.vetores, strict=True))
-            self._gravar()
+            with _TRAVA:
+                dados.update(zip(faltando, resposta.vetores, strict=True))
+                self._gravar()
         return [dados[c] for c in chaves]
 
     def vetor(self, texto: str) -> list[float]:

@@ -8,7 +8,8 @@ perguntas medidas com um usuário simulado que responde pela ficha) e
 `conversar` (a conversa inteira no terminal, com o estado em JSON por sessão),
 `moderar` (a mesma conversa numa página local, para as sessões moderadas) e
 `sessoes` (o relatório dessas sessões) e `sortear-aves` (as aves e as fotos
-dessas sessões).
+dessas sessões). Assistant 4: `servir` (a API e a página do beta fechado, só em
+127.0.0.1) e `convite` (criar, listar e revogar os convites).
 """
 
 import csv
@@ -58,6 +59,13 @@ AJUDA_MODOS_AVALIACAO = f"Modos a avaliar (pode repetir; padrão: {', '.join(MOD
 AJUDA_SUGESTOES = (
     "Pede ao LLM (c04_candidatas) espécies para a descrição; nos modos que reordenam, "
     "elas entram como candidatas com o bônus de ranking.sugestoes."
+)
+
+convite_app = typer.Typer(
+    help="Convites do beta fechado (o token aparece uma vez; o arquivo guarda só o hash).",
+    no_args_is_help=True,
+    add_completion=False,
+    rich_markup_mode=None,
 )
 
 app = typer.Typer(
@@ -491,6 +499,116 @@ def moderar(
     finally:
         servidor.server_close()
     typer.echo(f"sessões salvas em {settings.REPORTS_DIR / 'sessoes'}")
+
+
+@app.command()
+def servir(
+    porta: int = typer.Option(8000, "--porta", min=1, max=65535, help="Porta local."),
+    host: str = typer.Option(
+        "127.0.0.1", "--host", help="Endereço; o padrão só aceita conexões desta máquina."
+    ),
+    sessoes_em: str = typer.Option(
+        "mongo",
+        "--sessoes",
+        help="Onde guardar as sessões: mongo (collection conversations) ou arquivo.",
+    ),
+) -> None:
+    """API e página do beta fechado (por convite), para expor por um túnel com HTTPS."""
+    import uvicorn
+
+    from avesrag_assistant.api.app import criar_app
+    from avesrag_assistant.api.config import ConfigInvalida, carregar_api
+    from avesrag_assistant.api.convites import Convites
+    from avesrag_assistant.api.guardrails import ModeradorOpenAI
+    from avesrag_assistant.api.limites import Limitador
+    from avesrag_assistant.api.sessoes import RepositorioArquivo, RepositorioMongo
+    from avesrag_assistant.api.uso_diario import UsoDiario
+
+    if sessoes_em not in ("mongo", "arquivo"):
+        falhar("--sessoes deve ser mongo ou arquivo", 2)
+    settings = get_settings()
+    try:
+        voc, regras = vocabulario.carregar()
+        config = carregar_api(settings.CONFIG_DIR / "api.yaml")
+        servicos = _servicos(settings, voc, regras)
+        if sessoes_em == "mongo":
+            repositorio = RepositorioMongo(servicos.db, config.sessoes.ttl_dias)
+            repositorio.garantir_indices()
+        else:
+            repositorio = RepositorioArquivo(settings.REPORTS_DIR / "sessoes")
+        convites = Convites(settings.CONVITES_PATH)
+        if not convites.listar():
+            falhar("Não há convites. Crie um: avesrag-assistant convite criar <nome>", 2)
+        app_web = criar_app(
+            servicos,
+            config,
+            repositorio,
+            convites,
+            Limitador(config.limites.requisicoes_por_ip_por_minuto),
+            ModeradorOpenAI(settings.OPENAI_API_KEY.get_secret_value()),
+            uso_diario=UsoDiario(settings.REPORTS_DIR / "uso.tsv"),
+        )
+    except (
+        VocabularioInvalido,
+        RankingInvalido,
+        ConversaInvalida,
+        PromptInvalido,
+        ConfigInvalida,
+    ) as e:
+        falhar(str(e), 2)
+    except (FileNotFoundError, MissingSettingError, OSError) as e:
+        falhar(str(e), 2)
+    except PyMongoError as e:
+        falhar(f"falha no MongoDB ({settings.MONGODB_URI}): {e}")
+    typer.echo(f"beta em http://{host}:{porta}/ (sessões: {sessoes_em}; Ctrl+C para sair)")
+    uvicorn.run(
+        app_web, host=host, port=porta, log_level="warning", proxy_headers=False, access_log=False
+    )
+
+
+@convite_app.command("criar")
+def convite_criar(
+    nome: str = typer.Argument(..., help="Quem vai usar (aparece na sessão)."),
+) -> None:
+    """Cria um convite e mostra o link; o token não fica guardado."""
+    from avesrag_assistant.api.convites import ConviteInvalido, Convites
+
+    try:
+        token = Convites(get_settings().CONVITES_PATH).criar(nome)
+    except ConviteInvalido as e:
+        falhar(str(e), 2)
+    typer.echo(f"convite de {nome}: guarde agora, o token não aparece de novo")
+    typer.echo(f"  /entrar?c={token}")
+    typer.echo(
+        "  (junte ao endereço do túnel, ex.: https://exemplo.trycloudflare.com/entrar?c=...)"
+    )
+
+
+@convite_app.command("listar")
+def convite_listar() -> None:
+    """Os convites criados e se estão ativos."""
+    from avesrag_assistant.api.convites import Convites
+
+    convites = Convites(get_settings().CONVITES_PATH).listar()
+    for nome, criado, revogado in convites:
+        typer.echo(f"{nome}\t{criado}\t{'revogado' if revogado else 'ativo'}")
+    if not convites:
+        typer.echo("nenhum convite")
+
+
+@convite_app.command("revogar")
+def convite_revogar(nome: str = typer.Argument(..., help="O nome do convite.")) -> None:
+    """Revoga um convite: o link deixa de funcionar na próxima requisição."""
+    from avesrag_assistant.api.convites import ConviteInvalido, Convites
+
+    try:
+        Convites(get_settings().CONVITES_PATH).revogar(nome)
+    except ConviteInvalido as e:
+        falhar(str(e), 2)
+    typer.echo(f"convite de {nome} revogado")
+
+
+app.add_typer(convite_app, name="convite")
 
 
 @app.command(name="sessoes")

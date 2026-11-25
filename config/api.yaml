@@ -1,0 +1,32 @@
+# Limites e textos da API do beta fechado (plano_assistant4.md §4).
+# Mudou um valor: suba a versão e anote o motivo no histórico.
+versao: "1.0"
+historico:
+  - "1.0 (25/11/2026): valores iniciais do plano; ajustar com o uso do beta."
+
+limites:
+  caracteres_por_mensagem: 1000
+  mensagens_por_sessao: 30
+  sessoes_por_convite_por_dia: 10
+  mensagens_por_convite_por_dia: 100
+  requisicoes_por_ip_por_minuto: 20
+  chamadas_llm_por_dia: 1500   # todos os convites; o alerta no log sai aos 80%
+
+sessoes:
+  ttl_dias: 14
+
+tempo_limite_segundos: 60       # uma mensagem; passando disso a pessoa vê o erro e tenta de novo
+
+textos:
+  sem_convite: "Este beta é só por convite. Peça um link a quem organiza os testes."
+  limite_ip: "Muitas requisições em pouco tempo. Espere um minuto e tente de novo."
+  limite_sessao: "Esta conversa chegou ao limite de mensagens. Comece uma nova para identificar outra ave."
+  limite_sessoes_dia: "Você já abriu muitas conversas hoje. Volte amanhã."
+  limite_mensagens_dia: "Você chegou ao limite de mensagens de hoje. Volte amanhã."
+  limite_diario: "O beta atingiu o limite de uso de hoje. Volte amanhã."
+  mensagem_vazia: "Escreva alguma coisa para eu poder ajudar."
+  mensagem_grande: "A mensagem está grande demais. Resuma em até {limite} caracteres."
+  moderacao: "Não consigo ajudar com essa mensagem. Me conte como era a ave que você viu."
+  demorou: "Demorei demais para responder. Tente de novo."
+  erro: "Tive um problema agora. Tente de novo em instantes."
+  sessao_nao_encontrada: "Não encontrei essa conversa. Comece uma nova."

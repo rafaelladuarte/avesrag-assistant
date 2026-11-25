@@ -12,13 +12,18 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 from collections.abc import Callable
 from pathlib import Path
 from typing import TypeVar
 
 from avesrag_builder.llm.base import Fornecedor, Pedido
 
+from avesrag_assistant.uso import CONTADOR
+
 ARQUIVO_PADRAO = "cache_llm.json"
+# Uma trava para todas as instâncias: o extrator, o redator e o sugestor gravam o mesmo arquivo.
+_TRAVA = threading.Lock()
 TENTATIVAS = 2
 T = TypeVar("T")
 
@@ -46,14 +51,15 @@ class CacheLLM:
         return f"{prompt_id}:{versao}:{hashlib.sha256(conteudo.encode('utf-8')).hexdigest()}"
 
     def _carregar(self) -> dict[str, str]:
-        if self._dados is None:
-            if self.path.exists():
-                self._dados = json.loads(self.path.read_text(encoding="utf-8"))
-            else:
-                self._dados = {}
-        return self._dados
+        with _TRAVA:
+            if self._dados is None:
+                if self.path.exists():
+                    self._dados = json.loads(self.path.read_text(encoding="utf-8"))
+                else:
+                    self._dados = {}
+            return self._dados
 
-    def _gravar(self) -> None:
+    def _gravar(self) -> None:  # chamado com a _TRAVA
         self.path.parent.mkdir(parents=True, exist_ok=True)
         tmp = self.path.with_suffix(self.path.suffix + ".tmp")
         tmp.write_text(json.dumps(self._dados, ensure_ascii=False), encoding="utf-8")
@@ -69,6 +75,7 @@ class CacheLLM:
         for _ in range(TENTATIVAS):
             resposta = self.fornecedor.gerar(pedido)
             self.chamadas += 1
+            CONTADOR.mais_llm()
             self.tokens_entrada += resposta.tokens_entrada
             self.tokens_saida += resposta.tokens_saida
             if resposta.erro is not None or resposta.conteudo is None:
@@ -79,7 +86,8 @@ class CacheLLM:
             except ValueError as e:  # inclui ValidationError e JSONDecodeError
                 erros.append(str(e).splitlines()[0])
                 continue
-            dados[chave] = resposta.conteudo
-            self._gravar()
+            with _TRAVA:
+                dados[chave] = resposta.conteudo
+                self._gravar()
             return valor
         raise ErroLLM(f"{prompt_id}: sem resposta válida em {TENTATIVAS} tentativas: {erros}")

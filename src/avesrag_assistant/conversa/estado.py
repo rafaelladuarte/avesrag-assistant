@@ -68,6 +68,11 @@ class EstadoConversa(_Base):
     confirmada: str | None = None
     motivo_fim: str | None = None
     mensagens: list[Mensagem] = Field(default_factory=list)
+    # API (plano_assistant4.md): quem abriu a sessão, o que ela custou e o voto final.
+    convite: str | None = None
+    chamadas_llm: int = 0
+    chamadas_embedding: int = 0
+    voto: Literal["ajudou", "nao_ajudou"] | None = None
     criada_em: datetime = Field(default_factory=agora)
     atualizada_em: datetime = Field(default_factory=agora)
 

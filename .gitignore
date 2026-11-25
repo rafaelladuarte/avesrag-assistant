@@ -203,3 +203,5 @@ reports/*
 !reports/.gitkeep
 
 *.ua/
+# Convites do beta (hash dos tokens)
+config/convites.json

@@ -44,6 +44,8 @@ class Settings(BaseSettings):
     CONFIG_DIR: Path = ROOT_DIR / "config"
     AVALIACAO_DIR: Path = ROOT_DIR / "avaliacao"
     REPORTS_DIR: Path = ROOT_DIR / "reports"
+    # Convites do beta (só o hash do token); fora do git
+    CONVITES_PATH: Path = ROOT_DIR / "config" / "convites.json"
 
     @property
     def builder_config_dir(self) -> Path:
