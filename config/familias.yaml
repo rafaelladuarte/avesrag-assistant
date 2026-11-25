@@ -1,0 +1,72 @@
+# Nome popular de cada família, para o filtro do "Explorar aves" (plano_assistant4.md §5).
+# Chave: a família científica da ficha (`taxonomia.familia`). Família que faltar aqui
+# aparece com o nome científico, sem quebrar nada.
+versao: "1.0"
+familias:
+  Accipitridae: Gaviões e águias
+  Alcedinidae: Martins-pescadores
+  Anatidae: Patos e marrecas
+  Anhimidae: Tachãs
+  Anhingidae: Biguatingas
+  Apodidae: Andorinhões
+  Aramidae: Carãos
+  Ardeidae: Garças e socós
+  Bucconidae: Joões-bobos
+  Caprimulgidae: Bacuraus e curiangos
+  Cardinalidae: Azulões e tiês
+  Cariamidae: Seriemas
+  Cathartidae: Urubus
+  Charadriidae: Quero-queros e batuíras
+  Ciconiidae: Cegonhas
+  Columbidae: Pombas e rolinhas
+  Conopophagidae: Chupa-dentes
+  Corvidae: Gralhas
+  Cotingidae: Cotingas
+  Cracidae: Jacus e mutuns
+  Cuculidae: Anus e cucos
+  Dendrocolaptidae: Arapaçus
+  Donacobiidae: Japacanins
+  Estrildidae: Bicos-de-lacre
+  Eurypygidae: Pavãozinhos-do-pará
+  Falconidae: Falcões e carcarás
+  Fringillidae: Gaturamos e pintassilgos
+  Furnariidae: Joões-de-barro e afins
+  Galbulidae: Aramburus e ariramba
+  Heliornithidae: Picaparras
+  Hirundinidae: Andorinhas
+  Icteridae: Graúnas e japus
+  Jacanidae: Jaçanãs
+  Laridae: Gaivotas e trinta-réis
+  Melanopareiidae: Meia-luas
+  Mimidae: Sabiás-do-campo
+  Momotidae: Udus
+  Motacillidae: Caminheiros
+  Nyctibiidae: Urutaus
+  Pandionidae: Águias-pescadoras
+  Parulidae: Mariquitas
+  Passerellidae: Tico-ticos
+  Passeridae: Pardais
+  Phalacrocoracidae: Biguás
+  Picidae: Pica-paus
+  Pipridae: Tangarás e uirapurus
+  Podicipedidae: Mergulhões
+  Polioptilidae: Balança-rabos
+  Psittacidae: Papagaios e periquitos
+  Rallidae: Saracuras e frangos-d'água
+  Ramphastidae: Tucanos
+  Rheidae: Emas
+  Rhynchocyclidae: Papa-moscas
+  Scolopacidae: Maçaricos
+  Strigidae: Corujas
+  Thamnophilidae: Chocas e papa-formigas
+  Thraupidae: Sanhaços e saíras
+  Threskiornithidae: Íbis e colhereiros
+  Tinamidae: Inhambus e codornas
+  Tityridae: Anambés e caneleiros
+  Trochilidae: Beija-flores
+  Troglodytidae: Corruíras
+  Trogonidae: Surucuás
+  Turdidae: Sabiás
+  Tyrannidae: Bem-te-vis e tiranídeos
+  Tytonidae: Corujas-de-igreja
+  Vireonidae: Juruvíaras e pitiguaris

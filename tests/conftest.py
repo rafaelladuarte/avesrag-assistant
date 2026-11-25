@@ -43,6 +43,8 @@ class ColecaoFalsa:
         return iter(self.responder(pipeline) if self.responder else self.docs)
 
     def find(self, filtro, projecao=None):
+        if "species_id" not in filtro:  # o catálogo: todas as fichas
+            return iter(self.docs)
         ids = set(filtro["species_id"]["$in"])
         return iter(d for d in self.docs if d["species_id"] in ids)
 

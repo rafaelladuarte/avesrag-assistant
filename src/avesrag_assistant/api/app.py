@@ -11,7 +11,7 @@ from __future__ import annotations
 import logging
 import secrets
 import threading
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as TempoEsgotado
 from pathlib import Path
@@ -77,6 +77,7 @@ def criar_app(
     contador: Contador = CONTADOR,
     dia: Callable[[], str] | None = None,
     uso_diario: UsoDiario | None = None,
+    familias: Mapping[str, str] | None = None,
 ) -> FastAPI:
     app = FastAPI(title="AvesRAG", docs_url=None, redoc_url=None, openapi_url=None)
     textos = config.textos
@@ -274,17 +275,22 @@ def criar_app(
             repositorio.salvar(e)
             return _visao(e)
 
-    @app.get("/api/sessoes/{sessao}/especies/{species_id}")
-    def especie(sessao: str, species_id: str, convite: str = Depends(convite_atual)):
-        e = _sessao_do_convite(sessao, convite)
-        apresentadas = {c.species_id for c in e.candidatas} | set(e.recusadas)
-        if e.confirmada:
-            apresentadas.add(e.confirmada)
-        if species_id not in apresentadas:  # a rota não vira um catálogo aberto
-            raise ErroApi(404, textos.sessao_nao_encontrada)
+    catalogo_pronto: dict[str, Any] = {}
+    catalogo_trava = threading.Lock()
+
+    @app.get("/api/especies")
+    def listar_especies(_: str = Depends(convite_atual)) -> list[dict[str, Any]]:
+        """O catálogo do "Explorar aves": montado uma vez por processo (a base não muda no ar)."""
+        with catalogo_trava:
+            if "itens" not in catalogo_pronto:
+                catalogo_pronto["itens"] = especies.catalogo(servicos.db, familias or {})
+            return catalogo_pronto["itens"]
+
+    @app.get("/api/especies/{species_id}")
+    def especie(species_id: str, _: str = Depends(convite_atual)) -> dict[str, Any]:
         ficha = especies.ficha_publica(servicos.db, species_id)
         if ficha is None:
-            raise ErroApi(404, textos.sessao_nao_encontrada)
+            raise ErroApi(404, textos.especie_nao_encontrada)
         return ficha
 
     app.mount("/static", StaticFiles(directory=WEB / "static"), name="static")

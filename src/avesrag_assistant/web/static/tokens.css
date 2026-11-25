@@ -76,7 +76,7 @@ p { margin: 0; }
 .marca:hover { color: #fff; }
 .marca svg { flex: none; }
 .cabecalho nav { display: flex; gap: 4px; }
-.cabecalho nav a { display: flex; align-items: center; min-height: 44px; padding: 0 14px;
+.cabecalho nav a { white-space: nowrap; display: flex; align-items: center; min-height: 44px; padding: 0 14px;
   border-radius: 8px; text-decoration: none; color: #fff; }
 .cabecalho nav a[aria-current="page"] { background: var(--verde-claro); color: var(--verde-escuro);
   font-weight: 500; }
@@ -243,6 +243,35 @@ dl.lista dd { margin: 0; font-size: 15px; }
 .fontes h2 { color: var(--texto); }
 .fontes ul { margin: 0; padding-left: 20px; }
 
+/* explorar aves */
+.explorar { display: flex; flex-direction: column; gap: 24px; }
+.explorar-topo { display: flex; flex-wrap: wrap; gap: 20px 40px; justify-content: space-between; align-items: flex-end; }
+.explorar-topo h1 { font-size: clamp(32px, 5vw, 48px); line-height: 1.05; }
+.explorar-topo .sub { color: var(--texto-2); max-width: 56ch; margin-top: 8px; }
+.explorar-topo .campo { flex: 1 1 280px; max-width: 420px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-filtro { font: inherit; font-size: 14px; font-weight: 500; min-height: 40px; padding: 0 14px;
+  border-radius: 999px; cursor: pointer; background: var(--papel); color: var(--texto);
+  border: 1px solid var(--campo); }
+.chip-filtro .total { color: var(--texto-2); font-weight: 400; }
+.chip-filtro[aria-pressed="true"] { background: var(--verde); border-color: var(--verde); color: #fff; }
+.chip-filtro[aria-pressed="true"] .total { color: var(--verde-claro); }
+.lista-topo { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 16px; margin-bottom: 14px; }
+.lista-topo h2 { font-size: 22px; }
+.lista-topo > div { display: flex; gap: 16px; align-items: baseline; }
+.grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.cartao-especie { display: flex; flex-direction: column; padding: 0; overflow: hidden; text-align: left;
+  font: inherit; color: var(--texto); background: var(--papel); border: 1px solid var(--linha);
+  border-radius: 14px; cursor: pointer; }
+.cartao-especie:hover { border-color: var(--verde); }
+.cartao-especie .miniatura { display: flex; align-items: center; justify-content: center; height: 150px;
+  background: var(--areia-2); color: var(--texto-2); font-size: 13px; overflow: hidden; }
+.cartao-especie .miniatura img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cartao-especie .dados { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px 14px; }
+.cartao-especie .nome-comum { font: 700 18px/1.2 var(--titulo); }
+.cartao-especie .cient { font-style: italic; font-size: 14px; color: var(--texto-2); }
+.cartao-especie .familia { font-size: 13px; color: var(--texto-2); margin-top: 4px; }
+
 /* páginas fixas */
 .texto-longo { max-width: 70ch; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 .texto-longo h1 { font-size: 40px; }
@@ -252,7 +281,8 @@ dl.lista dd { margin: 0; font-size: 15px; }
 @media (max-width: 600px) {
   main { padding: 20px 16px 40px; }
   .cabecalho, .rodape { padding-left: 16px; padding-right: 16px; }
-  .cabecalho nav a span { display: none; }
+  .cabecalho nav a { padding: 0 10px; font-size: 15px; white-space: nowrap; }
+  .marca { font-size: 20px; }
   .balao { max-width: 94%; }
   .principal .corpo { padding: 18px; }
   .nome h2 { font-size: 28px; }

@@ -42,6 +42,7 @@ class Textos(_Base):
     demorou: str
     erro: str
     sessao_nao_encontrada: str
+    especie_nao_encontrada: str
 
 
 class ConfigApi(_Base):
@@ -60,4 +61,20 @@ def carregar_api(path: Path) -> ConfigApi:
     except FileNotFoundError as e:
         raise ConfigInvalida(f"{path} não encontrado") from e
     except (yaml.YAMLError, ValidationError) as e:
+        raise ConfigInvalida(f"{path}: {e}") from e
+
+
+def carregar_familias(path: Path) -> dict[str, str]:
+    """`config/familias.yaml`: família científica → nome popular, para o filtro do catálogo."""
+    try:
+        bruto = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+        familias = bruto["familias"]
+        if not isinstance(familias, dict) or not all(
+            isinstance(k, str) and isinstance(v, str) and v.strip() for k, v in familias.items()
+        ):
+            raise ValueError("familias deve mapear texto para texto não vazio")
+        return familias
+    except FileNotFoundError as e:
+        raise ConfigInvalida(f"{path} não encontrado") from e
+    except (yaml.YAMLError, KeyError, TypeError, ValueError) as e:
         raise ConfigInvalida(f"{path}: {e}") from e

@@ -92,14 +92,17 @@ CAMPOS_CONFIRMADA = {"species_id", "nome", "nome_cientifico"}
 CAMPOS_ESPECIE = {
     "species_id",
     "nome",
+    "nome_en",
     "nome_cientifico",
     "familia",
     "foto",
+    "fotos",
     "ilustracao",
     "como_reconhecer",
     "ficha",
     "url_wikiaves",
 }
+CAMPOS_CATALOGO = {"species_id", "nome", "nome_cientifico", "familia", "familia_popular", "foto"}
 CAMPOS_ILUSTRACAO = {"url", "credito", "link", "rotulo"}
 CAMPOS_ITEM = {"rotulo", "valor"}
 
@@ -133,9 +136,19 @@ def conferir_especie(e: dict[str, Any]) -> dict[str, Any]:
     _conferir(e, CAMPOS_ESPECIE, "espécie")
     if e.get("foto"):
         _conferir(e["foto"], CAMPOS_FOTO, "foto")
+    for foto in e.get("fotos") or []:
+        _conferir(foto, CAMPOS_FOTO, "fotos")
     if e.get("ilustracao"):
         _conferir(e["ilustracao"], CAMPOS_ILUSTRACAO, "ilustração")
     for lista in ("como_reconhecer", "ficha"):
         for item in e.get(lista) or []:
             _conferir(item, CAMPOS_ITEM, lista)
     return e
+
+
+def conferir_catalogo(itens: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    for item in itens:
+        _conferir(item, CAMPOS_CATALOGO, "catálogo")
+        if item.get("foto"):
+            _conferir(item["foto"], CAMPOS_FOTO, "foto do catálogo")
+    return itens

@@ -61,6 +61,25 @@ def test_ficha_publica_de_uma_especie_real(banco):
     assert ficha["url_wikiaves"]
     assert ficha["ficha"] and ficha["como_reconhecer"]
     assert "evidencia" not in str(ficha).lower()
+    itens = {i["rotulo"]: i["valor"] for i in ficha["ficha"]}
+    assert itens["Dieta"] == "Onívora" and itens["Peso"].endswith(" g")
+    assert itens["Conservação"] == "Pouco preocupante" and itens["Ordem"] == "Passeriformes"
+    assert ficha["nome_en"] == "Great Kiskadee" and 2 <= len(ficha["fotos"]) <= 4
     fotos = especies.fotos(banco, ["sp_pitangus_sulphuratus", "sp_nao_existe"])
     assert set(fotos) == {"sp_pitangus_sulphuratus"}
     assert especies.ficha_publica(banco, "sp_nao_existe") is None
+
+
+def test_catalogo_real_tem_as_387_aptas(banco):
+    from avesrag_assistant.api.config import carregar_familias
+    from avesrag_assistant.settings import ROOT_DIR
+
+    familias = carregar_familias(ROOT_DIR / "config" / "familias.yaml")
+    itens = especies.catalogo(banco, familias)
+    assert len(itens) == 387
+    assert all(i["foto"] for i in itens) and all(i["familia"] for i in itens)
+    sem_nome_popular = {i["familia"] for i in itens if i["familia_popular"] == i["familia"]}
+    assert sem_nome_popular == set(), (
+        f"famílias sem nome popular em familias.yaml: {sem_nome_popular}"
+    )
+    assert [i["nome"] for i in itens] == sorted((i["nome"] for i in itens), key=str.casefold)

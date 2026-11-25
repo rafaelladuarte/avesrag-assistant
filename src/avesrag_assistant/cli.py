@@ -517,7 +517,7 @@ def servir(
     import uvicorn
 
     from avesrag_assistant.api.app import criar_app
-    from avesrag_assistant.api.config import ConfigInvalida, carregar_api
+    from avesrag_assistant.api.config import ConfigInvalida, carregar_api, carregar_familias
     from avesrag_assistant.api.convites import Convites
     from avesrag_assistant.api.guardrails import ModeradorOpenAI
     from avesrag_assistant.api.limites import Limitador
@@ -530,6 +530,7 @@ def servir(
     try:
         voc, regras = vocabulario.carregar()
         config = carregar_api(settings.CONFIG_DIR / "api.yaml")
+        familias = carregar_familias(settings.CONFIG_DIR / "familias.yaml")
         servicos = _servicos(settings, voc, regras)
         if sessoes_em == "mongo":
             repositorio = RepositorioMongo(servicos.db, config.sessoes.ttl_dias)
@@ -547,6 +548,7 @@ def servir(
             Limitador(config.limites.requisicoes_por_ip_por_minuto),
             ModeradorOpenAI(settings.OPENAI_API_KEY.get_secret_value()),
             uso_diario=UsoDiario(settings.REPORTS_DIR / "uso.tsv"),
+            familias=familias,
         )
     except (
         VocabularioInvalido,

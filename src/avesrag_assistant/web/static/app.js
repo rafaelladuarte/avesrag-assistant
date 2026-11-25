@@ -15,6 +15,11 @@
     visao: null, // a última resposta da API
     tela: "inicio", // inicio | conversa | detalhe
     detalhe: null,
+    origem: "candidatas", // de onde veio o detalhe: candidatas | explorar
+    catalogo: null, // as espécies do "Explorar aves", carregadas uma vez
+    busca: "",
+    familia: null,
+    todasFamilias: false, // o filtro mostra só as maiores até pedirem todas
     rascunho: "",
     local: "",
     ocupado: false,
@@ -179,13 +184,19 @@
     estado.tela = "inicio";
     estado.rascunho = "";
     estado.erro = null;
+    if (location.hash) history.replaceState(null, "", location.pathname);
     desenhar();
     window.scrollTo(0, 0);
   }
 
-  function abrirDetalhe(speciesId) {
+  function abrirDetalhe(speciesId, origem) {
+    estado.origem = origem;
+    location.hash = "especie/" + encodeURIComponent(speciesId); // o hashchange carrega e desenha
+  }
+
+  function carregarDetalhe(speciesId) {
     estado.erro = null;
-    api("GET", "/api/sessoes/" + encodeURIComponent(estado.visao.id) + "/especies/" + encodeURIComponent(speciesId))
+    api("GET", "/api/especies/" + encodeURIComponent(speciesId))
       .then(function (d) {
         estado.detalhe = d;
         estado.tela = "detalhe";
@@ -194,8 +205,39 @@
       })
       .catch(function (e) {
         estado.erro = { texto: e.message, repetir: null };
+        estado.tela = estado.catalogo || estado.origem === "explorar" ? "explorar" : "inicio";
         desenhar();
       });
+  }
+
+  function carregarCatalogo() {
+    if (estado.catalogo) return Promise.resolve();
+    return api("GET", "/api/especies").then(function (itens) {
+      estado.catalogo = itens;
+    });
+  }
+
+  function telaDaConversa() {
+    return estado.visao && estado.visao.mensagens.length > 1 ? "conversa" : "inicio";
+  }
+
+  // A navegação usa o hash (#explorar, #especie/<id>) para o botão voltar do navegador funcionar.
+  function aplicarHash() {
+    var h = decodeURIComponent(location.hash.replace(/^#/, ""));
+    if (h === "explorar") {
+      estado.tela = "explorar";
+      estado.erro = null;
+      carregarCatalogo()
+        .catch(function (e) { estado.erro = { texto: e.message, repetir: null }; })
+        .then(function () { desenhar(); window.scrollTo(0, 0); });
+      desenhar();
+    } else if (h.indexOf("especie/") === 0) {
+      carregarDetalhe(h.slice(8));
+    } else {
+      estado.tela = telaDaConversa();
+      estado.erro = null;
+      desenhar();
+    }
   }
 
   function votar(voto) {
@@ -347,7 +389,7 @@
         ),
         el("div", { class: "botoes" },
           el("button", { class: "botao botao-pequeno", type: "button", onclick: function () { enviar(String(c.numero)); } }, "É essa"),
-          el("button", { class: "botao-contorno", type: "button", onclick: function () { abrirDetalhe(c.species_id); } }, "Ver detalhes")))
+          el("button", { class: "botao-contorno", type: "button", onclick: function () { abrirDetalhe(c.species_id, "candidatas"); } }, "Ver detalhes")))
     );
   }
 
@@ -360,7 +402,7 @@
         el("p", { class: "restantes", texto: c.combina.length ? "Combina: " + c.combina.join(", ") + "." : "" }),
         el("div", { class: "botoes" },
           el("button", { class: "botao botao-pequeno", type: "button", onclick: function () { enviar(String(c.numero)); } }, "É essa"),
-          el("button", { class: "botao-contorno", type: "button", onclick: function () { abrirDetalhe(c.species_id); } }, "Ver detalhes")))
+          el("button", { class: "botao-contorno", type: "button", onclick: function () { abrirDetalhe(c.species_id, "candidatas"); } }, "Ver detalhes")))
     );
   }
 
@@ -445,7 +487,7 @@
         el("div", { class: "confirmada" }, icone(["M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", "m8 12 3 3 5-6"], 22),
           el("span", { texto: "Identificação confirmada: " + v.confirmada.nome + " (" + v.confirmada.nome_cientifico + ")." })),
         el("div", { class: "botoes" },
-          el("button", { class: "botao botao-pequeno", type: "button", onclick: function () { abrirDetalhe(v.confirmada.species_id); } }, "Ver a ficha da espécie"),
+          el("button", { class: "botao botao-pequeno", type: "button", onclick: function () { abrirDetalhe(v.confirmada.species_id, "candidatas"); } }, "Ver a ficha da espécie"),
           el("button", { class: "botao-contorno", type: "button", onclick: novaConversa }, "Identificar outra ave")),
         feedback(v));
     }
@@ -468,32 +510,35 @@
   function telaDetalhe() {
     var d = estado.detalhe;
     var v = estado.visao;
-    var confirmada = v && v.confirmada && v.confirmada.species_id === d.species_id;
+    var deExplorar = estado.origem === "explorar";
+    var confirmada = !deExplorar && v && v.confirmada && v.confirmada.species_id === d.species_id;
     var itens = function (lista) {
       var dl = el("dl", { class: "lista" });
       lista.forEach(function (i) { dl.appendChild(el("dt", { texto: i.rotulo })); dl.appendChild(el("dd", { texto: i.valor })); });
       return dl;
     };
-    var fotos = el("section", { class: "fotos", "aria-label": "Foto e ilustração" });
-    if (d.foto) {
-      var f = foto(d.foto, d.nome);
-      fotos.appendChild(el("figure", {}, f));
-    }
+    var fotos = el("section", { class: "fotos", "aria-label": "Fotos e ilustração" });
+    (d.fotos || []).forEach(function (f, i) {
+      fotos.appendChild(el("figure", {}, foto(f, d.nome + (i ? ", foto " + (i + 1) : ""))));
+    });
     if (d.ilustracao) {
       var fi = el("div", { class: "foto" }, el("img", { src: d.ilustracao.url, alt: "Ilustração de " + d.nome, loading: "lazy", referrerpolicy: "no-referrer" }));
       fotos.appendChild(el("figure", {}, fi,
         el("figcaption", {}, d.ilustracao.rotulo + " · ", el("a", { href: d.ilustracao.link, target: "_blank", rel: "noopener noreferrer" }, "fonte"))));
     }
+    var voltarTexto = deExplorar ? "Voltar para Explorar aves" : v && v.etapa === "fim" ? "Voltar" : "Voltar para as candidatas";
+    var cabecaDeNomes = el("span", { class: "cient" },
+      d.nome_cientifico + (d.familia ? ", da família " + d.familia : "") + (d.nome_en ? " · em inglês, " + d.nome_en : ""));
     return el("div", { class: "detalhe" },
-      el("button", { class: "link-botao voltar", type: "button", onclick: function () { estado.tela = "conversa"; desenhar(); window.scrollTo(0, 0); } },
-        icone(VOLTAR, 18), v && v.etapa === "fim" ? "Voltar" : "Voltar para as candidatas"),
+      el("button", { class: "link-botao voltar", type: "button", onclick: function () { location.hash = deExplorar ? "explorar" : ""; } },
+        icone(VOLTAR, 18), voltarTexto),
       confirmada ? el("div", { class: "confirmada" }, icone(["M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", "m8 12 3 3 5-6"], 22),
         el("span", { texto: "Identificação confirmada: " + d.nome + "." }),
         el("button", { class: "link-botao", type: "button", onclick: novaConversa }, "Identificar outra ave")) : null,
       blocoErro(),
       el("section", { class: "topo" },
-        el("div", { class: "nome" }, el("h1", { texto: d.nome }),
-          el("span", { class: "cient", texto: d.nome_cientifico + (d.familia ? ", da família " + d.familia : "") }))),
+        el("div", { class: "nome" }, el("h1", { texto: d.nome }), cabecaDeNomes),
+        deExplorar ? el("button", { class: "botao botao-pequeno", type: "button", onclick: novaConversa }, "Identificar uma ave") : null),
       fotos,
       el("div", { class: "colunas" },
         el("section", {},
@@ -501,22 +546,118 @@
           el("div", { class: "fontes" }, el("h2", { texto: "Fontes" }),
             el("ul", {},
               d.url_wikiaves ? el("li", {}, el("a", { href: d.url_wikiaves, target: "_blank", rel: "noopener noreferrer" }, "WikiAves"), ": página da espécie") : null,
-              el("li", { texto: "AVONET, CBRO e eBird, para medidas, nomes e taxonomia" })),
+              el("li", { texto: "AVONET, BIRDBASE, CBRO e eBird, para medidas, dieta, nomes e taxonomia" })),
             el("p", { texto: "As fotos pertencem aos seus autores e aparecem com crédito e link para a origem." }))),
         el("aside", {}, el("h2", { texto: "Ficha" }), d.ficha.length ? itens(d.ficha) : el("p", { texto: "Sem dados na ficha." })))
     );
   }
 
+  // -- explorar aves ------------------------------------------------------------
+
+  function semAcento(s) {
+    return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  }
+
+  function telaExplorar() {
+    var todas = estado.catalogo || [];
+    var termo = semAcento(estado.busca.trim());
+    var passaBusca = function (e) {
+      return !termo || semAcento(e.nome).indexOf(termo) !== -1 || semAcento(e.nome_cientifico).indexOf(termo) !== -1;
+    };
+    var base = todas.filter(passaBusca); // os totais dos chips respeitam a busca
+    var porFamilia = {};
+    base.forEach(function (e) {
+      var f = porFamilia[e.familia] || (porFamilia[e.familia] = { familia: e.familia, popular: e.familia_popular, total: 0 });
+      f.total++;
+    });
+    var familias = Object.keys(porFamilia).map(function (k) { return porFamilia[k]; })
+      .sort(function (a, b) { return b.total - a.total || a.popular.localeCompare(b.popular, "pt-BR"); });
+    var lista = base.filter(function (e) { return !estado.familia || e.familia === estado.familia; });
+    var nomeFamilia = estado.familia && porFamilia[estado.familia] ? porFamilia[estado.familia].popular : null;
+
+    var campo = el("input", {
+      id: "busca", type: "text", placeholder: "Bem-te-vi ou Pitangus", autocomplete: "off", maxlength: "60",
+      oninput: function () { estado.busca = campo.value; desenhar(); },
+    });
+    campo.value = estado.busca;
+    var chip = function (rotulo, total, ativo, aoClicar) {
+      return el("button", { class: "chip-filtro", type: "button", "aria-pressed": ativo ? "true" : "false", onclick: aoClicar },
+        rotulo + " ", el("span", { class: "total", texto: String(total) }));
+    };
+    var VISIVEIS = 14;
+    var mostradas = estado.todasFamilias ? familias : familias.slice(0, VISIVEIS);
+    if (estado.familia && mostradas.every(function (f) { return f.familia !== estado.familia; }) && porFamilia[estado.familia]) {
+      mostradas = mostradas.concat([porFamilia[estado.familia]]); // a escolhida nunca some
+    }
+    var chips = el("div", { class: "chips", role: "group", "aria-label": "Filtrar por família" },
+      chip("Todas", base.length, !estado.familia, function () { estado.familia = null; desenhar(); }),
+      mostradas.map(function (f) {
+        return chip(f.popular, f.total, estado.familia === f.familia, function () { estado.familia = f.familia; desenhar(); });
+      }),
+      familias.length > VISIVEIS
+        ? el("button", { class: "link-botao", type: "button", "aria-expanded": estado.todasFamilias ? "true" : "false",
+            onclick: function () { estado.todasFamilias = !estado.todasFamilias; desenhar(); } },
+            estado.todasFamilias ? "Mostrar menos" : "Ver todas as " + familias.length + " famílias")
+        : null);
+    var cartoes = lista.map(function (e) {
+      return el("button", { class: "cartao-especie", type: "button", onclick: function () { abrirDetalhe(e.species_id, "explorar"); } },
+        el("span", { class: "miniatura" }, e.foto ? el("img", { src: e.foto.url, alt: "", loading: "lazy", referrerpolicy: "no-referrer" }) : el("span", { texto: "Sem foto" })),
+        el("span", { class: "dados" },
+          el("span", { class: "nome-comum", texto: e.nome }),
+          el("span", { class: "cient", texto: e.nome_cientifico }),
+          el("span", { class: "familia", texto: e.familia_popular })));
+    });
+    var vazio = !lista.length
+      ? el("div", { class: "nenhuma" },
+          el("div", {}, el("b", { texto: "Nenhuma espécie encontrada" }), el("p", { texto: "Tire um filtro, tente outro nome ou descreva a ave para o AvesRAG identificar." })),
+          el("button", { class: "botao-contorno", type: "button", onclick: novaConversa }, "Identificar por descrição"))
+      : null;
+    return el("div", { class: "explorar" },
+      blocoErro(),
+      el("div", { class: "explorar-topo" },
+        el("div", {}, el("h1", { texto: "Explorar aves" }),
+          el("p", { class: "sub", texto: "Busque pelo nome ou filtre por família e escolha uma espécie para ver a ficha. São as " + todas.length + " aves de Uberlândia (MG) que o AvesRAG conhece." })),
+        el("div", { class: "campo" }, el("label", { for: "busca", texto: "Buscar espécie" }), campo)),
+      chips,
+      el("div", { class: "explorar-lista" },
+        el("div", { class: "lista-topo" },
+          el("h2", { texto: nomeFamilia || "Todas as espécies" }),
+          el("div", {},
+            el("span", { class: "restantes", texto: lista.length === 1 ? "1 espécie" : lista.length + " espécies" }),
+            estado.familia || estado.busca ? el("button", { class: "link-botao", type: "button", onclick: function () { estado.familia = null; estado.busca = ""; desenhar(); } }, "Limpar filtros") : null)),
+        vazio,
+        el("div", { class: "grade" }, cartoes)),
+      estado.catalogo ? null : el("p", { class: "restantes", texto: "Carregando as espécies..." })
+    );
+  }
+
   // -- desenho ------------------------------------------------------------------
+
+  function marcarNavegacao() {
+    var explorando = estado.tela === "explorar" || (estado.tela === "detalhe" && estado.origem === "explorar");
+    document.getElementById("nav-identificar").setAttribute("aria-current", explorando ? "false" : "page");
+    document.getElementById("nav-explorar").setAttribute("aria-current", explorando ? "page" : "false");
+  }
 
   function desenhar() {
     var ativo = document.activeElement;
     var id = ativo && ativo.id;
-    var conteudo = estado.tela === "detalhe" && estado.detalhe ? telaDetalhe() : estado.tela === "conversa" ? telaConversa() : telaInicio();
+    var pos = ativo && ativo.selectionStart;
+    var conteudo =
+      estado.tela === "detalhe" && estado.detalhe ? telaDetalhe()
+      : estado.tela === "explorar" ? telaExplorar()
+      : estado.tela === "conversa" ? telaConversa()
+      : telaInicio();
     raiz.replaceChildren(conteudo);
+    marcarNavegacao();
     if (id) {
       var voltar = document.getElementById(id);
-      if (voltar && voltar.focus) voltar.focus();
+      if (voltar && voltar.focus) {
+        voltar.focus();
+        if (pos !== null && pos !== undefined && voltar.setSelectionRange) {
+          try { voltar.setSelectionRange(pos, pos); } catch (e) {}
+        }
+      }
     }
   }
 
@@ -524,21 +665,25 @@
     ev.preventDefault();
     novaConversa();
   });
+  document.getElementById("nav-identificar").addEventListener("click", function (ev) {
+    ev.preventDefault();
+    if (location.hash) location.hash = "";
+    else { estado.tela = telaDaConversa(); desenhar(); }
+  });
+  document.getElementById("nav-explorar").addEventListener("click", function (ev) {
+    ev.preventDefault();
+    location.hash = "explorar";
+  });
+  window.addEventListener("hashchange", aplicarHash);
 
-  // retoma a sessão ao recarregar a página
+  // retoma a sessão ao recarregar a página (e abre a tela do hash, se houver)
   var id = lembrada();
   if (id) {
     api("GET", "/api/sessoes/" + encodeURIComponent(id))
-      .then(function (v) {
-        estado.visao = v;
-        estado.tela = v.mensagens.length > 1 ? "conversa" : "inicio";
-        desenhar();
-      })
-      .catch(function () {
-        guardar(null);
-        desenhar();
-      });
+      .then(function (v) { estado.visao = v; })
+      .catch(function () { guardar(null); })
+      .then(aplicarHash);
   } else {
-    desenhar();
+    aplicarHash();
   }
 })();

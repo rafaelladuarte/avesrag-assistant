@@ -11,6 +11,7 @@ from avesrag_assistant.api.convites import ConviteInvalido, Convites
 from avesrag_assistant.api.guardrails import (
     EntradaRecusada,
     SaidaInvalida,
+    conferir_catalogo,
     conferir_especie,
     conferir_visao,
     limpar_entrada,
@@ -76,10 +77,20 @@ def _config(tmp_path, **limites):
 
 @pytest.fixture
 def montar(tmp_path, vocab_regras):
-    def _montar(moderador=None, relogio=None, extrator=None, uso=None, **limites):
+    def _montar(moderador=None, relogio=None, extrator=None, uso=None, familias=None, **limites):
         banco = _banco()
-        banco["species"].docs[0]["midia"] = {"foto": FOTO, "url_wikiaves": "https://wikiaves/a"}
-        banco["species"].docs[0]["taxonomia"] = {"familia": "Tyrannidae"}
+        for doc in banco["species"].docs:
+            doc["_meta"] = {"dq_status": "apta"}
+            doc["taxonomia"] = {"familia": "Tyrannidae", "ordem": "Passeriformes"}
+        banco["species"].docs[0]["midia"] = {
+            "foto": FOTO,
+            "fotos": [FOTO, {**FOTO, "link": "https://exemplo/b"}],
+            "url_wikiaves": "https://wikiaves/a",
+        }
+        banco["species"].docs[0]["nomes"] = {"pt": ["ave-sp_a"], "en": ["Bird A"]}
+        banco["species"].docs[0]["perfil"] = {"massa_g": 62.85, "dieta": "onívora"}
+        banco["species"].docs[0]["iucn"] = "LC"
+        banco["species"].docs[1]["taxonomia"] = {"familia": "Thraupidae"}
         banco["species"].docs[0]["texto_wikiaves"] = "NUNCA DEVE SAIR"
         contador = Contador()
         servicos = Servicos(
@@ -111,6 +122,7 @@ def montar(tmp_path, vocab_regras):
             contador,
             dia=lambda: "2026-11-25",
             uso_diario=uso,
+            familias=familias,
         )
         cliente = TestClient(app, base_url="http://testserver", client=("127.0.0.1", 50000))
         return Montagem(
@@ -230,7 +242,7 @@ def test_saida_nunca_traz_texto_nem_campo_extra(montar):
     conferir_visao(v)
     corpo = str(v)
     assert "NUNCA DEVE SAIR" not in corpo and "wikiaves" not in corpo.lower()
-    especie = m.cliente.get(f"/api/sessoes/{sessao}/especies/sp_a")
+    especie = m.cliente.get("/api/especies/sp_a")
     assert especie.status_code == 200
     d = especie.json()
     conferir_especie(d)
@@ -239,17 +251,53 @@ def test_saida_nunca_traz_texto_nem_campo_extra(montar):
     assert d["url_wikiaves"] == "https://wikiaves/a"
     assert "NUNCA DEVE SAIR" not in str(d)
     assert {i["rotulo"] for i in d["como_reconhecer"]} >= {"Cores"}
+    ficha = {i["rotulo"]: i["valor"] for i in d["ficha"]}
+    assert ficha["Peso"] == "62,9 g" and ficha["Dieta"] == "Onívora"
+    assert ficha["Ordem"] == "Passeriformes" and ficha["Conservação"] == "Pouco preocupante"
+    assert d["nome_en"] == "Bird A" and len(d["fotos"]) == 2
 
 
-def test_especie_so_se_foi_apresentada_na_sessao(montar):
+def test_especie_e_catalogo_exigem_convite(montar):
     m = montar()
+    assert m.cliente.get("/api/especies").status_code == 401
+    assert m.cliente.get("/api/especies/sp_a").status_code == 401
     _entrar(m)
-    sessao = _abrir(m)
-    assert m.cliente.get(f"/api/sessoes/{sessao}/especies/sp_a").status_code == 404
-    _msg(m, sessao, "uma ave pequena")
-    _msg(m, sessao, "amarela")
-    assert m.cliente.get(f"/api/sessoes/{sessao}/especies/sp_d").status_code == 404
-    assert m.cliente.get(f"/api/sessoes/{sessao}/especies/sp_b").status_code == 200
+    assert m.cliente.get("/api/especies/sp_a").status_code == 200
+    r = m.cliente.get("/api/especies/sp_nao_existe")
+    assert r.status_code == 404 and "Não encontrei essa espécie" in r.json()["erro"]
+
+
+def test_catalogo_lista_as_aptas_com_familia_popular(montar):
+    m = montar(familias={"Tyrannidae": "Bem-te-vis e tiranídeos"})
+    _entrar(m)
+    itens = m.cliente.get("/api/especies").json()
+    conferir_catalogo(itens)
+    assert [i["nome"] for i in itens] == ["ave-sp_a", "ave-sp_b", "ave-sp_c"]
+    primeiro = itens[0]
+    assert primeiro["familia_popular"] == "Bem-te-vis e tiranídeos"
+    assert primeiro["foto"]["credito"] == FOTO["credito"]
+    assert itens[1]["familia_popular"] == "Thraupidae"  # sem nome popular: a própria família
+    assert itens[2]["foto"] is None
+    assert "NUNCA DEVE SAIR" not in str(itens)
+
+
+def test_catalogo_usa_miniatura_do_inaturalist():
+    from avesrag_assistant.api.especies import _foto
+
+    f = {"url": "https://inaturalist-open-data.s3.amazonaws.com/photos/1/medium.jpeg",
+         "credito": "c", "link": "l"}  # fmt: skip
+    assert _foto(f, miniatura=True)["url"].endswith("/small.jpeg")
+    assert _foto(f)["url"].endswith("/medium.jpeg")
+    commons = {"url": "https://upload.wikimedia.org/x.jpg", "credito": "c", "link": "l"}
+    assert _foto(commons, miniatura=True)["url"] == commons["url"]
+
+
+def test_exibicao_de_massa_e_conservacao():
+    from avesrag_assistant.api.exibicao import exibir_iucn, exibir_massa
+
+    assert exibir_massa(62.85) == "62,9 g" and exibir_massa(615.0) == "615 g"
+    assert exibir_massa(1234.0) == "1,2 kg" and exibir_massa(8.0) == "8,0 g"
+    assert exibir_iucn("EN") == "Em perigo" and exibir_iucn("XX") == "XX"
 
 
 def test_sessao_de_outro_convite_nao_existe(montar):
@@ -533,3 +581,15 @@ def test_uso_diario_soma_e_sobrevive_ao_reinicio(montar, tmp_path):
     depois.registrar(mensagens=1)
     assert depois.hoje()["mensagens"] == 3
     assert UsoDiario(arquivo, dia=lambda: "2026-11-26").hoje()["mensagens"] == 0
+
+
+def test_familias_yaml_carrega_e_valida(tmp_path):
+    from avesrag_assistant.api.config import carregar_familias
+
+    reais = carregar_familias(ROOT_DIR / "config" / "familias.yaml")
+    assert reais["Tyrannidae"] == "Bem-te-vis e tiranídeos" and len(reais) >= 67
+    (tmp_path / "f.yaml").write_text("familias: {A: ''}\n", encoding="utf-8")
+    with pytest.raises(ConfigInvalida):
+        carregar_familias(tmp_path / "f.yaml")
+    with pytest.raises(ConfigInvalida):
+        carregar_familias(tmp_path / "nao-existe.yaml")
