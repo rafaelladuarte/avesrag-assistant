@@ -50,6 +50,8 @@ class EstadoConversa(_Base):
     # numa conversa livre.
     ave: str | None = None
     esperada: str | None = None
+    # Código anônimo de quem participou (ex.: P03), para medir a variação entre pessoas.
+    pessoa: str | None = None
     descricoes: list[str] = Field(default_factory=list)  # o que vira embedding e sugestões
     atributos: dict[str, Any] = Field(default_factory=dict)  # AtributosObservados
     descricao_para_busca: str | None = None  # do c01; guardada, mas não vai para a busca

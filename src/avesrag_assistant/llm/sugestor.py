@@ -17,6 +17,7 @@ from avesrag_builder.db.collections import SPECIES, SPECIES_RETRIEVAL_DOCS
 from avesrag_builder.llm.base import Pedido
 from pymongo.database import Database
 
+from avesrag_assistant.armazem import Armazem
 from avesrag_assistant.llm.cache import ARQUIVO_PADRAO, CacheLLM
 from avesrag_assistant.llm.contratos import C04Candidatas, schema_do_contrato
 from avesrag_assistant.llm.prompts import PromptChat, carregar_prompt
@@ -96,7 +97,10 @@ def casar(sugestao: C04Candidatas, indice: Mapping[str, str]) -> list[str | None
 
 
 def criar_sugestor(
-    settings: Settings, vocabulario: Vocabulario, regras_bico: RegrasBico
+    settings: Settings,
+    vocabulario: Vocabulario,
+    regras_bico: RegrasBico,
+    armazem: Armazem | None = None,
 ) -> Sugestor:
     """Sugestor com o prompt do `config/prompts/`, o fornecedor da OpenAI e o cache em `reports/`."""
     from avesrag_builder.llm.openai import OpenAIFornecedor
@@ -104,5 +108,5 @@ def criar_sugestor(
     prompt = carregar_prompt(settings.CONFIG_DIR / "prompts" / "c04_candidatas.yaml", vocabulario)
     settings.require("OPENAI_API_KEY")
     fornecedor = OpenAIFornecedor(settings.OPENAI_API_KEY.get_secret_value())
-    cache = CacheLLM(settings.REPORTS_DIR / ARQUIVO_PADRAO, fornecedor)
+    cache = CacheLLM(armazem or settings.REPORTS_DIR / ARQUIVO_PADRAO, fornecedor)
     return Sugestor(prompt, cache, vocabulario, regras_bico, settings.LLM_MODEL)

@@ -1,0 +1,997 @@
+[
+ {
+  "species_id": "sp_megarynchus_pitangua",
+  "nome": "neinei",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "ambiente",
+    "tipo": "conflito_observado",
+    "detalhe": "1 descrição(ões) conflitam; a pessoa disse: parque_jardim (só descrições geradas por LLM)",
+    "sugestao": "ver se a ficha está errada ou se a descrição é que errou",
+    "evidencia": "g022: Passarinho grande, de peito amarelo, cabeça preta com uma faixa branca e um bicão grosso …"
+   },
+   {
+    "campo": "bico",
+    "tipo": "conflito_observado",
+    "detalhe": "1 descrição(ões) conflitam; a pessoa disse: comprimento:longo, espessura:grosso (só descrições geradas por LLM)",
+    "sugestao": "ver se a ficha está errada ou se a descrição é que errou",
+    "evidencia": "g022: Passarinho grande, de peito amarelo, cabeça preta com uma faixa branca e um bicão grosso …"
+   },
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_crotophaga_ani",
+  "nome": "anu-preto",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "bico",
+    "tipo": "conflito_observado",
+    "detalhe": "1 descrição(ões) conflitam; a pessoa disse: curvatura:curvo, espessura:grosso (só descrições geradas por LLM)",
+    "sugestao": "ver se a ficha está errada ou se a descrição é que errou",
+    "evidencia": "g004: Pássaro todo preto, magrinho, de rabo comprido e um bico meio grosso e curvado em cima. P…"
+   },
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (preto); provavelmente é plumagem uniforme: conferir e dar a revisão por feita",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 2
+ },
+ {
+  "species_id": "sp_campylorhamphus_trochilirostris",
+  "nome": "arapaçu-beija-flor",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_lepidocolaptes_squamatus",
+  "nome": "arapaçu-escamoso",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_conopias_trivirgatus",
+  "nome": "bem-te-vi-pequeno",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_xenops_rutilans",
+  "nome": "bico-virado-carijó",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_mycteria_americana",
+  "nome": "cabeça-seca",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   },
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (cabeça e pescoço sem penas); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_troglodytes_musculus",
+  "nome": "corruíra",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_sporophila_angolensis",
+  "nome": "curió",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_pheugopedius_genibarbis",
+  "nome": "garrinchão-pai-avô",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_molothrus_oryzivorus",
+  "nome": "iraúna-grande",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_myiarchus_swainsoni",
+  "nome": "irré",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_geotrygon_violacea",
+  "nome": "juriti-vermelha",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_knipolegus_lophotes",
+  "nome": "maria-preta-de-penacho",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   },
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (branco); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 1
+ },
+ {
+  "species_id": "sp_asio_flammeus",
+  "nome": "mocho-dos-banhados",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_platyrinchus_mystaceus",
+  "nome": "patinho",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_tyrannopsis_sulphurea",
+  "nome": "suiriri-de-garganta-rajada",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_cypseloides_senex",
+  "nome": "taperuçu-velho",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_pseudocolopteryx_sclateri",
+  "nome": "tricolino",
+  "prioridade": "media",
+  "status_ficha": "incompleta",
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "sem_cores",
+    "detalhe": "a ficha não tem nenhuma cor, e a cor é o atributo que mais separa as aves",
+    "sugestao": "preencher as cores",
+    "evidencia": ""
+   }
+  ],
+  "ordem": 0
+ },
+ {
+  "species_id": "sp_alipiopsitta_xanthops",
+  "nome": "papagaio-galego",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (amarelo); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_antrostomus_rufus",
+  "nome": "joão-corta-pau",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (marrom); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_butorides_striata",
+  "nome": "socozinho",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (amarelo); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_cacicus_cela",
+  "nome": "xexéu",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (preto); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_chaetura_meridionalis",
+  "nome": "andorinhão-do-temporal",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (bege); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_contopus_cinereus",
+  "nome": "papa-moscas-cinzento",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (cinza); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_coragyps_atratus",
+  "nome": "urubu-preto",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 2,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (preto); provavelmente é plumagem uniforme: conferir e dar a revisão por feita",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_cranioleuca_vulpina",
+  "nome": "arredio-do-rio",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (marrom); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_crypturellus_undulatus",
+  "nome": "jaó",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (cinza); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_cypseloides_fumigatus",
+  "nome": "taperuçu-preto",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 2,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (preto); provavelmente é plumagem uniforme: conferir e dar a revisão por feita",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_dendrocincla_turdina",
+  "nome": "arapaçu-liso",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (marrom); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_elaenia_spectabilis",
+  "nome": "guaracava-grande",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (branco); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_gnorimopsar_chopi",
+  "nome": "pássaro-preto",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 2,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (preto); provavelmente é plumagem uniforme: conferir e dar a revisão por feita",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_hirundo_rustica",
+  "nome": "andorinha-de-bando",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (azul); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_hydropsalis_torquata",
+  "nome": "bacurau-tesoura",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (marrom); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_lepidocolaptes_angustirostris",
+  "nome": "arapaçu-de-cerrado",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (branco); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_mackenziaena_severa",
+  "nome": "borralhara",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (vermelho); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_myiarchus_tyrannulus",
+  "nome": "maria-cavaleira-de-rabo-enferrujado",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (laranja); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_myiodynastes_maculatus",
+  "nome": "bem-te-vi-rajado",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (branco); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_myiopagis_viridicata",
+  "nome": "guaracava-de-crista-alaranjada",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (amarelo); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_patagioenas_speciosa",
+  "nome": "pomba-trocal",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (preto); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_picumnus_albosquamatus",
+  "nome": "picapauzinho-escamoso",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (vermelho); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_sittasomus_griseicapillus",
+  "nome": "arapaçu-verde",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (marrom); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_sporophila_hypoxantha",
+  "nome": "caboclinho-de-barriga-vermelha",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (azul); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_sporophila_melanogaster",
+  "nome": "caboclinho-de-barriga-preta",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (marrom); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_thamnophilus_pelzelni",
+  "nome": "choca-do-planalto",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (marrom); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_xolmis_velatus",
+  "nome": "noivinha-branca",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.cores",
+    "tipo": "uma_cor",
+    "detalhe": "a ficha tem uma cor só (branco); conferir se falta alguma cor (a ave tem mais de uma?)",
+    "sugestao": "se faltar cor, complete atributos.cores e depois marque como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_cathartes_burrovianus",
+  "nome": "urubu-de-cabeça-amarela",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (cabeça nua de urubu); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_cathartes_aura",
+  "nome": "urubu-de-cabeça-vermelha",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (cabeça nua de urubu); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_sarcoramphus_papa",
+  "nome": "urubu-rei",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (cabeça nua e colorida, com carúncula no bico); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_ciconia_maguari",
+  "nome": "maguari",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (pele nua vermelha no rosto); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_jabiru_mycteria",
+  "nome": "tuiuiú",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (pescoço nu, com papo vermelho); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_penelope_obscura",
+  "nome": "jacuguaçu",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (garganta nua vermelha); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_penelope_superciliaris",
+  "nome": "jacupemba",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (garganta nua vermelha); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_crax_fasciolata",
+  "nome": "mutum-de-penacho",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (carúncula amarela na base do bico); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_caracara_plancus",
+  "nome": "carcará",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (face nua e colorida); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_mesembrinibis_cayennensis",
+  "nome": "coró-coró",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (rosto sem penas); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_platalea_ajaja",
+  "nome": "colhereiro",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (cabeça sem penas); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_phimosus_infuscatus",
+  "nome": "tapicuru",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (face nua vermelha); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_theristicus_caudatus",
+  "nome": "curicaca",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (rosto sem penas); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ]
+ },
+ {
+  "species_id": "sp_cairina_moschata",
+  "nome": "pato-do-mato",
+  "prioridade": "baixa",
+  "status_ficha": "apta",
+  "ordem": 1,
+  "motivos": [
+   {
+    "campo": "atributos.marcas",
+    "tipo": "marca_pele_nua",
+    "detalhe": "conferir se tem pele nua na cabeça ou no pescoço (carúnculas no rosto e na base do bico); se tiver, marque pele_nua em Marcas",
+    "sugestao": "Editar ficha → Marcas → pele_nua; depois, marcar como revisada",
+    "evidencia": ""
+   }
+  ]
+ }
+]

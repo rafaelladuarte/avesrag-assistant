@@ -84,7 +84,7 @@ def test_pagina_e_lista_de_aves_sem_nome(servidor):
 
 def test_sessao_moderada_ate_revelar(servidor):
     base, diretorio = servidor
-    status, corpo = _chamar(base + "/api/sessoes", {"ave": "A1"})
+    status, corpo = _chamar(base + "/api/sessoes", {"ave": "A1", "pessoa": "P01"})
     assert status == 201
     v = json.loads(corpo)
     assert (v["ave"], v["foto_url"], v["etapa"]) == ("A1", "https://exemplo/a.jpg", "coleta")
@@ -150,7 +150,7 @@ def test_erros(servidor, caminho, corpo, status):
 
 def test_mensagem_vazia_ou_longa(servidor):
     base, _ = servidor
-    v = json.loads(_chamar(base + "/api/sessoes", {"ave": "A1"})[1])
+    v = json.loads(_chamar(base + "/api/sessoes", {"ave": "A1", "pessoa": "P01"})[1])
     url = f"{base}/api/sessoes/{v['id']}/mensagens"
     assert _chamar(url, {"texto": "  "})[0] == 400
     assert _chamar(url, {"texto": "a" * (LIMITE_MENSAGEM + 1)})[0] == 400
@@ -163,3 +163,54 @@ def test_relatorio_sem_sessoes(tmp_path):
     r = resumir(e)
     assert (r.acertou, r.apresentada, r.rodadas, r.primeira) == (False, False, 0, None)
     assert "em andamento" in linhas([r])[0]
+
+
+def test_codigo_da_pessoa_obrigatorio_com_ave_e_validado(servidor):
+    base, diretorio = servidor
+    assert _chamar(base + "/api/sessoes", {"ave": "A1"})[0] == 400  # sem o código da pessoa
+    assert _chamar(base + "/api/sessoes", {"ave": "A1", "pessoa": "Maria da Silva"})[0] == 400
+    status, corpo = _chamar(base + "/api/sessoes", {"ave": "A1", "pessoa": "P07"})
+    assert status == 201
+    assert carregar_moderadas(diretorio)[0].pessoa == "P07"
+    assert resumir(carregar_moderadas(diretorio)[0]).pessoa == "P07"
+
+
+def test_linhas_do_teste_separa_calibracao_e_conta_por_pessoa(tmp_path):
+    from avesrag_assistant.avaliacao.sessoes import especies_de_calibracao, linhas_do_teste
+
+    casos = tmp_path / "casos.yaml"
+    casos.write_text(
+        "casos:\n"
+        "  - {id: a, esperada: sp_cal, uso: calibracao}\n"
+        "  - {id: b, esperada: sp_teste, uso: teste}\n",
+        encoding="utf-8",
+    )
+    cal = especies_de_calibracao(casos)
+    assert cal == {"sp_cal"}
+    assert especies_de_calibracao(tmp_path / "nao_existe.yaml") == set()
+
+    def sessao(id_, ave, esperada, pessoa, confirmada, etapa="fim"):
+        return resumir(
+            sessoes.EstadoConversa(
+                id=id_,
+                ave=ave,
+                esperada=esperada,
+                pessoa=pessoa,
+                confirmada=confirmada,
+                etapa=etapa,
+            )
+        )
+
+    resumos = [
+        sessao("s1", "S1", "sp_x", "P01", "sp_x"),  # válida, acertou
+        sessao("s2", "S2", "sp_y", "P01", "sp_z"),  # válida, errou
+        sessao("s3", "S3", "sp_w", "P02", "sp_w"),  # válida
+        sessao("s4", "A1", "sp_cal", "P02", "sp_cal"),  # ave da calibração: fora
+        sessao("s5", "S4", "sp_v", "P03", None, etapa="coleta"),  # em andamento: fora
+    ]
+    saida = "\n".join(linhas_do_teste(resumos, cal, ["S1", "S2", "S3", "S4", "S5"]))
+    assert "3 sessão(ões) válida(s); 2 fora da contagem" in saida
+    assert "acerto: 2/3 (67%)" in saida
+    assert "pessoas: 2" in saida
+    assert "P01          2 sessão(ões), 1 acerto(s)" in saida
+    assert "aves ainda sem sessão válida (2): S4, S5" in saida

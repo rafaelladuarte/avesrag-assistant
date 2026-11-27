@@ -73,6 +73,9 @@
         <option value="">Livre: sem foto (a pessoa conta de uma ave que viu)</option>
       </select>
     </label>
+    <label>Código da pessoa (anônimo, ex.: P03; sem nome nem e-mail)
+      <input id="pessoa" type="text" maxlength="12" placeholder="P01" autocomplete="off">
+    </label>
     <button id="iniciar">Iniciar sessão</button>
     <label>Retomar uma sessão
       <input id="retomar-id" type="text" placeholder="id da sessão" autocomplete="off">
@@ -204,7 +207,7 @@ async function enviar(texto) {
 async function iniciar() {
   $("erro-inicio").textContent = "";
   try {
-    mostrar(await chamar("POST", "/api/sessoes", { ave: $("ave").value || null }));
+    mostrar(await chamar("POST", "/api/sessoes", { ave: $("ave").value || null, pessoa: $("pessoa").value.trim() || null }));
   } catch (e) { $("erro-inicio").textContent = `Erro: ${e.message}`; }
 }
 

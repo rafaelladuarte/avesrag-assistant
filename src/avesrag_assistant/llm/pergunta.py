@@ -13,6 +13,7 @@ import json
 from avesrag_builder.core.vocabulario import RegrasBico, Vocabulario
 from avesrag_builder.llm.base import Pedido
 
+from avesrag_assistant.armazem import Armazem
 from avesrag_assistant.busca.modelos import AtributosObservados
 from avesrag_assistant.llm.cache import ARQUIVO_PADRAO, CacheLLM
 from avesrag_assistant.llm.contratos import C02Pergunta, schema_do_contrato
@@ -63,7 +64,10 @@ class RedatorPergunta:
 
 
 def criar_redator(
-    settings: Settings, vocabulario: Vocabulario, regras_bico: RegrasBico
+    settings: Settings,
+    vocabulario: Vocabulario,
+    regras_bico: RegrasBico,
+    armazem: Armazem | None = None,
 ) -> RedatorPergunta:
     """Redator com o prompt do `config/prompts/`, o fornecedor da OpenAI e o cache em `reports/`."""
     from avesrag_builder.llm.openai import OpenAIFornecedor
@@ -71,5 +75,5 @@ def criar_redator(
     prompt = carregar_prompt(settings.CONFIG_DIR / "prompts" / "c02_pergunta.yaml", vocabulario)
     settings.require("OPENAI_API_KEY")
     fornecedor = OpenAIFornecedor(settings.OPENAI_API_KEY.get_secret_value())
-    cache = CacheLLM(settings.REPORTS_DIR / ARQUIVO_PADRAO, fornecedor)
+    cache = CacheLLM(armazem or settings.REPORTS_DIR / ARQUIVO_PADRAO, fornecedor)
     return RedatorPergunta(prompt, cache, vocabulario, regras_bico, settings.LLM_MODEL)

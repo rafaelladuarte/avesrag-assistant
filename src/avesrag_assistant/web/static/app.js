@@ -211,14 +211,84 @@
         }
         estado.detalhe = d;
         estado.tela = "detalhe";
+        if (estado.origem === "fila") carregarTextoWa(d.species_id);
         desenhar();
         window.scrollTo(0, 0);
       })
       .catch(function (e) {
         estado.erro = { texto: e.message, repetir: null };
-        estado.tela = estado.catalogo || estado.origem === "explorar" ? "explorar" : "inicio";
+        estado.tela = estado.origem === "fila" ? "fila" : estado.catalogo || estado.origem === "explorar" ? "explorar" : "inicio";
         desenhar();
       });
+  }
+
+  // texto do WikiAves colado à mão na revisão (temporário; só curadoria)
+  function carregarTextoWa(speciesId) {
+    if (estado.textoWa && estado.textoWa.species_id === speciesId) return;
+    estado.textoWa = null;
+    api("GET", "/api/curadoria/fila/" + encodeURIComponent(speciesId) + "/texto")
+      .then(function (r) { estado.textoWa = r; estado.textoWaRascunho = r.texto; desenhar(); })
+      .catch(function () {});
+  }
+
+  function salvarTextoWa() {
+    var id = estado.detalhe.species_id;
+    estado.avisoTextoWa = null;
+    api("PUT", "/api/curadoria/fila/" + encodeURIComponent(id) + "/texto", { texto: estado.textoWaRascunho || "" })
+      .then(function (r) {
+        estado.textoWa = r; estado.textoWaRascunho = r.texto; estado.fila = null;
+        estado.avisoTextoWa = { erro: false, texto: r.texto ? "Texto salvo (" + r.texto.length + " caracteres)." : "Texto removido." };
+        desenhar();
+      })
+      .catch(function (e) { estado.avisoTextoWa = { erro: true, texto: e.message }; desenhar(); });
+  }
+
+  // tira a espécie da fila de revisão (a revisão dela terminou)
+  function concluirRevisao(speciesId, nome, voltar) {
+    api("POST", "/api/curadoria/fila/" + encodeURIComponent(speciesId) + "/concluir")
+      .then(function () {
+        estado.fila = (estado.fila || []).filter(function (e) { return e.species_id !== speciesId; });
+        estado.avisoFila = { id: speciesId, nome: nome };
+        if (voltar) location.hash = "revisao"; else desenhar();
+      })
+      .catch(function (e) { estado.erro = { texto: e.message, repetir: null }; desenhar(); });
+  }
+
+  function desfazerRevisao() {
+    var a = estado.avisoFila;
+    if (!a) return;
+    api("DELETE", "/api/curadoria/fila/" + encodeURIComponent(a.id) + "/concluir")
+      .then(function () { estado.avisoFila = null; estado.fila = null; aplicarHash(); })
+      .catch(function (e) { estado.erro = { texto: e.message, repetir: null }; desenhar(); });
+  }
+
+  function painelRevisao() {
+    if (estado.papel !== "curadoria" || estado.origem !== "fila") return null;
+    var d = estado.detalhe;
+    return el("section", { class: "curadoria" },
+      el("div", { class: "curadoria-topo" },
+        el("div", {}, el("b", { texto: "Revisão da ficha" }),
+          el("span", { class: "restantes", texto: " Quando terminar de conferir esta ave, marque como revisada: ela sai da fila." })),
+        el("button", { class: "botao", type: "button", onclick: function () { concluirRevisao(d.species_id, d.nome, true); } }, "Marcar como revisada")));
+  }
+
+  function painelTextoWa() {
+    if (estado.papel !== "curadoria" || estado.origem !== "fila" || !estado.textoWa) return null;
+    var area = el("textarea", { id: "texto-wa", rows: "12", maxlength: "60000",
+      placeholder: "Cole aqui o texto completo da página do WikiAves desta ave (descrição, comportamento e ambiente, voz e hábitos).",
+      oninput: function () { estado.textoWaRascunho = area.value; } });
+    area.value = estado.textoWaRascunho || "";
+    var aviso = estado.avisoTextoWa
+      ? el("div", { class: estado.avisoTextoWa.erro ? "erro" : "confirmada", role: estado.avisoTextoWa.erro ? "alert" : "status" }, estado.avisoTextoWa.texto)
+      : null;
+    return el("section", { class: "curadoria" },
+      el("div", { class: "curadoria-topo" },
+        el("div", {}, el("b", { texto: "Texto do WikiAves (temporário)" }),
+          el("span", { class: "restantes", texto: " Fica guardado só para a extração das três partes; não aparece na ficha nem na conversa." }))),
+      aviso, area,
+      el("div", { class: "botoes" },
+        el("button", { class: "botao botao-pequeno", type: "button", onclick: salvarTextoWa }, "Salvar texto"),
+        estado.textoWa.atualizado_em ? el("span", { class: "restantes", texto: "Salvo em " + estado.textoWa.atualizado_em + " por " + estado.textoWa.atualizado_por }) : null));
   }
 
   function carregarCatalogo() {
@@ -235,7 +305,15 @@
   // A navegação usa o hash (#explorar, #especie/<id>) para o botão voltar do navegador funcionar.
   function aplicarHash() {
     var h = decodeURIComponent(location.hash.replace(/^#/, ""));
-    if (h === "explorar") {
+    if (h === "revisao") {
+      estado.tela = "fila";
+      estado.erro = null;
+      api("GET", "/api/curadoria/fila")
+        .then(function (f) { estado.fila = f; })
+        .catch(function (e) { estado.erro = { texto: e.message, repetir: null }; })
+        .then(function () { desenhar(); window.scrollTo(0, 0); });
+      desenhar();
+    } else if (h === "explorar") {
       estado.tela = "explorar";
       estado.erro = null;
       carregarCatalogo()
@@ -736,7 +814,8 @@
   function telaDetalhe() {
     var d = estado.detalhe;
     var v = estado.visao;
-    var deExplorar = estado.origem === "explorar";
+    var deFila = estado.origem === "fila";
+    var deExplorar = estado.origem === "explorar" || deFila;
     var confirmada = !deExplorar && v && v.confirmada && v.confirmada.species_id === d.species_id;
     var itens = function (lista) {
       var dl = el("dl", { class: "lista" });
@@ -752,17 +831,19 @@
       fotos.appendChild(el("figure", {}, fi,
         el("figcaption", {}, d.ilustracao.rotulo + " · ", el("a", { href: d.ilustracao.link, target: "_blank", rel: "noopener noreferrer" }, "fonte"))));
     }
-    var voltarTexto = deExplorar ? "Voltar para Explorar aves" : v && v.etapa === "fim" ? "Voltar" : "Voltar para as candidatas";
+    var voltarTexto = deFila ? "Voltar para a fila de revisão" : deExplorar ? "Voltar para Explorar aves" : v && v.etapa === "fim" ? "Voltar" : "Voltar para as candidatas";
     var cabecaDeNomes = el("span", { class: "cient" },
       d.nome_cientifico + (d.familia ? ", da família " + d.familia : "") + (d.nome_en ? " · em inglês, " + d.nome_en : ""));
     return el("div", { class: "detalhe" },
-      el("button", { class: "link-botao voltar", type: "button", onclick: function () { location.hash = deExplorar ? "explorar" : ""; } },
+      el("button", { class: "link-botao voltar", type: "button", onclick: function () { location.hash = deFila ? "revisao" : deExplorar ? "explorar" : ""; } },
         icone(VOLTAR, 18), voltarTexto),
       confirmada ? el("div", { class: "confirmada" }, icone(["M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", "m8 12 3 3 5-6"], 22),
         el("span", { texto: "Identificação confirmada: " + d.nome + "." }),
         el("button", { class: "link-botao", type: "button", onclick: novaConversa }, "Identificar outra ave")) : null,
       blocoErro(),
+      painelRevisao(),
       painelCuradoria(),
+      painelTextoWa(),
       el("section", { class: "topo" },
         el("div", { class: "nome" }, el("h1", { texto: d.nome }), cabecaDeNomes),
         deExplorar ? el("button", { class: "botao botao-pequeno", type: "button", onclick: novaConversa }, "Identificar uma ave") : null),
@@ -853,7 +934,10 @@
       el("div", { class: "explorar-topo" },
         el("div", {}, el("h1", { texto: "Explorar aves" }),
           el("p", { class: "sub", texto: "Busque pelo nome ou filtre por família e escolha uma espécie para ver a ficha. São as " + todas.length + " aves de Uberlândia (MG) que o AvesRAG conhece." })),
-        el("div", { class: "campo" }, el("label", { for: "busca", texto: "Buscar espécie" }), campo)),
+        el("div", { class: "campo" }, el("label", { for: "busca", texto: "Buscar espécie" }), campo),
+        estado.papel === "curadoria"
+          ? el("button", { class: "botao-contorno", type: "button", onclick: function () { location.hash = "revisao"; } }, "Fila de revisão das fichas")
+          : null),
       chips,
       el("div", { class: "explorar-lista" },
         el("div", { class: "lista-topo" },
@@ -865,6 +949,40 @@
         el("div", { class: "grade" }, cartoes)),
       estado.catalogo ? null : el("p", { class: "restantes", texto: "Carregando as espécies..." })
     );
+  }
+
+  // -- fila de revisão das fichas (só convite de curadoria) -----------------------
+
+  function telaFila() {
+    var fila = estado.fila || [];
+    var cartoes = fila.map(function (e) {
+      var cartao = el("button", { class: "cartao-especie", type: "button", onclick: function () { abrirDetalhe(e.species_id, "fila"); } },
+        el("span", { class: "dados" },
+          el("span", { class: "nome-comum", texto: e.nome }),
+          el("span", { class: "cient", texto: e.nome_cientifico || "" }),
+          el("span", { class: "familia", texto: e.texto_chars ? "Texto do WikiAves anexado (" + e.texto_chars + " caracteres)" : "Sem texto do WikiAves" }),
+          e.motivos.map(function (m) {
+            return el("span", { class: "familia", texto: m.campo + ": " + m.detalhe });
+          })));
+      return el("div", { class: "item-fila" }, cartao,
+        el("button", { class: "botao-contorno botao-mini", type: "button", onclick: function () { concluirRevisao(e.species_id, e.nome, false); } }, "Marcar como revisada"));
+    });
+    var avisoFila = estado.avisoFila
+      ? el("div", { class: "confirmada", role: "status" }, estado.avisoFila.nome + " saiu da fila. ",
+          el("button", { class: "link-botao", type: "button", onclick: desfazerRevisao }, "Desfazer"))
+      : null;
+    return el("div", { class: "explorar" },
+      blocoErro(),
+      avisoFila,
+      el("div", { class: "explorar-topo" },
+        el("div", {}, el("h1", { texto: "Fila de revisão das fichas" }),
+          el("p", { class: "sub", texto: "Fichas pendentes da revisão manual: primeiro as sem cor (fora da busca), depois as de uma cor só. Abra uma, corrija os campos e clique em Marcar como revisada para ela sair da fila." }))),
+      el("div", { class: "explorar-lista" },
+        el("div", { class: "lista-topo" },
+          el("h2", { texto: "Pendentes" }),
+          el("span", { class: "restantes", texto: fila.length === 1 ? "1 espécie" : fila.length + " espécies" })),
+        el("div", { class: "grade" }, cartoes)),
+      estado.fila ? null : el("p", { class: "restantes", texto: "Carregando a fila..." }));
   }
 
   // -- desenho ------------------------------------------------------------------
@@ -881,6 +999,7 @@
     var pos = ativo && ativo.selectionStart;
     var conteudo =
       estado.tela === "detalhe" && estado.detalhe ? telaDetalhe()
+      : estado.tela === "fila" ? telaFila()
       : estado.tela === "explorar" ? telaExplorar()
       : estado.tela === "conversa" ? telaConversa()
       : telaInicio();
@@ -912,8 +1031,9 @@
   });
   window.addEventListener("hashchange", aplicarHash);
 
+  // (a fila de revisão abre em #revisao, só com o papel de curadoria)
   // o papel do convite decide se a ficha mostra a curadoria (o servidor confere de novo)
-  api("GET", "/api/eu").then(function (e) { estado.papel = e.papel; if (estado.tela === "detalhe") desenhar(); }).catch(function () {});
+  api("GET", "/api/eu").then(function (e) { estado.papel = e.papel; if (estado.tela === "detalhe" || estado.tela === "explorar") desenhar(); }).catch(function () {});
 
   // retoma a sessão ao recarregar a página (e abre a tela do hash, se houver)
   var id = lembrada();

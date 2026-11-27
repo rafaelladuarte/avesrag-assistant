@@ -28,15 +28,21 @@ def _hash(token: str) -> str:
 
 
 class Convites:
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, dados: dict[str, dict] | None = None):
+        """`dados`: os convites já lidos (de uma variável de ambiente); ficam só para leitura."""
         self.path = Path(path)
+        self._fixos = dados
 
     def _ler(self) -> dict[str, dict]:
+        if self._fixos is not None:
+            return json.loads(json.dumps(self._fixos))
         if not self.path.exists():
             return {}
         return json.loads(self.path.read_text(encoding="utf-8"))
 
     def _gravar(self, dados: dict[str, dict]) -> None:
+        if self._fixos is not None:
+            raise ConviteInvalido("os convites vêm do ambiente: só leitura (crie-os localmente)")
         self.path.parent.mkdir(parents=True, exist_ok=True)
         fd, tmp = tempfile.mkstemp(dir=self.path.parent, prefix=".convites.", suffix=".tmp")
         try:

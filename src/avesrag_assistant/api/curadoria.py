@@ -25,6 +25,7 @@ from avesrag_builder.fuse.species import carregar as carregar_dados
 from avesrag_builder.fuse.species import refundir_uma
 from pymongo.database import Database
 
+from avesrag_assistant.api.curadoria_erro import ErroCuradoria
 from avesrag_assistant.api.especies import _foto, textos_gerados
 from avesrag_assistant.api.exibicao import exibir
 from avesrag_assistant.api.guardrails import conferir_edicao
@@ -61,10 +62,6 @@ ORIGENS_FOTO = {
 }
 Refundir = Callable[[Database, str], Any]
 Candidatas = Callable[[str], list[tuple[str, dict[str, Any]]]]
-
-
-class ErroCuradoria(ValueError):
-    """Pedido recusado; o texto é o que a pessoa vê."""
 
 
 def _valor_atual(doc: dict[str, Any], caminho: str) -> Any:

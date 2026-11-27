@@ -38,6 +38,7 @@ PAGINA = Path(__file__).with_name("pagina.html")
 LIMITE_CORPO = 10_000  # bytes de uma requisição
 LIMITE_MENSAGEM = 1_000  # caracteres de uma mensagem
 SAUDACAO = "Olá! Me conte como era a ave, do jeito que você contaria para um amigo."
+CODIGO_PESSOA = re.compile(r"^[A-Za-z0-9_-]{1,12}$")
 ROTA_MENSAGEM = re.compile(r"^/api/sessoes/([A-Za-z0-9]+)/mensagens$")
 ROTA_SESSAO = re.compile(r"^/api/sessoes/([A-Za-z0-9]+)$")
 
@@ -136,14 +137,20 @@ class Moderacao:
 
     # -- escrita -------------------------------------------------------------
 
-    def nova(self, codigo: str | None) -> dict[str, Any]:
+    def nova(self, codigo: str | None, pessoa: str | None = None) -> dict[str, Any]:
         if codigo and codigo not in self.aves:
             raise ValueError(f"ave desconhecida: {codigo!r}")
+        pessoa = (pessoa or "").strip() or None
+        if pessoa and not CODIGO_PESSOA.match(pessoa):
+            raise ValueError("código da pessoa: use até 12 letras, números, _ ou - (ex.: P03)")
+        if codigo and not pessoa:
+            raise ValueError("informe o código da pessoa (ex.: P03), sem nome nem e-mail")
         ave = self.aves.get(codigo or "")
         e = sessoes.EstadoConversa(
             id=sessoes.novo_id(),
             ave=ave.codigo if ave else None,
             esperada=ave.species_id if ave else None,
+            pessoa=pessoa,
         )
         with self.trava:
             sessoes.salvar(e, self.diretorio)
@@ -217,7 +224,9 @@ def criar_handler(moderacao: Moderacao) -> type[BaseHTTPRequestHandler]:
             try:
                 corpo = self._corpo()
                 if self.path == "/api/sessoes":
-                    self._json(HTTPStatus.CREATED, moderacao.nova(corpo.get("ave")))
+                    self._json(
+                        HTTPStatus.CREATED, moderacao.nova(corpo.get("ave"), corpo.get("pessoa"))
+                    )
                 elif m := ROTA_MENSAGEM.match(self.path):
                     texto = corpo.get("texto")
                     if not isinstance(texto, str):

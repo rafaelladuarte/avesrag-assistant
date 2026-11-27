@@ -12,18 +12,17 @@ from __future__ import annotations
 
 import hashlib
 import json
-import threading
 from collections.abc import Callable
 from pathlib import Path
 from typing import TypeVar
 
 from avesrag_builder.llm.base import Fornecedor, Pedido
 
+from avesrag_assistant.armazem import Armazem, ArmazemArquivo
 from avesrag_assistant.uso import CONTADOR
 
 ARQUIVO_PADRAO = "cache_llm.json"
-# Uma trava para todas as instâncias: o extrator, o redator e o sugestor gravam o mesmo arquivo.
-_TRAVA = threading.Lock()
+COLECAO_PADRAO = "cache_llm"
 TENTATIVAS = 2
 T = TypeVar("T")
 
@@ -33,13 +32,14 @@ class ErroLLM(RuntimeError):
 
 
 class CacheLLM:
-    def __init__(self, path: Path, fornecedor: Fornecedor):
-        self.path = Path(path)
+    def __init__(self, onde: Path | str | Armazem, fornecedor: Fornecedor):
+        """`onde`: um caminho (arquivo JSON) ou um armazém (arquivo ou MongoDB)."""
+        self.armazem: Armazem = ArmazemArquivo(onde) if isinstance(onde, (Path, str)) else onde
+        self.path = getattr(self.armazem, "path", None)
         self.fornecedor = fornecedor
         self.chamadas = 0  # chamadas ao fornecedor neste processo
         self.tokens_entrada = 0
         self.tokens_saida = 0
-        self._dados: dict[str, str] | None = None
 
     @staticmethod
     def chave(prompt_id: str, versao: str, pedido: Pedido) -> str:
@@ -50,27 +50,12 @@ class CacheLLM:
         )
         return f"{prompt_id}:{versao}:{hashlib.sha256(conteudo.encode('utf-8')).hexdigest()}"
 
-    def _carregar(self) -> dict[str, str]:
-        with _TRAVA:
-            if self._dados is None:
-                if self.path.exists():
-                    self._dados = json.loads(self.path.read_text(encoding="utf-8"))
-                else:
-                    self._dados = {}
-            return self._dados
-
-    def _gravar(self) -> None:  # chamado com a _TRAVA
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = self.path.with_suffix(self.path.suffix + ".tmp")
-        tmp.write_text(json.dumps(self._dados, ensure_ascii=False), encoding="utf-8")
-        tmp.replace(self.path)
-
     def gerar(self, prompt_id: str, versao: str, pedido: Pedido, validar: Callable[[str], T]) -> T:
         """A resposta validada: do cache, ou do fornecedor (até 2 tentativas)."""
-        dados = self._carregar()
         chave = self.chave(prompt_id, versao, pedido)
-        if chave in dados:
-            return validar(dados[chave])
+        guardado = self.armazem.obter([chave])
+        if chave in guardado:
+            return validar(guardado[chave])
         erros = []
         for _ in range(TENTATIVAS):
             resposta = self.fornecedor.gerar(pedido)
@@ -86,8 +71,6 @@ class CacheLLM:
             except ValueError as e:  # inclui ValidationError e JSONDecodeError
                 erros.append(str(e).splitlines()[0])
                 continue
-            with _TRAVA:
-                dados[chave] = resposta.conteudo
-                self._gravar()
+            self.armazem.gravar({chave: resposta.conteudo})
             return valor
         raise ErroLLM(f"{prompt_id}: sem resposta válida em {TENTATIVAS} tentativas: {erros}")

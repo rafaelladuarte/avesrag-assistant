@@ -319,3 +319,7 @@ input[type="number"] { font: inherit; font-size: 16px; height: 48px; padding: 0 
   .nome h2 { font-size: 28px; }
   .enviar { position: sticky; bottom: 0; background: var(--areia); padding: 10px 0; }
 }
+
+/* fila de revisão: cartão com o botão de concluir embaixo */
+.item-fila { display: flex; flex-direction: column; gap: 8px; }
+.item-fila .botao-mini { align-self: flex-start; }

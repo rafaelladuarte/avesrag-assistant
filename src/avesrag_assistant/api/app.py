@@ -15,7 +15,7 @@ from collections.abc import Callable, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as TempoEsgotado
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
@@ -23,10 +23,10 @@ from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from avesrag_assistant.api import especies
+from avesrag_assistant.api import especies, fila
 from avesrag_assistant.api.config import ConfigApi
 from avesrag_assistant.api.convites import Convites
-from avesrag_assistant.api.curadoria import Curadoria, ErroCuradoria
+from avesrag_assistant.api.curadoria_erro import ErroCuradoria
 from avesrag_assistant.api.guardrails import EntradaRecusada, Moderador, limpar_entrada
 from avesrag_assistant.api.limites import Limitador
 from avesrag_assistant.api.sessoes import RepositorioSessoes
@@ -35,6 +35,9 @@ from avesrag_assistant.api.visao import montar_visao
 from avesrag_assistant.conversa import estado as estados
 from avesrag_assistant.conversa.orquestrador import Orquestrador, Servicos
 from avesrag_assistant.uso import CONTADOR, Contador
+
+if TYPE_CHECKING:  # a curadoria traz o `fuse` do builder; só entra quando está habilitada
+    from avesrag_assistant.api.curadoria import Curadoria
 
 log = logging.getLogger(__name__)
 
@@ -57,6 +60,10 @@ class CorpoMensagem(BaseModel):
 class CorpoCorrecao(BaseModel):
     valor: Any = Field(...)  # obrigatório: null remove o campo da ficha
     motivo: str | None = None
+
+
+class CorpoTexto(BaseModel):
+    texto: str
 
 
 class CorpoVoto(BaseModel):
@@ -299,6 +306,34 @@ def criar_app(
             if "itens" not in catalogo_pronto:
                 catalogo_pronto["itens"] = especies.catalogo(servicos.db, familias or {})
             return catalogo_pronto["itens"]
+
+    @app.get("/api/curadoria/fila")
+    def fila_de_revisao(_: str = Depends(curador_atual)) -> list[dict[str, Any]]:
+        return fila.pendentes(servicos.db)
+
+    @app.post("/api/curadoria/fila/{species_id}/concluir")
+    def concluir_revisao(species_id: str, quem: str = Depends(curador_atual)) -> dict[str, Any]:
+        try:
+            return fila.concluir(servicos.db, species_id, quem)
+        except ValueError as e:
+            raise ErroApi(404, str(e)) from None
+
+    @app.delete("/api/curadoria/fila/{species_id}/concluir")
+    def reabrir_revisao(species_id: str, _: str = Depends(curador_atual)) -> dict[str, Any]:
+        return fila.reabrir(servicos.db, species_id)
+
+    @app.get("/api/curadoria/fila/{species_id}/texto")
+    def texto_anexado(species_id: str, _: str = Depends(curador_atual)) -> dict[str, Any]:
+        return fila.ler_texto(servicos.db, species_id)
+
+    @app.put("/api/curadoria/fila/{species_id}/texto")
+    def anexar_texto(
+        species_id: str, corpo: CorpoTexto, quem: str = Depends(curador_atual)
+    ) -> dict[str, Any]:
+        try:
+            return fila.gravar_texto(servicos.db, species_id, corpo.texto, quem)
+        except ValueError as e:
+            raise ErroApi(400, str(e)) from None
 
     @app.get("/api/especies/{species_id}")
     def especie(species_id: str, _: str = Depends(convite_atual)) -> dict[str, Any]:

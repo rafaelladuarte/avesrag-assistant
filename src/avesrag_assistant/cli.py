@@ -27,9 +27,15 @@ from avesrag_assistant.avaliacao.casos import CasosInvalidos, carregar_casos, co
 from avesrag_assistant.avaliacao.relatorio import gravar_tsv, tabela
 from avesrag_assistant.avaliacao.relatorio import inalcancaveis as relatorio_inalcancaveis
 from avesrag_assistant.avaliacao.rodar import DEGRADADO, MODOS_AVALIACAO, rodar
-from avesrag_assistant.avaliacao.sessoes import ARQUIVO_TSV, carregar_moderadas, resumir
+from avesrag_assistant.avaliacao.sessoes import (
+    ARQUIVO_TSV,
+    carregar_moderadas,
+    especies_de_calibracao,
+    resumir,
+)
 from avesrag_assistant.avaliacao.sessoes import gravar_tsv as gravar_tsv_sessoes
 from avesrag_assistant.avaliacao.sessoes import linhas as linhas_sessoes
+from avesrag_assistant.avaliacao.sessoes import linhas_do_teste as linhas_do_teste_sessoes
 from avesrag_assistant.avaliacao.simulacao import (
     entradas_e_saidas,
     linhas_tsv,
@@ -52,6 +58,7 @@ from avesrag_assistant.llm.extrator import criar_extrator
 from avesrag_assistant.llm.pergunta import criar_redator
 from avesrag_assistant.llm.prompts import PromptInvalido
 from avesrag_assistant.llm.sugestor import criar_sugestor, indice_da_base
+from avesrag_assistant.servicos import construir_servicos
 from avesrag_assistant.settings import MissingSettingError, get_settings
 
 MODO_DEGRADADO = DEGRADADO
@@ -386,21 +393,15 @@ SAIR = ("sair", "fim", "tchau")
 
 def _servicos(settings, voc, regras) -> Servicos:
     """Os serviços da conversa: Mongo, ranking, regras e os três prompts do chat."""
-    ranking = carregar_ranking(settings.CONFIG_DIR / "ranking.yaml")
-    conversa = carregar_conversa(settings.CONFIG_DIR / "conversa.yaml", voc)
-    db = get_db()
-    cache = criar_cache(settings)
-    return Servicos(
-        db=db,
-        ranking=ranking,
-        conversa=conversa,
-        vocabulario=voc,
-        regras_bico=regras,
-        extrator=criar_extrator(settings, voc, regras),
-        redator=criar_redator(settings, voc, regras),
-        vetor=cache.vetor,
-        sugestor=criar_sugestor(settings, voc, regras),
-        indice=indice_da_base(db),
+    return construir_servicos(
+        settings,
+        voc,
+        regras,
+        db=get_db(),
+        extrator=criar_extrator,
+        redator=criar_redator,
+        sugestor=criar_sugestor,
+        cache_embeddings=criar_cache,
     )
 
 
@@ -473,6 +474,11 @@ def moderar(
         "--aves",
         help="CSV das aves (padrão: avaliacao/especies_sessoes.csv, do sortear-aves).",
     ),
+    permitir_calibracao: bool = typer.Option(
+        False,
+        "--permitir-calibracao",
+        help="Aceita aves da calibração (só para ensaiar a página: essas sessões não valem no teste).",
+    ),
 ) -> None:
     """Página local para as sessões moderadas: a pessoa vê a foto e conversa com o assistente."""
     from avesrag_assistant.web.servidor import Moderacao, carregar_aves, criar_servidor
@@ -481,6 +487,17 @@ def moderar(
     try:
         voc, regras = vocabulario.carregar()
         aves = carregar_aves(aves_csv or settings.AVALIACAO_DIR / "especies_sessoes.csv")
+        na_calibracao = sorted(
+            a.codigo
+            for a in aves.values()
+            if a.species_id in especies_de_calibracao(settings.AVALIACAO_DIR / "casos.yaml")
+        )
+        if na_calibracao and not permitir_calibracao:
+            falhar(
+                f"aves da calibração, que não servem para o teste (a foto entrega a resposta): "
+                f"{', '.join(na_calibracao)}. Use as aves de sortear-aves ou --permitir-calibracao.",
+                2,
+            )
         moderacao = Moderacao(
             _servicos(settings, voc, regras), aves, settings.REPORTS_DIR / "sessoes"
         )
@@ -516,50 +533,21 @@ def servir(
     """API e página do beta fechado (por convite), para expor por um túnel com HTTPS."""
     import uvicorn
 
-    from avesrag_assistant.api.app import criar_app
-    from avesrag_assistant.api.config import ConfigInvalida, carregar_api, carregar_familias
-    from avesrag_assistant.api.convites import Convites
-    from avesrag_assistant.api.curadoria import Curadoria
-    from avesrag_assistant.api.guardrails import ModeradorOpenAI
-    from avesrag_assistant.api.limites import Limitador
-    from avesrag_assistant.api.sessoes import RepositorioArquivo, RepositorioMongo
-    from avesrag_assistant.api.uso_diario import UsoDiario
+    from avesrag_assistant.api.config import ConfigInvalida
+    from avesrag_assistant.api.fabrica import SemConvites, criar_app_do_ambiente
 
     if sessoes_em not in ("mongo", "arquivo"):
         falhar("--sessoes deve ser mongo ou arquivo", 2)
     settings = get_settings()
     try:
-        voc, regras = vocabulario.carregar()
-        config = carregar_api(settings.CONFIG_DIR / "api.yaml")
-        familias = carregar_familias(settings.CONFIG_DIR / "familias.yaml")
-        servicos = _servicos(settings, voc, regras)
-        if sessoes_em == "mongo":
-            repositorio = RepositorioMongo(servicos.db, config.sessoes.ttl_dias)
-            repositorio.garantir_indices()
-        else:
-            repositorio = RepositorioArquivo(settings.REPORTS_DIR / "sessoes")
-        curadoria = Curadoria(servicos.db, voc, regras, config_dir=settings.builder_config_dir)
-        curadoria.preparar()
-        convites = Convites(settings.CONVITES_PATH)
-        if not convites.listar():
-            falhar("Não há convites. Crie um: avesrag-assistant convite criar <nome>", 2)
-        app_web = criar_app(
-            servicos,
-            config,
-            repositorio,
-            convites,
-            Limitador(config.limites.requisicoes_por_ip_por_minuto),
-            ModeradorOpenAI(settings.OPENAI_API_KEY.get_secret_value()),
-            uso_diario=UsoDiario(settings.REPORTS_DIR / "uso.tsv"),
-            familias=familias,
-            curadoria=curadoria,
-        )
+        app_web = criar_app_do_ambiente(settings, sessoes_em)  # type: ignore[arg-type]
     except (
         VocabularioInvalido,
         RankingInvalido,
         ConversaInvalida,
         PromptInvalido,
         ConfigInvalida,
+        SemConvites,
     ) as e:
         falhar(str(e), 2)
     except (FileNotFoundError, MissingSettingError, OSError) as e:
@@ -674,9 +662,21 @@ def relatorio_sessoes() -> None:
     """Relatório das sessões moderadas: acerto, apresentação, posição e perguntas."""
     settings = get_settings()
     estados = carregar_moderadas(settings.REPORTS_DIR / "sessoes")
-    for linha in linhas_sessoes([resumir(e) for e in estados]):
+    resumos = [resumir(e) for e in estados]
+    for linha in linhas_sessoes(resumos):
         typer.echo(linha)
     if estados:
+        previstas: list[str] = []
+        csv_aves = settings.AVALIACAO_DIR / "especies_sessoes.csv"
+        if csv_aves.exists():
+            from avesrag_assistant.web.servidor import carregar_aves
+
+            previstas = list(carregar_aves(csv_aves))
+        typer.echo("")
+        for linha in linhas_do_teste_sessoes(
+            resumos, especies_de_calibracao(settings.AVALIACAO_DIR / "casos.yaml"), previstas
+        ):
+            typer.echo(linha)
         caminho = gravar_tsv_sessoes(estados, settings.REPORTS_DIR / ARQUIVO_TSV)
         typer.echo(f"tabela: {caminho}")
 

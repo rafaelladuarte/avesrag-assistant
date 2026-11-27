@@ -7,8 +7,10 @@ que `--help` e os testes funcionem sem `.env`.
 O `.env` do builder não é lido: o assistant tem o seu próprio.
 """
 
+import os
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -40,12 +42,36 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "gpt-6-luna"
 
     # Caminhos
-    BUILDER_DIR: Path = ROOT_DIR.parent / "avesrag-dataset-builder"
+    # Ao lado deste repositório; no pacote da Vercel, o `builder/` copiado para dentro dele.
+    BUILDER_DIR: Path = (
+        ROOT_DIR / "builder"
+        if (ROOT_DIR / "builder" / "config").is_dir()
+        else ROOT_DIR.parent / "avesrag-dataset-builder"
+    )
     CONFIG_DIR: Path = ROOT_DIR / "config"
     AVALIACAO_DIR: Path = ROOT_DIR / "avaliacao"
     REPORTS_DIR: Path = ROOT_DIR / "reports"
     # Convites do beta (só o hash do token); fora do git
     CONVITES_PATH: Path = ROOT_DIR / "config" / "convites.json"
+    # O mesmo JSON do arquivo de convites, numa variável de ambiente (somente leitura): para
+    # onde não há disco persistente, como a Vercel. Vale no lugar do arquivo.
+    CONVITES_JSON: SecretStr | None = None
+
+    # Onde ficam os caches, os contadores de uso e os limites: `arquivo` (reports/, um processo)
+    # ou `mongo` (várias instâncias, como na Vercel). Vazio: `mongo` se estiver na Vercel.
+    ARMAZENAMENTO: Literal["arquivo", "mongo"] | None = None
+    # Curadoria das fichas pela página (traz o `fuse` do builder): vazio = só fora da Vercel.
+    CURADORIA_HABILITADA: bool | None = None
+
+    @property
+    def armazenamento(self) -> Literal["arquivo", "mongo"]:
+        return self.ARMAZENAMENTO or ("mongo" if os.environ.get("VERCEL") else "arquivo")
+
+    @property
+    def curadoria_habilitada(self) -> bool:
+        if self.CURADORIA_HABILITADA is not None:
+            return self.CURADORIA_HABILITADA
+        return not os.environ.get("VERCEL")
 
     @property
     def builder_config_dir(self) -> Path:

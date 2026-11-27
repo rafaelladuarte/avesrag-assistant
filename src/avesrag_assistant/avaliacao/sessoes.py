@@ -19,6 +19,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+import yaml
+
 from avesrag_assistant.conversa.estado import EstadoConversa
 
 FORA = "fora das 10"
@@ -30,6 +32,7 @@ class ResumoSessao:
     ave: str
     esperada: str
     etapa: str
+    pessoa: str
     acertou: bool
     apresentada: bool  # a esperada esteve entre as 3 mostradas em alguma rodada
     rodadas: int  # apresentações feitas
@@ -53,6 +56,7 @@ def resumir(e: EstadoConversa) -> ResumoSessao:
         ave=e.ave or "",
         esperada=esperada,
         etapa=e.etapa,
+        pessoa=e.pessoa or "",
         acertou=bool(e.confirmada) and e.confirmada == esperada,
         apresentada=esperada in mostradas,
         rodadas=rodadas,
@@ -84,7 +88,7 @@ def linhas(resumos: Sequence[ResumoSessao]) -> list[str]:
     for r in resumos:
         resultado = "acertou" if r.acertou else ("em andamento" if r.etapa != "fim" else "errou")
         saida.append(
-            f"{r.id}  ave {r.ave:<3} {r.esperada:<32} {resultado:<12} "
+            f"{r.id}  pessoa {r.pessoa or '-':<5} ave {r.ave:<3} {r.esperada:<32} {resultado:<12} "
             f"apresentada: {'sim' if r.apresentada else 'não'}  rodadas {r.rodadas}  "
             f"perguntas {r.perguntas}  1ª busca {_fmt(r.primeira)}  última {_fmt(r.ultima)}"
         )
@@ -101,11 +105,62 @@ def linhas(resumos: Sequence[ResumoSessao]) -> list[str]:
     return saida
 
 
+def especies_de_calibracao(casos_yaml: Path) -> set[str]:
+    """As espécies com algum caso de calibração: aves que não servem para o teste, porque os
+    pesos e as perguntas foram ajustados com elas."""
+    if not casos_yaml.exists():
+        return set()
+    dados = yaml.safe_load(casos_yaml.read_text(encoding="utf-8")) or {}
+    return {c["esperada"] for c in dados.get("casos", []) if c.get("uso") == "calibracao"}
+
+
+def linhas_do_teste(
+    resumos: Sequence[ResumoSessao],
+    calibracao: set[str],
+    previstas: Sequence[str] = (),
+) -> list[str]:
+    """O que vale como teste: sessões concluídas, com ave fora da calibração.
+
+    As sessões com ave da calibração (a foto delas entrega a resposta) e as em andamento ficam
+    de fora da contagem. Mostra o acerto por pessoa e as aves previstas que ainda não têm
+    nenhuma sessão válida.
+    """
+    validas = [r for r in resumos if r.etapa == "fim" and r.esperada not in calibracao]
+    fora = len(resumos) - len(validas)
+    saida = [
+        f"teste: {len(validas)} sessão(ões) válida(s); {fora} fora da contagem "
+        "(em andamento ou ave da calibração)"
+    ]
+    if validas:
+        acertos = sum(r.acertou for r in validas)
+        saida.append(
+            f"  acerto: {acertos}/{len(validas)} ({acertos / len(validas):.0%}); "
+            f"espécie apresentada em {sum(r.apresentada for r in validas)}"
+        )
+        pessoas: dict[str, list[ResumoSessao]] = {}
+        for r in validas:
+            pessoas.setdefault(r.pessoa or "(sem código)", []).append(r)
+        saida.append(f"  pessoas: {len(pessoas)}")
+        for nome in sorted(pessoas):
+            rs = pessoas[nome]
+            saida.append(
+                f"    {nome:<12} {len(rs)} sessão(ões), {sum(r.acertou for r in rs)} acerto(s)"
+            )
+        if "(sem código)" in pessoas:
+            saida.append("  atenção: há sessões sem código de pessoa")
+    if previstas:
+        feitas = {r.ave for r in validas}
+        faltam = [a for a in previstas if a not in feitas]
+        saida.append(f"  aves ainda sem sessão válida ({len(faltam)}): {', '.join(faltam) or '-'}")
+    return saida
+
+
 ARQUIVO_TSV = "sessoes_moderadas.tsv"
 COLUNAS_TSV = [
     "sessao",
     "criada_em",
     "atualizada_em",
+    "pessoa",
     "ave",
     "esperada",
     "etapa",
@@ -137,6 +192,7 @@ def linha_tsv(e: EstadoConversa) -> dict[str, str]:
         "sessao": e.id,
         "criada_em": e.criada_em.isoformat(timespec="seconds"),
         "atualizada_em": e.atualizada_em.isoformat(timespec="seconds"),
+        "pessoa": r.pessoa,
         "ave": r.ave,
         "esperada": r.esperada,
         "etapa": r.etapa,
