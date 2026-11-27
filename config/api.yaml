@@ -1,8 +1,9 @@
 # Limites e textos da API do beta fechado (plano_assistant4.md §4).
 # Mudou um valor: suba a versão e anote o motivo no histórico.
-versao: "1.0"
+versao: "1.1"
 historico:
   - "1.0 (25/11/2026): valores iniciais do plano; ajustar com o uso do beta."
+  - "1.1 (27/11/2026): padrões de injeção na entrada (P3a, texto `injecao`) e moderação que falha fechada (P3d, texto `moderacao_indisponivel`)."
 
 limites:
   caracteres_por_mensagem: 1000
@@ -11,6 +12,38 @@ limites:
   mensagens_por_convite_por_dia: 100
   requisicoes_por_ip_por_minuto: 20
   chamadas_llm_por_dia: 1500   # todos os convites; o alerta no log sai aos 80%
+
+# Camada de entrada que não chama ninguém (P3a). Cada padrão é uma expressão regular aplicada ao
+# texto NORMALIZADO (minúsculas, sem acento, espaços colapsados, sem caracteres invisíveis).
+# A defesa principal é outra (o LLM sem ferramentas e a saída em JSON validado); isto só barra
+# o óbvio antes de gastar uma chamada. Ao ampliar, confira com os casos de avaliação: nenhuma
+# descrição de ave pode ser barrada (teste `test_padroes_de_injecao_nao_barram_descricoes`).
+guardrails:
+  padroes_injecao:
+    # português: mandar ignorar ou revelar as instruções
+    - '\b(ignor|desconsider|esquec|descart|desobedec|sobrescrev)\w*\s+(\w+\s+){0,3}(instruc|regra|ordens|comando|prompt|diretriz|restric)'
+    - '\b(mostr|revel|repit|diga|escrev|imprim|exib|vaz|copi)\w*\s+(\w+\s+){0,4}(system prompt|prompt|instrucoes (iniciais|internas|originais|do sistema))'
+    - '\b(system prompt|prompt do sistema|prompt de sistema|prompt inicial|prompt original|mensagem de sistema)\b'
+    - '\b(suas|tuas|seu|teu)\s+(instrucoes|regras|diretrizes)\s+(internas|iniciais|originais|secretas|de sistema)'
+    # português: trocar o papel do assistente
+    - '\b(finja|aja|atue|comporte se)\s+(como|que|ser)\b'
+    - '\bresponda\s+como\s+se\s+(fosse|voce)\b'
+    - '\ba partir de agora\s+(voce|vc|seu|sua|responda|ignore)\b'
+    - '\bmodo\s+(desenvolvedor|dev|deus|jailbreak|irrestrito)\b'
+    - '\bjailbreak\b'
+    # inglês
+    - '\bignore\s+(\w+\s+){0,3}(instructions|rules|prompts?|guidelines|above|previous|prior)\b'
+    - '\b(disregard|forget|override|bypass)\s+(\w+\s+){0,3}(instructions|rules|prompts?|guidelines|above|previous|prior)\b'
+    - '\b(reveal|show|print|repeat|display|leak|output)\s+(\w+\s+){0,4}(system prompt|your prompt|your instructions|initial prompt|hidden prompt)\b'
+    - '\b(you are now|from now on you|pretend to be|pretend you)\b'
+    - '\b(developer mode|do anything now)\b'
+    # estrutura de conversa e blocos de código colados na mensagem
+    - '```'
+    - '<\s*/?\s*(system|assistant|user|instructions?|prompt)\s*>'
+    - '<\|(im_start|im_end|endoftext|system)\|>'
+    - '\[/?(inst|system)\]'
+    - '<<\s*/?\s*sys\s*>>'
+    - '(^|\s)(system|assistant|developer)\s*:'
 
 sessoes:
   ttl_dias: 14
@@ -31,6 +64,8 @@ textos:
   mensagem_vazia: "Escreva alguma coisa para eu poder ajudar."
   mensagem_grande: "A mensagem está grande demais. Resuma em até {limite} caracteres."
   moderacao: "Não consigo ajudar com essa mensagem. Me conte como era a ave que você viu."
+  moderacao_indisponivel: "Não consegui verificar sua mensagem agora. Tente de novo em instantes."
+  injecao: "Só consigo ajudar a identificar aves. Me conte como era a ave que você viu."
   demorou: "Demorei demais para responder. Tente de novo."
   erro: "Tive um problema agora. Tente de novo em instantes."
   sessao_nao_encontrada: "Não encontrei essa conversa. Comece uma nova."

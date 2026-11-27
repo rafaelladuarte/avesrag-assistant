@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 
 class ConfigInvalida(ValueError):
@@ -39,6 +40,8 @@ class Textos(_Base):
     mensagem_vazia: str
     mensagem_grande: str
     moderacao: str
+    moderacao_indisponivel: str
+    injecao: str
     demorou: str
     erro: str
     sessao_nao_encontrada: str
@@ -47,10 +50,27 @@ class Textos(_Base):
     correcao_falhou: str
 
 
+class ConfigGuardrails(_Base):
+    """Camada de entrada que não chama ninguém (P3a): padrões sobre o texto normalizado."""
+
+    padroes_injecao: list[str] = Field(default_factory=list)
+
+    @field_validator("padroes_injecao")
+    @classmethod
+    def _padroes_compilam(cls, padroes: list[str]) -> list[str]:
+        for padrao in padroes:
+            try:
+                re.compile(padrao)
+            except re.error as e:
+                raise ValueError(f"padrão de injeção inválido {padrao!r}: {e}") from e
+        return padroes
+
+
 class ConfigApi(_Base):
     versao: str
     historico: list[str] = Field(default_factory=list)
     limites: Limites
+    guardrails: ConfigGuardrails = Field(default_factory=ConfigGuardrails)
     sessoes: ConfigSessoes
     exibir_textos_gerados: bool = True
     tempo_limite_segundos: float = Field(gt=0)

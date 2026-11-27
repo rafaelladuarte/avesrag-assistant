@@ -27,7 +27,14 @@ from avesrag_assistant.api import especies, fila
 from avesrag_assistant.api.config import ConfigApi
 from avesrag_assistant.api.convites import Convites
 from avesrag_assistant.api.curadoria_erro import ErroCuradoria
-from avesrag_assistant.api.guardrails import EntradaRecusada, Moderador, limpar_entrada
+from avesrag_assistant.api.guardrails import (
+    EntradaRecusada,
+    ModeracaoIndisponivel,
+    Moderador,
+    compilar_padroes,
+    conferir_injecao,
+    limpar_entrada,
+)
 from avesrag_assistant.api.limites import Limitador
 from avesrag_assistant.api.sessoes import RepositorioSessoes
 from avesrag_assistant.api.uso_diario import UsoDiario
@@ -96,6 +103,7 @@ def criar_app(
     app = FastAPI(title="AvesRAG", docs_url=None, redoc_url=None, openapi_url=None)
     textos = config.textos
     lim = config.limites
+    padroes_injecao = compilar_padroes(config.guardrails.padroes_injecao)
     maximo_perguntas = servicos.conversa.perguntas.maximo
     executor = ThreadPoolExecutor(max_workers=8, thread_name_prefix="mensagem")
     travas: dict[str, threading.Lock] = {}
@@ -241,15 +249,21 @@ def criar_app(
                 None,  # a moderação vem depois dos limites, que são grátis
                 textos.moderacao,
             )
+            conferir_injecao(texto, padroes_injecao, textos.injecao)
         except EntradaRecusada as r:
+            if r.motivo == "injecao":  # só o convite e o padrão: o texto pode ter dado pessoal
+                log.warning("injeção barrada (convite %s, padrão %s)", convite, r.detalhe)
             raise ErroApi(400, r.texto) from None
         if sum(1 for m in e.mensagens if m.papel == "usuario") >= lim.mensagens_por_sessao:
             raise ErroApi(429, textos.limite_sessao)
         _teto_diario()
         if not limitador.consumir_dia(f"mensagens:{convite}", lim.mensagens_por_convite_por_dia):
             raise ErroApi(429, textos.limite_mensagens_dia)
-        if moderador is not None and moderador.sinaliza(texto):
-            raise ErroApi(400, textos.moderacao)
+        try:
+            if moderador is not None and moderador.sinaliza(texto):
+                raise ErroApi(400, textos.moderacao)
+        except ModeracaoIndisponivel:  # falha fechada (P3d): sem checagem, a mensagem não passa
+            raise ErroApi(503, textos.moderacao_indisponivel) from None
         return _processar(sessao, convite, texto)
 
     def _processar(sessao: str, convite: str, texto: str) -> dict[str, Any]:
