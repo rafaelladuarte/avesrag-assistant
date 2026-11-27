@@ -38,7 +38,7 @@ pasta/
 └── avesrag-assistant/
 ```
 
-- Uma chave da OpenAI, para os embeddings das consultas (`text-embedding-3-large`) e o LLM do chat (`gpt-6-luna`).
+- Uma chave da OpenAI, para os embeddings das consultas (`text-embedding-3-large`) e o LLM do chat (`gpt-5.4-mini` no `c01_extrator` e `gpt-6-luna` no `c02_pergunta` e no `c04_candidatas`; ver `RUNBOOK.md` §8).
 
 ## Instalação
 

@@ -203,7 +203,8 @@ def test_extrator_valida_e_converte_para_atributos_observados(tmp_path, prompt, 
         False,
     )
     pedido = falso.pedidos[0]
-    assert pedido.modelo == "gpt-6-luna"  # o do prompt vence o padrão
+    assert pedido.modelo == "gpt-5.4-mini"  # o do prompt vence o padrão
+    assert pedido.temperatura == 0
     assert "<mensagem_usuario>\numa ave amarela\n</mensagem_usuario>" in pedido.entrada
     assert pedido.schema["strict"] is True
 

@@ -5,10 +5,18 @@
 # mapeamento seguem a anotação dos casos revisada pela usuária em 24/11.
 # 1.1 (24/11): a entrada traz a última pergunta do assistente, para uma resposta
 # curta ("amarela") ir para o atributo perguntado (plano_assistant2.md §5).
+# 27/11/2026: modelo trocado de gpt-6-luna para gpt-5.4-mini, temperatura 0, decisão da
+# usuária; o texto do prompt e o schema não mudaram (a versão continua 1.1; a chave do
+# cache inclui o modelo, então as respostas do gpt-6-luna ficam intactas). Motivo: o c01 é
+# cerca de 90% dos tokens de uma conversa e o gpt-5.4-mini está na cota gratuita. Medido em
+# reports/analise_falhas/relatorio_modelos.md (§7 e §8): top 3 com a extração real no nível da
+# anotação na calibração (61% contra 59%) e no teste (61% contra 58%); precisão 80 a 84% e
+# cobertura 95% contra a anotação. Para voltar: modelo gpt-6-luna e temperatura null (ele
+# recusa o parâmetro).
 id: c01_extrator
 versao: "1.1"
-modelo: gpt-6-luna
-temperatura: null # o gpt-6-luna recusa o parâmetro (teste de 21/11/2026)
+modelo: gpt-5.4-mini
+temperatura: 0
 schema: C01Extrator
 vocabulario: [tamanho, cores, cores_por_parte, marcas, cauda, ambiente, onde_estava, o_que_fazia, grupo, atividade]
 
