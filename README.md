@@ -67,9 +67,10 @@ poetry run avesrag-assistant conversar                                  # no ter
 poetry run avesrag-assistant avaliar --uso calibracao --modo hibrido --sugestoes
 poetry run avesrag-assistant simular --uso calibracao --sugestoes --calibrado   # perguntas, usuário simulado
 
-# Sessões moderadas (teste com pessoas)
+# Teste com pessoas: o beta (as sessões moderadas foram encerradas em 27/11)
 poetry run avesrag-assistant moderar        # página em http://127.0.0.1:8765/
-poetry run avesrag-assistant sessoes        # resultado das sessões
+poetry run avesrag-assistant sessoes        # resultado das sessões moderadas (encerradas em 27/11)
+poetry run avesrag-assistant beta           # relatório do beta fechado (conversas, confirmações, votos)
 poetry run avesrag-assistant sortear-aves   # as aves e as fotos das sessões (já sorteadas)
 ```
 

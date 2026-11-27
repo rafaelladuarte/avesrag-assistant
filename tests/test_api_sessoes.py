@@ -24,6 +24,9 @@ class ColecaoMongoFalsa:
     def replace_one(self, filtro, doc, upsert=False):
         self.docs[filtro["_id"]] = dict(doc)
 
+    def find(self, filtro):
+        return [dict(d) for d in self.docs.values()]
+
     @property
     def client(self):
         return self
@@ -81,3 +84,17 @@ def test_mongo_grava_expira_em_e_cria_o_ttl():
     doc = db.colecao.docs["abc123"]
     assert doc["expira_em"] - e.atualizada_em == timedelta(days=14)
     assert doc["_id"] == "abc123"
+
+
+def test_todas_lista_as_sessoes_e_pula_as_ilegiveis(repo, tmp_path):
+    repo.salvar(EstadoConversa(id="um111", convite="ana"))
+    repo.salvar(EstadoConversa(id="dois2", convite="bia"))
+    if isinstance(repo, RepositorioArquivo):
+        (tmp_path / "estragada.json").write_text('{"id": "x", "campo_novo": 1}', encoding="utf-8")
+    else:
+        repo.colecao.docs["estragada"] = {"_id": "estragada", "id": "x", "campo_novo": 1}
+    assert sorted(e.id for e in repo.todas()) == ["dois2", "um111"]
+
+
+def test_todas_sem_pasta(tmp_path):
+    assert RepositorioArquivo(tmp_path / "nao_existe").todas() == []

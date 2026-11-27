@@ -7,16 +7,20 @@ formato é o do `EstadoConversa` nas duas.
 
 from __future__ import annotations
 
+import logging
 from datetime import timedelta
 from pathlib import Path
 from typing import Protocol
 
+from pydantic import ValidationError
 from pymongo.database import Database
 
 from avesrag_assistant.conversa import estado as arquivos
 from avesrag_assistant.conversa.estado import EstadoConversa, agora
 
 CONVERSATIONS = "conversations"
+
+log = logging.getLogger(__name__)
 
 
 class RepositorioSessoes(Protocol):
@@ -25,6 +29,10 @@ class RepositorioSessoes(Protocol):
         ...
 
     def salvar(self, estado: EstadoConversa) -> None: ...
+
+    def todas(self) -> list[EstadoConversa]:
+        """Todas as sessões que existem (para o relatório); as ilegíveis ficam de fora."""
+        ...
 
     def ok(self) -> bool: ...
 
@@ -38,6 +46,15 @@ class RepositorioArquivo:
 
     def salvar(self, estado: EstadoConversa) -> None:
         arquivos.salvar(estado, self.diretorio)
+
+    def todas(self) -> list[EstadoConversa]:
+        estados = []
+        for path in sorted(self.diretorio.glob("*.json")) if self.diretorio.exists() else []:
+            try:
+                estados.append(EstadoConversa.model_validate_json(path.read_text(encoding="utf-8")))
+            except ValidationError:
+                log.warning("sessão ilegível ignorada: %s", path.name)
+        return estados
 
     def ok(self) -> bool:
         return True
@@ -65,6 +82,18 @@ class RepositorioMongo:
         doc = estado.model_dump()
         doc["expira_em"] = estado.atualizada_em + self.ttl
         self.colecao.replace_one({"_id": estado.id}, {"_id": estado.id, **doc}, upsert=True)
+
+    def todas(self) -> list[EstadoConversa]:
+        estados = []
+        for doc in self.colecao.find({}):
+            doc = dict(doc)
+            sessao = doc.pop("_id", "?")
+            doc.pop("expira_em", None)
+            try:
+                estados.append(EstadoConversa.model_validate(doc))
+            except ValidationError:
+                log.warning("sessão ilegível ignorada: %s", sessao)
+        return estados
 
     def ok(self) -> bool:
         try:

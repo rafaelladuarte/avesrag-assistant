@@ -8,7 +8,8 @@ perguntas medidas com um usuário simulado que responde pela ficha) e
 `conversar` (a conversa inteira no terminal, com o estado em JSON por sessão),
 `moderar` (a mesma conversa numa página local, para as sessões moderadas) e
 `sessoes` (o relatório dessas sessões) e `sortear-aves` (as aves e as fotos
-dessas sessões). Assistant 4: `servir` (a API e a página do beta fechado, só em
+dessas sessões; encerradas em 27/11) e `beta` (o relatório do beta fechado, que as
+substitui como teste com pessoas). Assistant 4: `servir` (a API e a página do beta fechado, só em
 127.0.0.1) e `convite` (criar, listar e revogar os convites).
 """
 
@@ -23,6 +24,7 @@ from pydantic import ValidationError
 from pymongo.errors import PyMongoError
 
 from avesrag_assistant import __version__, vocabulario
+from avesrag_assistant.avaliacao import beta as beta_conversas
 from avesrag_assistant.avaliacao.casos import CasosInvalidos, carregar_casos, conferir_no_banco
 from avesrag_assistant.avaliacao.relatorio import gravar_tsv, tabela
 from avesrag_assistant.avaliacao.relatorio import inalcancaveis as relatorio_inalcancaveis
@@ -679,6 +681,100 @@ def relatorio_sessoes() -> None:
             typer.echo(linha)
         caminho = gravar_tsv_sessoes(estados, settings.REPORTS_DIR / ARQUIVO_TSV)
         typer.echo(f"tabela: {caminho}")
+
+
+@app.command(name="beta")
+def relatorio_beta(
+    origem: str = typer.Option(
+        "mongo",
+        "--origem",
+        help="Onde ler as conversas: mongo (collection conversations) ou arquivo (reports/sessoes).",
+    ),
+    excluir: list[str] = typer.Option(
+        [],
+        "--excluir",
+        help="Nome de um convite a deixar de fora, como o seu nos testes (pode repetir).",
+    ),
+    arquivar: bool = typer.Option(
+        True,
+        "--arquivar/--sem-arquivar",
+        help="Guarda o resumo sem texto livre em reports/beta/ antes de o TTL apagar a conversa.",
+    ),
+    minimo_conversas: int = typer.Option(
+        beta_conversas.MINIMO_CONVERSAS, "--minimo-conversas", min=1, help="Critério do marco 2."
+    ),
+    minimo_pessoas: int = typer.Option(
+        beta_conversas.MINIMO_PESSOAS, "--minimo-pessoas", min=1, help="Critério do marco 2."
+    ),
+) -> None:
+    """Relatório do beta fechado: conversas, confirmações e votos por convite (AS6)."""
+    from datetime import timedelta
+
+    from avesrag_assistant.api.config import ConfigInvalida, carregar_api
+    from avesrag_assistant.api.fabrica import SemConvites, convites_do_ambiente
+    from avesrag_assistant.api.sessoes import RepositorioArquivo, RepositorioMongo
+    from avesrag_assistant.conversa.estado import agora
+
+    if origem not in ("mongo", "arquivo"):
+        falhar("--origem deve ser mongo ou arquivo", 2)
+    settings = get_settings()
+    pasta = settings.REPORTS_DIR / "beta"
+    try:
+        config = carregar_api(settings.CONFIG_DIR / "api.yaml")
+        if origem == "mongo":
+            repositorio = RepositorioMongo(get_db(), config.sessoes.ttl_dias)
+        else:
+            repositorio = RepositorioArquivo(settings.REPORTS_DIR / "sessoes")
+        lidas = repositorio.todas()
+    except ConfigInvalida as e:
+        falhar(str(e), 2)
+    except PyMongoError as e:
+        falhar(f"falha no MongoDB ({settings.MONGODB_URI}): {e}")
+
+    estados = [e for e in lidas if not e.ave]  # as moderadas têm o próprio relatório (`sessoes`)
+    sal = beta_conversas.carregar_sal(pasta)
+    vivos = [beta_conversas.anonimizar(beta_conversas.resumir(e), sal) for e in estados]
+    guardados = beta_conversas.ler_arquivo(pasta / beta_conversas.ARQUIVO_RESUMOS)
+    todos = beta_conversas.mesclar(guardados, vivos)
+    novas = len(set(todos) - set(guardados))
+
+    try:
+        nomes = {
+            beta_conversas.pseudonimo(nome, sal): nome
+            for nome, _, _ in convites_do_ambiente(settings).listar()
+        }
+    except SemConvites:
+        nomes = {}
+    fora = {beta_conversas.pseudonimo(nome, sal) for nome in excluir}
+    resumos = [r for r in todos.values() if r.convite not in fora]
+    resumos.sort(key=lambda r: (r.criada_em, r.sessao))
+
+    typer.echo(
+        f"lidas {len(lidas)} conversa(s) de {origem}; {len(lidas) - len(estados)} da moderação "
+        f"ignorada(s); {len(todos) - len(resumos)} excluída(s) por convite; "
+        f"{len(guardados) - len(set(guardados) & {r.sessao for r in vivos})} só no arquivo"
+    )
+    typer.echo("")
+    for linha in beta_conversas.linhas(resumos, nomes, minimo_conversas, minimo_pessoas):
+        typer.echo(linha)
+
+    typer.echo("")
+    if arquivar:
+        caminho = beta_conversas.gravar_arquivo(pasta / beta_conversas.ARQUIVO_RESUMOS, todos)
+        beta_conversas.gravar_tsv(pasta / beta_conversas.ARQUIVO_TSV, todos)
+        typer.echo(
+            f"arquivo: {caminho} ({len(todos)} conversa(s), {novas} nova(s); "
+            f"tabela em {beta_conversas.ARQUIVO_TSV})"
+        )
+    if origem == "mongo" and estados:
+        mais_antiga = min(beta_conversas.como_utc(e.atualizada_em) for e in estados)
+        expira = mais_antiga + timedelta(days=config.sessoes.ttl_dias)
+        dias = (expira - agora()).days
+        aviso = "" if arquivar or dias > 3 else " e NÃO foram arquivadas: rode sem --sem-arquivar"
+        typer.echo(
+            f"a conversa mais antiga no banco expira em {dias} dia(s){aviso}; "
+            f"rode este comando de novo antes disso"
+        )
 
 
 @app.command(name="sortear-aves")
