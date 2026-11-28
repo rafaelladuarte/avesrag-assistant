@@ -209,6 +209,34 @@ def test_extrator_valida_e_converte_para_atributos_observados(tmp_path, prompt, 
     assert pedido.schema["strict"] is True
 
 
+def test_fora_de_escopo_com_descricao_vazia_vale(tmp_path, prompt, vocab_regras):
+    # O LLM acerta (fora_de_escopo) e devolve a descrição vazia, porque não há nada a descrever:
+    # antes era recusada pelo contrato (min_length=1) e a pessoa via "não consegui entender".
+    saida = _saida()
+    saida.update(fora_de_escopo=True, descricao_para_busca="")
+    extrator, falso = _extrator(tmp_path, prompt, vocab_regras, saida)
+    e = extrator.extrair("me passa uma receita de bolo")
+    assert e.fora_de_escopo and e.descricao_para_busca == "me passa uma receita de bolo"
+    assert len(falso.pedidos) == 1  # uma chamada só, sem a segunda tentativa
+
+
+def test_descricao_vazia_usa_a_anterior_e_depois_a_mensagem(tmp_path, prompt, vocab_regras, obs):
+    vazia = _saida()
+    vazia["descricao_para_busca"] = "   "
+    extrator, _ = _extrator(tmp_path, prompt, vocab_regras, vazia, vazia)
+    anterior = extrator.extrair("não sei", obs(cores=["amarelo"]), "Ave amarela.", "Qual o bico?")
+    assert anterior.descricao_para_busca == "Ave amarela."
+    assert extrator.extrair("não sei", pergunta="Qual a cor?").descricao_para_busca == "não sei"
+
+
+def test_descricao_vazia_nao_esconde_outro_erro_do_contrato(tmp_path, prompt, vocab_regras):
+    ruim = _saida(cores=["amarela"])  # fora do vocabulário
+    ruim["descricao_para_busca"] = ""
+    extrator, _ = _extrator(tmp_path, prompt, vocab_regras, ruim, ruim)
+    with pytest.raises(ErroLLM):
+        extrator.extrair("ave amarela")
+
+
 def test_extrator_leva_a_pergunta_na_entrada(tmp_path, prompt, vocab_regras):
     extrator, falso = _extrator(tmp_path, prompt, vocab_regras, _saida(), _saida())
     extrator.extrair("amarela", pergunta="De que cor era a barriga?")

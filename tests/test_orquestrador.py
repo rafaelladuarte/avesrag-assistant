@@ -10,6 +10,8 @@ from avesrag_assistant.conversa.config import carregar_conversa
 from avesrag_assistant.conversa.orquestrador import (
     ENCERRADA,
     FORA_DE_ESCOPO,
+    FORA_SOBRE_AVE,
+    NADA_DESCRITO,
     NAO_ENTENDI,
     PEDIR_ESCOLHA,
     SEM_MAIS_RODADAS,
@@ -223,6 +225,44 @@ def test_fora_de_escopo_nao_muda_o_estado(vocab_regras, montar):
     o = montar(extrator=ExtratorFalso(vocab_regras, fora=True))
     assert o.processar("me conta uma piada") == FORA_DE_ESCOPO
     assert o.estado.descricoes == [] and o.estado.atributos == {}
+
+
+def test_recusa_diz_se_a_mensagem_fala_de_ave(vocab_regras, montar):
+    o = montar(extrator=ExtratorFalso(vocab_regras, fora=True))
+    assert o.processar("me conta uma piada") == FORA_DE_ESCOPO  # sem detector: texto geral
+    o.s.fala_de_ave = lambda texto: "tucano" in texto
+    assert o.processar("quanto vive um tucano?") == FORA_SOBRE_AVE
+    assert o.processar("qual a capital da França?") == FORA_DE_ESCOPO
+    assert FORA_SOBRE_AVE != FORA_DE_ESCOPO and "melhorar" in FORA_SOBRE_AVE
+    assert o.estado.descricoes == [] and o.estado.atributos == {}  # nenhuma das duas muda o estado
+
+
+def test_mensagem_sem_nenhuma_caracteristica_pede_para_lembrar_sem_buscar(vocab_regras, montar):
+    sugestor = SugestorFalso()
+    o = montar(sugestor=sugestor)
+    resposta = o.processar("quero identificar uma ave, mas não lembro de nada")
+    assert resposta == NADA_DESCRITO and "cor" in resposta
+    e = o.estado
+    assert (e.etapa, e.descricoes, e.atributos, e.pergunta, e.buscas) == (
+        "coleta",
+        [],
+        {},
+        None,
+        [],
+    )
+    assert sugestor.mensagens == []  # nem sugestões nem busca: nada para buscar ainda
+    # A conversa segue normalmente quando a pessoa lembra de algo.
+    assert o.processar("uma ave pequena") != NADA_DESCRITO
+    assert o.estado.descricoes == ["uma ave pequena"]
+
+
+def test_resposta_sem_informacao_a_uma_pergunta_nao_cai_no_pedido_para_lembrar(
+    vocab_regras, montar
+):
+    o = montar()
+    o.processar("uma ave pequena")  # a conversa já tem atributos e uma pergunta pendente
+    assert o.estado.pergunta is not None
+    assert o.processar("não sei") != NADA_DESCRITO
 
 
 def test_falha_do_extrator(vocab_regras, montar):

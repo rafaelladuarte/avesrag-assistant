@@ -17,7 +17,7 @@ from avesrag_builder.llm.base import Pedido
 from avesrag_assistant.armazem import Armazem
 from avesrag_assistant.busca.modelos import AtributosObservados, validar_atributos
 from avesrag_assistant.llm.cache import ARQUIVO_PADRAO, CacheLLM
-from avesrag_assistant.llm.contratos import contrato, schema_do_contrato
+from avesrag_assistant.llm.contratos import LIMITE_DESCRICAO, contrato, schema_do_contrato
 from avesrag_assistant.llm.prompts import PromptChat, carregar_prompt
 from avesrag_assistant.settings import Settings
 
@@ -60,7 +60,15 @@ class Extrator:
         self._schema = schema_do_contrato("C01Extrator", vocabulario, regras_bico)
         self._contrato = contrato("C01Extrator", vocabulario, regras_bico)
 
-    def _validar(self, conteudo: str) -> Extracao:
+    def _validar(self, conteudo: str, reserva: str | None = None) -> Extracao:
+        """`reserva`: a descrição de quando o LLM devolve vazia (o que é comum numa mensagem fora
+        do escopo ou sem informação, sem estado anterior). O contrato exige 1 caractere; sem esta
+        reserva, uma resposta certa (`fora_de_escopo: true`) era recusada como inválida."""
+        if reserva:
+            dados = json.loads(conteudo)
+            if isinstance(dados, dict) and not str(dados.get("descricao_para_busca") or "").strip():
+                dados["descricao_para_busca"] = reserva
+                conteudo = json.dumps(dados, ensure_ascii=False)
         saida = self._contrato.model_validate_json(conteudo)
         atributos = validar_atributos(
             saida.atributos.model_dump(), self.vocabulario, self.regras_bico
@@ -94,7 +102,13 @@ class Extrator:
             schema=self._schema,
             temperatura=self.prompt.temperatura,
         )
-        return self.cache.gerar(self.prompt.id, self.prompt.versao, pedido, self._validar)
+        reserva = (descricao or mensagem).strip()[:LIMITE_DESCRICAO]
+        return self.cache.gerar(
+            self.prompt.id,
+            self.prompt.versao,
+            pedido,
+            lambda conteudo: self._validar(conteudo, reserva),
+        )
 
 
 def criar_extrator(

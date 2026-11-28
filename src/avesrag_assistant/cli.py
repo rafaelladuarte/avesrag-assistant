@@ -26,6 +26,14 @@ from pymongo.errors import PyMongoError
 from avesrag_assistant import __version__, vocabulario
 from avesrag_assistant.avaliacao import beta as beta_conversas
 from avesrag_assistant.avaliacao.casos import CasosInvalidos, carregar_casos, conferir_no_banco
+from avesrag_assistant.avaliacao.escopo import (
+    EscopoInvalido,
+    carregar_escopo,
+    gravar_tsv_escopo,
+    tabela_escopo,
+)
+from avesrag_assistant.avaliacao.escopo import medir as medir_escopo
+from avesrag_assistant.avaliacao.escopo import resumir as resumir_escopo
 from avesrag_assistant.avaliacao.relatorio import gravar_tsv, tabela
 from avesrag_assistant.avaliacao.relatorio import inalcancaveis as relatorio_inalcancaveis
 from avesrag_assistant.avaliacao.rodar import DEGRADADO, MODOS_AVALIACAO, rodar
@@ -222,8 +230,17 @@ def avaliar(
         None, "--tsv", help="Onde gravar o relatório por caso (padrão: reports/avaliacao.tsv)."
     ),
     sugestoes: bool = typer.Option(False, "--sugestoes", help=AJUDA_SUGESTOES),
+    escopo: bool = typer.Option(
+        False,
+        "--escopo",
+        help="Mede o fora_de_escopo do c01 (avaliacao/escopo.yaml e as descrições do casos.yaml); "
+        "grava reports/escopo.tsv e ignora as outras opções.",
+    ),
 ) -> None:
     """Roda o conjunto de avaliação nos modos de busca e mostra top 1, top 3 e top 10."""
+    if escopo:
+        _avaliar_escopo(tsv)
+        return
     modos = tuple(modo) or MODOS_AVALIACAO
     if desconhecidos := [m for m in modos if m not in MODOS_AVALIACAO]:
         falhar(f"modos desconhecidos: {desconhecidos} (use {', '.join(MODOS_AVALIACAO)})", 2)
@@ -275,6 +292,31 @@ def avaliar(
     if fora := relatorio_inalcancaveis(av):
         typer.echo(f"inalcançáveis (sem documento de busca): {', '.join(fora)}")
     caminho = gravar_tsv(av, tsv or settings.REPORTS_DIR / "avaliacao.tsv")
+    typer.echo(f"relatório: {caminho}")
+
+
+def _avaliar_escopo(tsv: Path | None) -> None:
+    settings = get_settings()
+    try:
+        voc, regras = vocabulario.carregar()
+        casos = carregar_casos(settings.AVALIACAO_DIR / "casos.yaml", voc, regras)
+        mensagens = carregar_escopo(settings.AVALIACAO_DIR / "escopo.yaml")
+        extrator = criar_extrator(settings, voc, regras)
+        resultados = medir_escopo(
+            extrator, mensagens, [(c.id, c.descricao) for c in casos], ErroLLM
+        )
+    except (VocabularioInvalido, CasosInvalidos, EscopoInvalido, PromptInvalido) as e:
+        falhar(str(e), 2)
+    except MissingSettingError as e:
+        falhar(str(e), 2)
+    cache = extrator.cache
+    typer.echo(
+        f"c01 {extrator.prompt.versao} · {len(resultados)} mensagens · "
+        f"{cache.chamadas} chamada(s) ao LLM ({cache.tokens_entrada} + {cache.tokens_saida} tokens)"
+    )
+    for linha in tabela_escopo(resumir_escopo(resultados)):
+        typer.echo(linha)
+    caminho = gravar_tsv_escopo(resultados, tsv or settings.REPORTS_DIR / "escopo.tsv")
     typer.echo(f"relatório: {caminho}")
 
 

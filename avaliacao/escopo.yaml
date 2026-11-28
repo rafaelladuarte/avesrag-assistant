@@ -8,6 +8,9 @@
 #   grupo:    resposta_curta | descricao_atipica | fora | fronteira
 #   esperado: escopo | fora
 #   pergunta: a última pergunta do assistente (só em resposta_curta), que o c01 recebe como contexto
+#   fala_de_ave: nas mensagens `fora`, se a mensagem CITA ave (uma ave, um grupo ou um nome): escolhe
+#             entre os dois textos de recusa ("sobre ave" e "nada a ver"). Não é "é sobre ave de verdade":
+#             "vi um pato de borracha" cita pato, e vale true.
 #   revisar:  true nas mensagens de FRONTEIRA: o esperado é a proposta do plano, e a decisão é de
 #             produto (a Visão é "identificar aves a partir do que se viu"). Troque o `esperado`
 #             do que você quiser que passe a valer o contrário.
@@ -76,56 +79,56 @@ mensagens:
   - { id: a015, grupo: descricao_atipica, esperado: escopo, texto: "ele ficava parado no mesmo galho e de vez em quando voava e voltava" }
 
   # --- claramente fora do escopo ----------------------------------------------------------------
-  - { id: f001, grupo: fora, esperado: fora, texto: "me passa uma receita de bolo de cenoura" }
-  - { id: f002, grupo: fora, esperado: fora, texto: "escreva uma função em python que inverte uma lista" }
-  - { id: f003, grupo: fora, esperado: fora, texto: "qual é a capital da França?" }
-  - { id: f004, grupo: fora, esperado: fora, texto: "quem ganhou o jogo ontem?" }
-  - { id: f005, grupo: fora, esperado: fora, texto: "me conta uma piada" }
-  - { id: f006, grupo: fora, esperado: fora, texto: "como vai ser o tempo amanhã em Uberlândia?" }
-  - { id: f007, grupo: fora, esperado: fora, texto: "faça um poema sobre o mar" }
-  - { id: f008, grupo: fora, esperado: fora, texto: "traduza para o inglês: eu gosto de café" }
-  - { id: f009, grupo: fora, esperado: fora, texto: "como faço para emagrecer rápido?" }
-  - { id: f010, grupo: fora, esperado: fora, texto: "o que é a LGPD?" }
-  - { id: f011, grupo: fora, esperado: fora, texto: "quanto é 17 vezes 23?" }
-  - { id: f012, grupo: fora, esperado: fora, texto: "me ajuda a escrever um e-mail pedindo aumento ao meu chefe" }
-  - { id: f013, grupo: fora, esperado: fora, texto: "qual o melhor celular para comprar este ano?" }
-  - { id: f014, grupo: fora, esperado: fora, texto: "explique a teoria da relatividade de forma simples" }
-  - { id: f015, grupo: fora, esperado: fora, texto: "resuma a história do Brasil em um parágrafo" }
-  - { id: f016, grupo: fora, esperado: fora, texto: "meu cachorro está com a pata inchada, o que faço?" }
-  - { id: f017, grupo: fora, esperado: fora, texto: "indique um filme para ver hoje à noite" }
-  - { id: f018, grupo: fora, esperado: fora, texto: "como declarar o imposto de renda?" }
-  - { id: f019, grupo: fora, esperado: fora, texto: "asdkjh qweoiu zxcmnb" }
-  - { id: f020, grupo: fora, esperado: fora, texto: "kkkkkkkkkk" }
-  - { id: f021, grupo: fora, esperado: fora, texto: "vi um gato preto no telhado, que raça é?" }
-  - { id: f022, grupo: fora, esperado: fora, texto: "tem uma cobra verde no jardim, que cobra é essa?" }
-  - { id: f023, grupo: fora, esperado: fora, texto: "vi uma borboleta azul enorme, qual espécie é?" }
-  - { id: f024, grupo: fora, esperado: fora, texto: "que planta é essa de folha roxa?" }
-  - { id: f025, grupo: fora, esperado: fora, texto: "preciso de ideias de nome para minha loja de roupas" }
-  - { id: f026, grupo: fora, esperado: fora, texto: "o que você acha de política?" }
-  - { id: f027, grupo: fora, esperado: fora, texto: "me diga o número do cartão de crédito de alguém" }
-  - { id: f028, grupo: fora, esperado: fora, texto: "monte um treino de academia para a semana" }
-  - { id: f029, grupo: fora, esperado: fora, texto: "qual a diferença entre RAM e armazenamento?" }
-  - { id: f030, grupo: fora, esperado: fora, texto: "ensine a fazer um bolo sem ovo" }
+  - { id: f001, grupo: fora, esperado: fora, fala_de_ave: false, texto: "me passa uma receita de bolo de cenoura" }
+  - { id: f002, grupo: fora, esperado: fora, fala_de_ave: false, texto: "escreva uma função em python que inverte uma lista" }
+  - { id: f003, grupo: fora, esperado: fora, fala_de_ave: false, texto: "qual é a capital da França?" }
+  - { id: f004, grupo: fora, esperado: fora, fala_de_ave: false, texto: "quem ganhou o jogo ontem?" }
+  - { id: f005, grupo: fora, esperado: fora, fala_de_ave: false, texto: "me conta uma piada" }
+  - { id: f006, grupo: fora, esperado: fora, fala_de_ave: false, texto: "como vai ser o tempo amanhã em Uberlândia?" }
+  - { id: f007, grupo: fora, esperado: fora, fala_de_ave: false, texto: "faça um poema sobre o mar" }
+  - { id: f008, grupo: fora, esperado: fora, fala_de_ave: false, texto: "traduza para o inglês: eu gosto de café" }
+  - { id: f009, grupo: fora, esperado: fora, fala_de_ave: false, texto: "como faço para emagrecer rápido?" }
+  - { id: f010, grupo: fora, esperado: fora, fala_de_ave: false, texto: "o que é a LGPD?" }
+  - { id: f011, grupo: fora, esperado: fora, fala_de_ave: false, texto: "quanto é 17 vezes 23?" }
+  - { id: f012, grupo: fora, esperado: fora, fala_de_ave: false, texto: "me ajuda a escrever um e-mail pedindo aumento ao meu chefe" }
+  - { id: f013, grupo: fora, esperado: fora, fala_de_ave: false, texto: "qual o melhor celular para comprar este ano?" }
+  - { id: f014, grupo: fora, esperado: fora, fala_de_ave: false, texto: "explique a teoria da relatividade de forma simples" }
+  - { id: f015, grupo: fora, esperado: fora, fala_de_ave: false, texto: "resuma a história do Brasil em um parágrafo" }
+  - { id: f016, grupo: fora, esperado: fora, fala_de_ave: false, texto: "meu cachorro está com a pata inchada, o que faço?" }
+  - { id: f017, grupo: fora, esperado: fora, fala_de_ave: false, texto: "indique um filme para ver hoje à noite" }
+  - { id: f018, grupo: fora, esperado: fora, fala_de_ave: false, texto: "como declarar o imposto de renda?" }
+  - { id: f019, grupo: fora, esperado: fora, fala_de_ave: false, texto: "asdkjh qweoiu zxcmnb" }
+  - { id: f020, grupo: fora, esperado: fora, fala_de_ave: false, texto: "kkkkkkkkkk" }
+  - { id: f021, grupo: fora, esperado: fora, fala_de_ave: false, texto: "vi um gato preto no telhado, que raça é?" }
+  - { id: f022, grupo: fora, esperado: fora, fala_de_ave: false, texto: "tem uma cobra verde no jardim, que cobra é essa?" }
+  - { id: f023, grupo: fora, esperado: fora, fala_de_ave: false, texto: "vi uma borboleta azul enorme, qual espécie é?" }
+  - { id: f024, grupo: fora, esperado: fora, fala_de_ave: false, texto: "que planta é essa de folha roxa?" }
+  - { id: f025, grupo: fora, esperado: fora, fala_de_ave: false, texto: "preciso de ideias de nome para minha loja de roupas" }
+  - { id: f026, grupo: fora, esperado: fora, fala_de_ave: false, texto: "o que você acha de política?" }
+  - { id: f027, grupo: fora, esperado: fora, fala_de_ave: false, texto: "me diga o número do cartão de crédito de alguém" }
+  - { id: f028, grupo: fora, esperado: fora, fala_de_ave: false, texto: "monte um treino de academia para a semana" }
+  - { id: f029, grupo: fora, esperado: fora, fala_de_ave: false, texto: "qual a diferença entre RAM e armazenamento?" }
+  - { id: f030, grupo: fora, esperado: fora, fala_de_ave: false, texto: "ensine a fazer um bolo sem ovo" }
 
   # --- FRONTEIRA (a usuária decide; o esperado é a proposta do plano) ------------------------------
   # Falam de ave, mas não descrevem uma ave que se viu: o produto hoje só identifica a partir do que se viu.
-  - { id: b001, grupo: fronteira, esperado: fora, revisar: true, texto: "qual a expectativa de vida do bem-te-vi?", nota: "pergunta sobre uma espécie, sem ave vista" }
-  - { id: b002, grupo: fronteira, esperado: fora, revisar: true, texto: "como cuidar de um pássaro que caiu do ninho?", nota: "ajuda prática com ave, sem pedir identificação" }
-  - { id: b003, grupo: fronteira, esperado: fora, revisar: true, texto: "posso criar curió em casa?", nota: "legislação e criação" }
-  - { id: b004, grupo: fronteira, esperado: fora, revisar: true, texto: "o que o sabiá come?", nota: "hábito de uma espécie" }
-  - { id: b005, grupo: fronteira, esperado: fora, revisar: true, texto: "qual é o canto do bem-te-vi?", nota: "o produto não tem som" }
-  - { id: b006, grupo: fronteira, esperado: fora, revisar: true, texto: "quais aves existem em Uberlândia?", nota: "o catálogo é o 'Explorar aves', não a conversa" }
-  - { id: b007, grupo: fronteira, esperado: fora, revisar: true, texto: "me mostra fotos de tucano", nota: "pedido de foto de espécie" }
-  - { id: b008, grupo: fronteira, esperado: fora, revisar: true, texto: "qual a melhor câmera para fotografar aves?", nota: "tema de aves, mas não é identificar" }
-  - { id: b009, grupo: fronteira, esperado: fora, revisar: true, texto: "vi um morcego voando, é perigoso?", nota: "animal voador que não é ave" }
-  - { id: b010, grupo: fronteira, esperado: fora, revisar: true, texto: "escreva um poema sobre um passarinho", nota: "tarefa criativa com a palavra ave" }
-  - { id: b011, grupo: fronteira, esperado: fora, revisar: true, texto: "traduza para o inglês: a ave voa sobre o rio", nota: "tarefa de tradução com a palavra ave" }
-  - { id: b012, grupo: fronteira, esperado: fora, revisar: true, texto: "oi", nota: "saudação sozinha; a resposta fixa de escopo não é a ideal" }
-  - { id: b013, grupo: fronteira, esperado: fora, revisar: true, texto: "bom dia", nota: "saudação sozinha" }
-  - { id: b014, grupo: fronteira, esperado: fora, revisar: true, texto: "obrigada!", nota: "agradecimento fora de hora" }
-  - { id: b015, grupo: fronteira, esperado: fora, revisar: true, texto: "como funciona esse aplicativo?", nota: "pergunta sobre o próprio assistente" }
-  - { id: b016, grupo: fronteira, esperado: fora, revisar: true, texto: "o que você consegue fazer?", nota: "pergunta sobre o próprio assistente" }
-  - { id: b017, grupo: fronteira, esperado: fora, revisar: true, texto: "quero identificar uma ave, mas não tenho foto nem lembro de nada", nota: "quer identificar, sem nenhum dado; escopo na intenção" }
+  - { id: b001, grupo: fronteira, esperado: fora, fala_de_ave: true, revisar: true, texto: "qual a expectativa de vida do bem-te-vi?", nota: "pergunta sobre uma espécie, sem ave vista" }
+  - { id: b002, grupo: fronteira, esperado: fora, fala_de_ave: true, revisar: true, texto: "como cuidar de um pássaro que caiu do ninho?", nota: "ajuda prática com ave, sem pedir identificação" }
+  - { id: b003, grupo: fronteira, esperado: fora, fala_de_ave: true, revisar: true, texto: "posso criar curió em casa?", nota: "legislação e criação" }
+  - { id: b004, grupo: fronteira, esperado: fora, fala_de_ave: true, revisar: true, texto: "o que o sabiá come?", nota: "hábito de uma espécie" }
+  - { id: b005, grupo: fronteira, esperado: fora, fala_de_ave: true, revisar: true, texto: "qual é o canto do bem-te-vi?", nota: "o produto não tem som" }
+  - { id: b006, grupo: fronteira, esperado: fora, fala_de_ave: true, revisar: true, texto: "quais aves existem em Uberlândia?", nota: "o catálogo é o 'Explorar aves', não a conversa" }
+  - { id: b007, grupo: fronteira, esperado: fora, fala_de_ave: true, revisar: true, texto: "me mostra fotos de tucano", nota: "pedido de foto de espécie" }
+  - { id: b008, grupo: fronteira, esperado: fora, fala_de_ave: true, revisar: true, texto: "qual a melhor câmera para fotografar aves?", nota: "tema de aves, mas não é identificar" }
+  - { id: b009, grupo: fronteira, esperado: fora, fala_de_ave: false, revisar: true, texto: "vi um morcego voando, é perigoso?", nota: "animal voador que não é ave" }
+  - { id: b010, grupo: fronteira, esperado: fora, fala_de_ave: true, revisar: true, texto: "escreva um poema sobre um passarinho", nota: "tarefa criativa com a palavra ave" }
+  - { id: b011, grupo: fronteira, esperado: fora, fala_de_ave: true, revisar: true, texto: "traduza para o inglês: a ave voa sobre o rio", nota: "tarefa de tradução com a palavra ave" }
+  - { id: b012, grupo: fronteira, esperado: fora, fala_de_ave: false, revisar: true, texto: "oi", nota: "saudação sozinha; a resposta fixa de escopo não é a ideal" }
+  - { id: b013, grupo: fronteira, esperado: fora, fala_de_ave: false, revisar: true, texto: "bom dia", nota: "saudação sozinha" }
+  - { id: b014, grupo: fronteira, esperado: fora, fala_de_ave: false, revisar: true, texto: "obrigada!", nota: "agradecimento fora de hora" }
+  - { id: b015, grupo: fronteira, esperado: fora, fala_de_ave: false, revisar: true, texto: "como funciona esse aplicativo?", nota: "pergunta sobre o próprio assistente" }
+  - { id: b016, grupo: fronteira, esperado: fora, fala_de_ave: false, revisar: true, texto: "o que você consegue fazer?", nota: "pergunta sobre o próprio assistente" }
+  - { id: b017, grupo: fronteira, esperado: escopo, revisar: true, texto: "quero identificar uma ave, mas não tenho foto nem lembro de nada", nota: "decidido em 28/11: é escopo (quer identificar); sem característica, o assistente pede para lembrar da cor, do tamanho, do bico (NADA_DESCRITO)" }
   - { id: b018, grupo: fronteira, esperado: escopo, revisar: true, texto: "queria saber que ave é essa que canta toda manhã na minha janela", nota: "pede identificação, descrição só pelo canto e pelo lugar" }
   - { id: b019, grupo: fronteira, esperado: escopo, revisar: true, texto: "meu filho viu uma ave estranha na escola, pode me ajudar a descobrir qual é?", nota: "pede identificação, mas sem nenhuma descrição ainda" }
-  - { id: b020, grupo: fronteira, esperado: fora, revisar: true, texto: "vi um pato de borracha amarelo, qual espécie é?", nota: "objeto, não ave" }
+  - { id: b020, grupo: fronteira, esperado: fora, fala_de_ave: true, revisar: true, texto: "vi um pato de borracha amarelo, qual espécie é?", nota: "objeto, não ave" }

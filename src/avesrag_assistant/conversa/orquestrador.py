@@ -55,9 +55,23 @@ ROTULOS = {
     "atividade": "horário",
 }
 
+# Nada a ver com aves.
 FORA_DE_ESCOPO = (
     "Eu só ajudo a identificar aves a partir do que você viu. "
     "Me conte como era a ave: tamanho, cores, bico, onde ela estava."
+)
+# Fala de ave, mas não é identificação (expectativa de vida, o que come, fotos...): um ponto de
+# evolução da aplicação (planos/plano_guardrails.md §13).
+FORA_SOBRE_AVE = (
+    "No momento não consigo responder a esse tipo de pergunta sobre aves: a aplicação ainda está "
+    "em desenvolvimento e, por enquanto, só identifico espécies a partir do que você viu. "
+    "Estamos trabalhando para melhorar! Me conte como era a ave: tamanho, cores, bico, "
+    "onde ela estava."
+)
+# A mensagem é sobre uma ave vista, mas não traz nenhuma característica (planos/plano_guardrails.md §11).
+NADA_DESCRITO = (
+    "Vamos por partes. Tente se lembrar de como era a ave: a cor, o tamanho, o bico ou "
+    "o lugar onde ela estava. Qualquer detalhe ajuda."
 )
 NAO_ENTENDI = "Desculpe, não consegui entender agora. Pode repetir de outro jeito?"
 NENHUMA = (
@@ -102,6 +116,7 @@ class Servicos:
     vetor: Callable[[str], list[float]]  # o embedding (pelo cache)
     sugestor: Sugestor | None = None
     indice: Mapping[str, str] | None = None  # nomes → species_id, para o sugestor
+    fala_de_ave: Callable[[str], bool] | None = None  # escolhe o texto da recusa de escopo
 
 
 def _normalizar(texto: str) -> str:
@@ -159,7 +174,13 @@ class Orquestrador:
         except ErroLLM:
             return NAO_ENTENDI
         if ex.fora_de_escopo:
-            return FORA_DE_ESCOPO
+            fala = self.s.fala_de_ave
+            return FORA_SOBRE_AVE if fala is not None and fala(texto) else FORA_DE_ESCOPO
+        if e.pergunta is None and not ex.atributos.informados():
+            # Descrição nova sem característica nenhuma: buscar com "ave" só gasta chamadas.
+            e.local = ex.local or e.local
+            e.data_observacao = ex.data_observacao or e.data_observacao
+            return NADA_DESCRITO
         self.atributos = ex.atributos
         e.atributos = ex.atributos.model_dump(exclude_none=True)
         e.descricao_para_busca = ex.descricao_para_busca

@@ -14,6 +14,7 @@ from avesrag_assistant.busca.cache import COLECAO_PADRAO as COLECAO_EMBEDDINGS
 from avesrag_assistant.busca.cache import criar_cache
 from avesrag_assistant.busca.pontuacao import carregar_ranking
 from avesrag_assistant.conversa.config import carregar_conversa
+from avesrag_assistant.conversa.escopo import carregar_escopo_config, criar_detector
 from avesrag_assistant.conversa.orquestrador import Servicos
 from avesrag_assistant.db import get_db
 from avesrag_assistant.llm.cache import COLECAO_PADRAO as COLECAO_LLM
@@ -47,6 +48,8 @@ def construir_servicos(
             armazem_do_ambiente(settings, db, COLECAO_EMBEDDINGS, "cache_embeddings.json"),
         )
     cache = cache_embeddings(settings, *extra_emb)
+    indice = indice_da_base(db)
+    escopo = carregar_escopo_config(settings.CONFIG_DIR / "escopo.yaml")
     return Servicos(
         db=db,
         ranking=ranking,
@@ -57,5 +60,6 @@ def construir_servicos(
         redator=redator(settings, voc, regras, *extra_llm),
         vetor=cache.vetor,
         sugestor=sugestor(settings, voc, regras, *extra_llm),
-        indice=indice_da_base(db),
+        indice=indice,
+        fala_de_ave=criar_detector(escopo.palavras_de_ave, indice),
     )

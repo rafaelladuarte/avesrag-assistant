@@ -1,0 +1,62 @@
+# Palavras que mostram que uma mensagem fora do escopo fala de ave (planos/plano_guardrails.md §13).
+# Só escolhe entre dois textos de recusa: "sobre ave, mas não é identificação" e "nada a ver".
+# Os nomes das espécies com ficha entram sozinhos (o índice do sugestor); aqui ficam as palavras
+# genéricas e os grupos que as pessoas dizem sem o nome completo ("tucano", "coruja"). O plural
+# ("aves", "tucanos") é tratado pelo código. Mudou a lista: rode o teste de `escopo.yaml`.
+versao: "1.0"
+palavras_de_ave:
+  # genéricas
+  - ave
+  - pássaro
+  - passarinho
+  - passarinha
+  - avezinha
+  - filhote de ave
+  - ninho
+  # grupos e aves comuns
+  - tucano
+  - beija-flor
+  - colibri
+  - coruja
+  - gavião
+  - falcão
+  - águia
+  - pato
+  - marreca
+  - garça
+  - socó
+  - papagaio
+  - periquito
+  - arara
+  - maritaca
+  - pardal
+  - sabiá
+  - canário
+  - curió
+  - sanhaço
+  - urubu
+  - pomba
+  - rolinha
+  - juriti
+  - quero-quero
+  - ema
+  - seriema
+  - jacu
+  - pica-pau
+  - andorinha
+  - andorinhão
+  - tico-tico
+  - joão-de-barro
+  - bem-te-vi
+  - anu
+  - cuco
+  - tiziu
+  - tesourinha
+  - martim-pescador
+  - galinha
+  - galo
+  - pavão
+  - ganso
+  - peru
+  - pinguim
+  - avestruz
