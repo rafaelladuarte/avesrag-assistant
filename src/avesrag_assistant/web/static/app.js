@@ -603,6 +603,7 @@
     var v = c.valor;
     if (v === null || v === undefined || (Array.isArray(v) && !v.length)) return "sem valor";
     if (c.tipo === "fotos") return v.length + (v.length === 1 ? " foto" : " fotos") + "; principal: " + v[0].credito;
+    if (c.tipo === "bico") return ["comprimento", "espessura"].filter(function (d) { return v[d]; }).map(function (d) { return d + ": " + rotulo(c, d, v[d]); }).join("; ");
     if (c.tipo === "pares") return v.map(function (p) { return rotulo(c, "partes", p.parte) + ": " + rotulo(c, "cores", p.cor); }).join("; ");
     if (Array.isArray(v)) return v.map(function (x) { return rotulo(c, null, x); }).join(", ");
     return c.tipo === "numero" ? String(v).replace(".", ",") : String(v);
@@ -624,7 +625,7 @@
     estado.campoAberto = c.caminho;
     estado.rascunhoMotivo = "";
     estado.avisoCuradoria = null;
-    estado.rascunhoValor = c.valor === null || c.valor === undefined ? (c.tipo === "lista" || c.tipo === "pares" ? [] : "") : JSON.parse(JSON.stringify(c.valor));
+    estado.rascunhoValor = c.valor === null || c.valor === undefined ? (c.tipo === "lista" || c.tipo === "pares" ? [] : c.tipo === "bico" ? {} : "") : JSON.parse(JSON.stringify(c.valor));
     if (c.tipo === "texto_longo" && !c.valor && c.sugestao) estado.rascunhoValor = c.sugestao; // parte do texto gerado
     estado.novaFoto = { url: "", autor: "", licenca: "", link: "" };
     desenhar();
@@ -642,6 +643,19 @@
   function salvarCampo(c, remover) {
     var valor = remover ? null : estado.rascunhoValor;
     if (c.tipo === "numero" && !remover) valor = valor === "" ? null : Number(valor);
+    if (c.tipo === "bico" && !remover) {
+      // Só o que mudou: o que ficou como estava segue vindo da medida (ou da correção anterior).
+      var atual = c.valor || {};
+      valor = {};
+      ["comprimento", "espessura"].forEach(function (d) {
+        if (estado.rascunhoValor[d] && estado.rascunhoValor[d] !== atual[d]) valor[d] = estado.rascunhoValor[d];
+      });
+      if (!Object.keys(valor).length) {
+        estado.avisoCuradoria = { erro: true, texto: "Mude o comprimento ou a espessura do bico antes de salvar." };
+        desenhar();
+        return;
+      }
+    }
     if (c.tipo === "fotos") {
       valor = estado.rascunhoValor.map(function (f) {
         return f.novo ? { url: f.novo.url, autor: f.novo.autor, licenca: f.novo.licenca, link: f.novo.link } : { link: f.link };
@@ -741,6 +755,15 @@
       corpo = el("div", { class: "campo" }, el("label", { for: "edit-valor" }, c.rotulo), sel);
     } else if (c.tipo === "fotos") {
       corpo = editorDeFotos(c);
+    } else if (c.tipo === "bico") {
+      corpo = el("div", { class: "pares" }, ["comprimento", "espessura"].map(function (dim) {
+        var id = "edit-bico-" + dim;
+        var s = el("select", { id: id, onchange: function () {
+          if (s.value) estado.rascunhoValor[dim] = s.value; else delete estado.rascunhoValor[dim];
+        } }, el("option", { value: "" }, "sem alteração"), c.opcoes[dim].map(function (o) { return el("option", { value: o.valor }, o.rotulo); }));
+        s.value = estado.rascunhoValor[dim] || "";
+        return el("div", { class: "campo" }, el("label", { for: id }, dim === "comprimento" ? "Comprimento do bico" : "Espessura do bico"), s);
+      }));
     } else if (c.tipo === "pares") {
       var atuais = {};
       estado.rascunhoValor.forEach(function (p) { atuais[p.parte] = p.cor; });

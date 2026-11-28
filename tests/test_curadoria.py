@@ -103,7 +103,41 @@ def test_lista_todos_os_campos_editaveis_com_as_opcoes(curadoria):
     assert {o["valor"] for o in pares["opcoes"]["partes"]} >= {"cabeca", "barriga"}
     assert {"valor": "cabeca", "rotulo": "cabeça"} in pares["opcoes"]["partes"]
     assert campo(r, "atributos.bico_tipo")["tipo"] == "escolha"
+    bico = campo(r, "atributos.bico")
+    assert bico["tipo"] == "bico" and bico["valor"] is None
+    assert {"valor": "muito_longo", "rotulo": "muito longo"} in bico["opcoes"]["comprimento"]
+    assert {o["valor"] for o in bico["opcoes"]["espessura"]} >= {"fino", "grosso"}
     assert campo(r, "descricao")["tipo"] == "texto_longo"
+
+
+def test_corrigir_o_bico_medido_mantem_a_outra_dimensao(curadoria):
+    c, banco = curadoria
+    medido = {"comprimento": "longo", "espessura": "grosso"}
+    atual = next(d for d in banco["species"].docs if d["species_id"] == "sp_a")
+    for doc in (atual, banco.originais["sp_a"]):
+        doc["atributos"]["bico"] = dict(medido)
+    r = c.definir("sp_a", "atributos.bico", {"comprimento": "curto"}, "ana", "tucuruvi")
+    assert campo(r, "atributos.bico")["manual"]["por"] == "ana"
+    assert campo(r, "atributos.bico")["valor"] == {"comprimento": "curto", "espessura": "grosso"}
+    with pytest.raises(ErroCuradoria):
+        c.definir("sp_a", "atributos.bico", {"curvatura": "reto"}, "ana")
+
+
+def test_duas_correcoes_parciais_do_bico_se_somam(curadoria):
+    c, banco = curadoria
+    medido = {"comprimento": "longo", "espessura": "grosso"}
+    atual = next(d for d in banco["species"].docs if d["species_id"] == "sp_a")
+    for doc in (atual, banco.originais["sp_a"]):
+        doc["atributos"]["bico"] = dict(medido)
+    c.definir("sp_a", "atributos.bico", {"comprimento": "curto"}, "ana")
+    r = c.definir("sp_a", "atributos.bico", {"espessura": "fino"}, "ana")
+    gravado = banco[SPECIES_OVERRIDES].docs["sp_a"]["campos"]["atributos/bico"]["valor"]
+    assert gravado == {"comprimento": "curto", "espessura": "fino"}  # a 2ª não apagou a 1ª
+    assert campo(r, "atributos.bico")["valor"] == {"comprimento": "curto", "espessura": "fino"}
+    # Uma correção que repete a dimensão troca só aquela.
+    c.definir("sp_a", "atributos.bico", {"comprimento": "medio"}, "ana")
+    gravado = banco[SPECIES_OVERRIDES].docs["sp_a"]["campos"]["atributos/bico"]["valor"]
+    assert gravado == {"comprimento": "medio", "espessura": "fino"}
 
 
 def test_corrigir_um_campo_muda_a_ficha_e_guarda_o_historico(curadoria):

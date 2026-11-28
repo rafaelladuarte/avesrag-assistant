@@ -25,6 +25,7 @@ from avesrag_builder.core.models import Atributos
 from avesrag_builder.core.vocabulario import RegrasBico, Vocabulario
 
 from avesrag_assistant.busca.modelos import DIMENSOES_BICO, AtributosObservados, validar_atributos
+from avesrag_assistant.busca.pontuacao import aceitos_do_bico
 from avesrag_assistant.conversa.config import ConfigPerguntas
 
 
@@ -70,9 +71,7 @@ def valores_da_ficha(pergunta: Pergunta, ficha: Atributos, regras_bico: RegrasBi
     if pergunta.atributo == "cores_por_parte":
         valores = [c.cor for c in ficha.cores_por_parte or [] if c.parte == pergunta.parte]
     elif pergunta.atributo == "bico":
-        if ficha.bico_tipo is None:
-            return []
-        valores = list(getattr(regras_bico.perfil(ficha.bico_tipo), pergunta.parte))
+        valores = aceitos_do_bico(ficha, regras_bico, pergunta.parte) or []
     else:
         valores = list(getattr(ficha, pergunta.atributo) or [])
     return list(dict.fromkeys(valores))

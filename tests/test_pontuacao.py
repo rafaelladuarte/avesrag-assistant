@@ -200,6 +200,49 @@ def test_bico_extra_sem_perfil_e_neutro(obs, pontua):
     assert (d.resultado, d.pontos) == ("bate", pytest.approx(0.4))
 
 
+def test_bico_medido_vale_mais_que_o_perfil_do_tipo(obs, pontua):
+    # O perfil do insetívoro é "fino"; a ave medida tem o bico grosso (ex.: o neinei).
+    ficha = Atributos(bico_tipo="insetivoro", bico={"comprimento": "longo", "espessura": "grosso"})
+    d = pontua(obs(bico={"comprimento": "longo", "espessura": "grosso"}), ficha)
+    assert (d.resultado, d.conflitaram) == ("bate", [])
+    d = pontua(obs(bico={"espessura": "fino"}), ficha)  # o perfil diria "bate"; a medida, não
+    assert (d.resultado, d.conflitaram) == ("conflita", ["espessura:fino"])
+
+
+def test_bico_medido_um_degrau_ainda_conflita(obs, pontua):
+    # Opção A do plano_bico.md §5: tudo ou nada; o "vizinho" é um experimento à parte.
+    ficha = Atributos(bico_tipo="generalista", bico={"comprimento": "medio", "espessura": "grosso"})
+    assert pontua(obs(bico={"espessura": "intermediario"}), ficha).resultado == "conflita"
+
+
+def test_bico_longo_e_muito_longo_sao_equivalentes(obs, pontua):
+    # A curicaca mede "muito longo", e as pessoas dizem "longo" (plano_bico.md §9).
+    ficha = Atributos(bico_tipo="limicola_sondador", bico={"comprimento": "muito_longo"})
+    assert pontua(obs(bico={"comprimento": "longo"}), ficha).resultado == "bate"
+    assert pontua(obs(bico={"comprimento": "muito_longo"}), ficha).resultado == "bate"
+    assert pontua(obs(bico={"comprimento": "medio"}), ficha).resultado == "conflita"
+    ficha = Atributos(bico_tipo="quebrador", bico={"espessura": "muito_grosso"})
+    assert pontua(obs(bico={"espessura": "grosso"}), ficha).resultado == "bate"
+    assert pontua(obs(bico={"espessura": "intermediario"}), ficha).resultado == "conflita"
+
+
+def test_bico_curvatura_e_extra_seguem_o_perfil_do_tipo(obs, pontua):
+    ficha = Atributos(bico_tipo="generalista", bico={"comprimento": "medio", "espessura": "fino"})
+    d = pontua(obs(bico={"curvatura": "gancho"}), ficha)
+    assert (d.resultado, d.conflitaram) == ("conflita", ["curvatura:gancho"])
+    assert (
+        pontua(obs(bico={"curvatura": "reto", "extra": ["pontiagudo"]}), ficha).resultado == "bate"
+    )
+
+
+def test_bico_medido_sem_bico_tipo(obs, pontua):
+    ficha = Atributos(bico={"comprimento": "curto", "espessura": "grosso"})
+    assert pontua(obs(bico={"espessura": "grosso"}), ficha).resultado == "bate"
+    assert (
+        pontua(obs(bico={"curvatura": "reto"}), ficha).resultado == "sem_dado"
+    )  # o tipo é que dá a curvatura
+
+
 def test_bico_ficha_sem_bico_tipo(obs, pontua):
     d = pontua(obs(bico={"espessura": "grosso"}), Atributos(cores=["preto"]))
     assert d.resultado == "sem_dado"

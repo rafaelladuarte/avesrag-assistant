@@ -37,6 +37,7 @@ ROTULOS = {
     "atributos.cauda": "Cauda",
     "atributos.tamanho": "Tamanho",
     "atributos.bico_tipo": "Tipo de bico",
+    "atributos.bico": "Forma do bico (comprimento e espessura)",
     "atributos.ambiente": "Ambiente",
     "atributos.onde_estava": "Onde costuma estar",
     "atributos.o_que_fazia": "O que costuma fazer",
@@ -123,6 +124,9 @@ class Curadoria:
             return lista(self.voc.valores(caminho.removeprefix("atributos.")))
         if tipo == "escolha":
             return lista(self.voc.valores("bico_tipo"))
+        if tipo == "bico":
+            dimensoes = self.bico.arquivo.dimensoes
+            return {d: lista(dimensoes[d]) for d in ("comprimento", "espessura")}
         if tipo == "pares":
             return {"partes": lista(self.voc.partes()), "cores": lista(self.voc.valores("cores"))}
         return None
@@ -220,17 +224,21 @@ class Curadoria:
         doc = self.db[SPECIES].find_one({"species_id": species_id})
         if doc is None:
             raise ErroCuradoria("Não encontrei essa espécie.")
+        existente = (self.db[SPECIES_OVERRIDES].find_one({"species_id": species_id}) or {}).get(
+            "campos"
+        ) or {}
         if caminho == "midia.fotos":
             valor = self._resolver_fotos(species_id, doc, valor)
+        if caminho == "atributos.bico" and isinstance(valor, dict):
+            # Uma correção guarda uma dimensão só ou as duas: a nova se soma à que já existe.
+            gravado = (existente.get(ov.chave_de(caminho)) or {}).get("valor")
+            valor = {**(gravado if isinstance(gravado, dict) else {}), **valor}
         try:
-            normalizado = ov.validar_valor(caminho, valor, self.voc, self.midia)
+            normalizado = ov.validar_valor(caminho, valor, self.voc, self.midia, self.bico)
         except ov.OverrideInvalido as e:
             raise ErroCuradoria(str(e)) from e
         motivo = (motivo or "").strip()[:300] or None
         agora = datetime.now(UTC)
-        existente = (self.db[SPECIES_OVERRIDES].find_one({"species_id": species_id}) or {}).get(
-            "campos"
-        ) or {}
         anterior = _valor_atual(doc, caminho)
         if caminho == "midia.fotos" and not anterior:
             anterior = [doc["midia"]["foto"]] if (doc.get("midia") or {}).get("foto") else None

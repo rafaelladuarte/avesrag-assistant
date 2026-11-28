@@ -220,17 +220,29 @@ def _itens_cores_por_parte(informados: list[CorPorParte], ficha: Atributos) -> l
     return itens
 
 
+def aceitos_do_bico(ficha: Atributos, regras_bico: RegrasBico, dimensao: str) -> list[str] | None:
+    """Valores que a ficha aceita numa dimensão do bico; `None` = a ficha não diz.
+
+    Comprimento e espessura medidos (`ficha.bico`, do AVONET) valem para a espécie, junto com os
+    valores que as pessoas não distinguem (`equivalentes` no YAML); sem eles, e
+    na curvatura e no extra, vale o perfil do `bico_tipo`."""
+    if ficha.bico is not None and dimensao in ("comprimento", "espessura"):
+        medido = getattr(ficha.bico, dimensao)
+        if medido is not None:
+            return regras_bico.equivalentes(dimensao, medido)
+    if ficha.bico_tipo is None:
+        return None
+    return list(getattr(regras_bico.perfil(ficha.bico_tipo), dimensao))
+
+
 def _itens_bico(informado: Bico, ficha: Atributos, regras_bico: RegrasBico) -> list[Item]:
     pedidos = [(d, getattr(informado, d)) for d in DIMENSOES_BICO if getattr(informado, d)]
     pedidos += [("extra", v) for v in informado.extra or []]
-    if ficha.bico_tipo is None:
-        return [(f"{d}:{v}", None) for d, v in pedidos]
-    perfil = regras_bico.perfil(ficha.bico_tipo)
     itens: list[Item] = []
     for dim, valor in pedidos:
-        aceitos = getattr(perfil, dim)
-        if dim == "extra" and not aceitos:
-            itens.append((f"{dim}:{valor}", None))  # o perfil não define extra: neutro
+        aceitos = aceitos_do_bico(ficha, regras_bico, dim)
+        if aceitos is None or (dim == "extra" and not aceitos):
+            itens.append((f"{dim}:{valor}", None))  # a ficha não diz, ou o perfil não define extra
         else:
             itens.append((f"{dim}:{valor}", 1.0 if valor in aceitos else CONFLITO))
     return itens
