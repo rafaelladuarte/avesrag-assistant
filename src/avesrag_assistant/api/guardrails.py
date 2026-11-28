@@ -12,8 +12,12 @@ from __future__ import annotations
 import logging
 import re
 import unicodedata
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass, replace
 from typing import Any, Protocol
+
+from avesrag_builder.db.collections import SPECIES
+from pymongo.database import Database
 
 log = logging.getLogger(__name__)
 
@@ -105,6 +109,90 @@ def conferir_injecao(texto: str, padroes: Sequence[re.Pattern[str]], recusada: s
         recusa = EntradaRecusada("injecao", recusada)
         recusa.detalhe = padrao
         raise recusa
+
+
+# -- texto livre do LLM (P3c) -------------------------------------------------
+
+_PALAVRAS = re.compile(r"[a-z0-9]+")
+# Palavras de ligação que não dizem sobre o que a pergunta trata (regra do tema).
+_LIGACAO = frozenset(
+    "a o as os de da do das dos em na no nas nos um uma uns umas e ou que se com por para como "
+    "era eram foi ser tinha tinham ave aves lembra voce viu ela ele qual quais".split()
+)
+
+
+def palavras(texto: str) -> list[str]:
+    """As palavras do texto normalizado ("tico-tico" vira "tico", "tico")."""
+    return _PALAVRAS.findall(normalizar(texto))
+
+
+@dataclass(frozen=True)
+class RegrasTextoLivre:
+    maximo_caracteres: int
+    terminar_com: str
+    marcas_proibidas: tuple[str, ...]
+    nomes: frozenset[tuple[str, ...]]  # nomes de ave, cada um como tupla de palavras
+    trechos: frozenset[tuple[str, ...]]  # n palavras seguidas do system prompt
+    palavras_do_prompt: int
+    tema: str = "aviso"
+
+
+def nomes_das_aves(db: Database) -> frozenset[tuple[str, ...]]:
+    """Nomes populares (pt e en) e científicos das fichas, para a pergunta não citar espécie."""
+    nomes: set[tuple[str, ...]] = set()
+    for doc in db[SPECIES].find({}, {"nome_cientifico": 1, "nomes": 1, "_id": 0}):
+        candidatos = [doc.get("nome_cientifico"), *(doc.get("nomes") or {}).get("pt", [])]
+        candidatos += (doc.get("nomes") or {}).get("en", [])
+        nomes.update(tuple(palavras(n)) for n in candidatos if isinstance(n, str) and n.strip())
+    nomes.discard(())
+    return frozenset(nomes)
+
+
+def trechos_do_texto(texto: str, n: int) -> frozenset[tuple[str, ...]]:
+    """Todas as sequências de `n` palavras do texto (o system prompt, sem os `{marcadores}`)."""
+    ps = palavras(re.sub(r"\{[a-z_]+\}", " ", texto))
+    return frozenset(tuple(ps[i : i + n]) for i in range(len(ps) - n + 1))
+
+
+def conferir_texto_livre(texto: str, regras: RegrasTextoLivre, pedido: str = "") -> str | None:
+    """O motivo da recusa, ou `None` se o texto passa. Nunca devolve nem registra o texto."""
+    t = texto.strip()
+    if len(t) > regras.maximo_caracteres:
+        return "grande"
+    if regras.terminar_com and not t.endswith(regras.terminar_com):
+        return "sem_final"
+    if any(m in t for m in regras.marcas_proibidas):
+        return "marcacao"
+    ps = palavras(t)
+    maior = max((len(n) for n in regras.nomes), default=0)
+    for tamanho in range(1, maior + 1):
+        if any(tuple(ps[i : i + tamanho]) in regras.nomes for i in range(len(ps) - tamanho + 1)):
+            return "nome_de_ave"
+    n = regras.palavras_do_prompt
+    if any(tuple(ps[i : i + n]) in regras.trechos for i in range(len(ps) - n + 1)):
+        return "vazamento"
+    if regras.tema == "recusa" and pedido:
+        assunto = {p for p in palavras(pedido) if p not in _LIGACAO and len(p) > 2}
+        if assunto and not assunto & set(ps):
+            return "tema"
+    return None
+
+
+def conferidor_da_pergunta(
+    regras: RegrasTextoLivre,
+) -> Callable[[str, str], str | None]:
+    """O conferidor que o `RedatorPergunta` chama: `(pergunta, pedido) -> motivo ou None`.
+
+    O tema no modo `aviso` só vai para o log (sem o texto), e a pergunta passa."""
+
+    def conferir(pergunta: str, pedido: str) -> str | None:
+        motivo = conferir_texto_livre(pergunta, regras, pedido)
+        if motivo is None and regras.tema == "aviso" and pedido:
+            if conferir_texto_livre(pergunta, replace(regras, tema="recusa"), pedido) == "tema":
+                log.warning("pergunta do c02 fora do tema do pedido (só aviso)")
+        return motivo
+
+    return conferir
 
 
 # -- saída --------------------------------------------------------------------

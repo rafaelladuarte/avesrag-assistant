@@ -19,7 +19,13 @@ from avesrag_assistant import vocabulario
 from avesrag_assistant.api.app import criar_app
 from avesrag_assistant.api.config import carregar_api, carregar_familias
 from avesrag_assistant.api.convites import Convites
-from avesrag_assistant.api.guardrails import ModeradorOpenAI
+from avesrag_assistant.api.guardrails import (
+    ModeradorOpenAI,
+    RegrasTextoLivre,
+    conferidor_da_pergunta,
+    nomes_das_aves,
+    trechos_do_texto,
+)
 from avesrag_assistant.api.limites import Limitador
 from avesrag_assistant.api.limites_mongo import LimitadorMongo, UsoDiarioMongo
 from avesrag_assistant.api.sessoes import RepositorioArquivo, RepositorioMongo
@@ -44,6 +50,25 @@ def convites_do_ambiente(settings: Settings) -> Convites:
     return convites
 
 
+def _conferir_saida_do_redator(servicos, config) -> None:
+    """Liga a conferência do texto livre (P3c) ao redator da pergunta, se ele a aceita."""
+    redator = servicos.redator
+    if not hasattr(redator, "conferidor") or not hasattr(redator, "system"):
+        return
+    saida = config.guardrails.saida
+    redator.conferidor = conferidor_da_pergunta(
+        RegrasTextoLivre(
+            maximo_caracteres=saida.maximo_caracteres,
+            terminar_com=saida.terminar_com,
+            marcas_proibidas=tuple(saida.marcas_proibidas),
+            nomes=nomes_das_aves(servicos.db),
+            trechos=trechos_do_texto(redator.system, saida.palavras_do_prompt),
+            palavras_do_prompt=saida.palavras_do_prompt,
+            tema=saida.tema,
+        )
+    )
+
+
 def criar_app_do_ambiente(
     settings: Settings | None = None,
     sessoes_em: Literal["mongo", "arquivo"] | None = None,
@@ -53,6 +78,7 @@ def criar_app_do_ambiente(
     config = carregar_api(settings.CONFIG_DIR / "api.yaml")
     familias = carregar_familias(settings.CONFIG_DIR / "familias.yaml")
     servicos = construir_servicos(settings, voc, regras)
+    _conferir_saida_do_redator(servicos, config)
     compartilhado = settings.armazenamento == "mongo"
     sessoes_em = sessoes_em or ("mongo" if compartilhado else "arquivo")
     if sessoes_em == "mongo":

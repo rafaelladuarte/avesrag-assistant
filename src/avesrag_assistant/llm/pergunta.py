@@ -9,16 +9,20 @@ falhar, quem chama usa a pergunta de reserva (`reserva`).
 from __future__ import annotations
 
 import json
+import logging
+from collections.abc import Callable
 
 from avesrag_builder.core.vocabulario import RegrasBico, Vocabulario
 from avesrag_builder.llm.base import Pedido
 
 from avesrag_assistant.armazem import Armazem
 from avesrag_assistant.busca.modelos import AtributosObservados
-from avesrag_assistant.llm.cache import ARQUIVO_PADRAO, CacheLLM
+from avesrag_assistant.llm.cache import ARQUIVO_PADRAO, CacheLLM, ErroLLM
 from avesrag_assistant.llm.contratos import C02Pergunta, schema_do_contrato
 from avesrag_assistant.llm.prompts import PromptChat, carregar_prompt
 from avesrag_assistant.settings import Settings
+
+log = logging.getLogger(__name__)
 
 
 def reserva(pedido: str) -> str:
@@ -49,6 +53,14 @@ class RedatorPergunta:
         self.modelo = prompt.modelo or modelo_padrao
         self._system = prompt.render_system(vocabulario, regras_bico)
         self._schema = schema_do_contrato("C02Pergunta", vocabulario, regras_bico)
+        # Conferência do texto livre na saída (P3c): `(pergunta, pedido) -> motivo ou None`.
+        # Quem monta a API a coloca; sem ela, vale só o "?" no fim.
+        self.conferidor: Callable[[str, str], str | None] | None = None
+
+    @property
+    def system(self) -> str:
+        """O system prompt já montado, para o conferidor reconhecer um vazamento dele."""
+        return self._system
 
     def redigir(self, pedido: str, atributos: AtributosObservados) -> str:
         estado = json.dumps(atributos.model_dump(exclude_none=True), ensure_ascii=False)
@@ -60,7 +72,19 @@ class RedatorPergunta:
             schema=self._schema,
             temperatura=self.prompt.temperatura,
         )
-        return self.cache.gerar(self.prompt.id, self.prompt.versao, pedido_llm, _validar)
+
+        def validar(conteudo: str) -> str:
+            pergunta = _validar(conteudo)
+            motivo = self.conferidor(pergunta, pedido) if self.conferidor else None
+            if motivo:
+                log.warning("pergunta do c02 recusada (%s)", motivo)  # nunca o texto
+                raise ValueError(f"pergunta recusada: {motivo}")
+            return pergunta
+
+        try:
+            return self.cache.gerar(self.prompt.id, self.prompt.versao, pedido_llm, validar)
+        except ValueError as e:  # a resposta já guardada no cache não passa nas regras de hoje
+            raise ErroLLM(f"{self.prompt.id}: {e}") from e
 
 
 def criar_redator(

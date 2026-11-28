@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
@@ -50,10 +51,25 @@ class Textos(_Base):
     correcao_falhou: str
 
 
+class ConfigSaida(_Base):
+    """Texto livre escrito pelo LLM e lido pela pessoa (hoje, a pergunta do `c02`; P3c)."""
+
+    maximo_caracteres: int = Field(default=120, gt=0)
+    terminar_com: str = "?"
+    marcas_proibidas: list[str] = Field(
+        default_factory=lambda: ["http", "www.", "`", "<", ">", "{", "}", "[", "]", "|"]
+    )
+    # Palavras seguidas do system prompt que, aparecendo na pergunta, indicam vazamento.
+    palavras_do_prompt: int = Field(default=6, ge=3)
+    # `aviso` só registra no log; `recusa` barra; `desligado` não olha. A regra é frágil.
+    tema: Literal["aviso", "recusa", "desligado"] = "aviso"
+
+
 class ConfigGuardrails(_Base):
     """Camada de entrada que não chama ninguém (P3a): padrões sobre o texto normalizado."""
 
     padroes_injecao: list[str] = Field(default_factory=list)
+    saida: ConfigSaida = Field(default_factory=ConfigSaida)
 
     @field_validator("padroes_injecao")
     @classmethod

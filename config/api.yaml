@@ -1,9 +1,10 @@
 # Limites e textos da API do beta fechado (plano_assistant4.md §4).
 # Mudou um valor: suba a versão e anote o motivo no histórico.
-versao: "1.1"
+versao: "1.2"
 historico:
   - "1.0 (25/11/2026): valores iniciais do plano; ajustar com o uso do beta."
   - "1.1 (27/11/2026): padrões de injeção na entrada (P3a, texto `injecao`) e moderação que falha fechada (P3d, texto `moderacao_indisponivel`)."
+  - "1.2 (28/11/2026): conferência do texto livre do LLM na saída (P3c, `guardrails.saida`): tamanho, nome de ave, marcação, trecho do system prompt e tema da pergunta do c02."
 
 limites:
   caracteres_por_mensagem: 1000
@@ -44,6 +45,15 @@ guardrails:
     - '\[/?(inst|system)\]'
     - '<<\s*/?\s*sys\s*>>'
     - '(^|\s)(system|assistant|developer)\s*:'
+
+  # Saída (P3c, planos/plano_guardrails.md §4.1): o que a pergunta escrita pelo c02 não pode ter.
+  # Recusada, a pergunta é pedida de novo (até 2 tentativas) e, se persistir, vale a pergunta fixa.
+  saida:
+    maximo_caracteres: 120
+    terminar_com: "?"
+    marcas_proibidas: ["http", "www.", "`", "<", ">", "{", "}", "[", "]", "|"]
+    palavras_do_prompt: 6   # palavras seguidas do system prompt do c02 que indicam vazamento
+    tema: aviso             # aviso (só o log) | recusa | desligado
 
 sessoes:
   ttl_dias: 14
