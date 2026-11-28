@@ -140,6 +140,13 @@ class ConfigConfirmacao(_Base):
     rodadas: PositiveInt
 
 
+class ConfigEscopo(_Base):
+    """Quem insiste fora do tema (planos/plano_guardrails.md §4.2, GR4)."""
+
+    # Mensagens seguidas fora do escopo que encerram a conversa; 0 = nunca encerra.
+    maximo_seguidas: int = Field(default=3, ge=0)
+
+
 class ConfigSimulacao(_Base):
     um_valor: list[str] = Field(default_factory=list)  # a resposta é um valor sorteado
     vizinhas: list[tuple[str, str]] = Field(default_factory=list)
@@ -193,6 +200,7 @@ class ConfigConversa(_Base):
     perguntas: ConfigPerguntas
     apresentacao: ConfigApresentacao
     confirmacao: ConfigConfirmacao
+    escopo: ConfigEscopo = Field(default_factory=ConfigEscopo)
     simulacao: ConfigSimulacao = Field(default_factory=ConfigSimulacao)
 
     @model_validator(mode="after")

@@ -49,6 +49,9 @@ apresentacao:
 confirmacao:
   rodadas: 2               # rodadas de "não" antes de encerrar
 
+escopo:
+  maximo_seguidas: 3       # mensagens seguidas fora do tema que encerram a conversa (0: nunca)
+
 simulacao:                 # usuário simulado (avaliacao/simulacao.py)
   # Atributos em que a pessoa viu um valor só: a resposta é um valor sorteado entre
   # os da ficha (ela viu a ave num lugar, não em todos os que a espécie usa). Nos

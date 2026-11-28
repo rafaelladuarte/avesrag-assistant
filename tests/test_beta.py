@@ -195,6 +195,19 @@ def test_relatorio_separa_concluida_sem_confirmar_e_abandonada():
     assert "com espécie confirmada: 1" in texto and "sem confirmar" in texto
 
 
+def test_conversa_encerrada_por_insistir_fora_do_tema_fica_fora_das_taxas():
+    resumos = [
+        beta.resumir(_estado("s1")),
+        beta.resumir(_estado("s2", confirmada=None, voto=None, motivo_fim="fora_de_escopo")),
+        beta.resumir(_estado("s3", confirmada=None, voto=None, etapa="coleta")),
+    ]
+    texto = "\n".join(beta.linhas(resumos))
+    assert "3 conversa(s)" in texto  # a conversa conta no total...
+    assert "concluídas: 1; em andamento ou abandonadas: 1" in texto  # ...mas não nas taxas
+    assert 'concluídas sem confirmar ("nenhuma delas" ou sem mais rodadas): 0' in texto
+    assert "encerradas por mensagens seguidas fora do tema (fora das taxas): 1" in texto
+
+
 def test_relatorio_mostra_o_nome_do_convite_so_na_tela():
     r = beta.anonimizar(beta.resumir(_estado(convite="ana")), "sal")
     pseudonimo = beta.pseudonimo("ana", "sal")

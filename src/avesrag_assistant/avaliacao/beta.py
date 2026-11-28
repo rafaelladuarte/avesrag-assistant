@@ -251,10 +251,14 @@ def linhas(
     nomes = nomes or {}
     if not resumos:
         return ["beta: nenhuma conversa (sem as da moderação nem as excluídas)"]
-    concluidas = [r for r in resumos if r.etapa == "fim"]
+    # Conversas encerradas por insistir fora do tema não são tentativas de identificar uma ave:
+    # ficam fora das taxas e aparecem numa linha própria (GR4).
+    fora_do_tema = [r for r in resumos if r.motivo_fim == "fora_de_escopo"]
+    validas = [r for r in resumos if r.motivo_fim != "fora_de_escopo"]
+    concluidas = [r for r in validas if r.etapa == "fim"]
     confirmadas = [r for r in resumos if r.confirmada]
     sem_confirmar = [r for r in concluidas if not r.confirmada]
-    abertas = len(resumos) - len(concluidas)
+    abertas = len(validas) - len(concluidas)
     pessoas = {r.convite for r in confirmadas}
 
     saida = [
@@ -263,6 +267,10 @@ def linhas(
         f"  com espécie confirmada: {len(confirmadas)}; "
         f'concluídas sem confirmar ("nenhuma delas" ou sem mais rodadas): {len(sem_confirmar)}',
     ]
+    if fora_do_tema:
+        saida.append(
+            f"  encerradas por mensagens seguidas fora do tema (fora das taxas): {len(fora_do_tema)}"
+        )
     if confirmadas:
         na_primeira = sum(1 for r in confirmadas if r.apresentacoes == 1)
         saida.append(

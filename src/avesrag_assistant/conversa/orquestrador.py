@@ -68,6 +68,11 @@ FORA_SOBRE_AVE = (
     "Estamos trabalhando para melhorar! Me conte como era a ave: tamanho, cores, bico, "
     "onde ela estava."
 )
+# A conversa acaba quando a pessoa só manda mensagens fora do tema, em sequência.
+ESCOPO_ENCERRADO = (
+    "Vou encerrar esta conversa, porque as últimas mensagens não eram sobre identificar uma ave. "
+    "Quando quiser identificar uma ave, comece uma nova conversa e me conte como ela era."
+)
 # A mensagem é sobre uma ave vista, mas não traz nenhuma característica (planos/plano_guardrails.md §11).
 NADA_DESCRITO = (
     "Vamos por partes. Tente se lembrar de como era a ave: a cor, o tamanho, o bico ou "
@@ -174,8 +179,13 @@ class Orquestrador:
         except ErroLLM:
             return NAO_ENTENDI
         if ex.fora_de_escopo:
+            e.fora_de_escopo_seguidas += 1
+            limite = self.s.conversa.escopo.maximo_seguidas
+            if limite and e.fora_de_escopo_seguidas >= limite:
+                return self._encerrar("fora_de_escopo", ESCOPO_ENCERRADO)  # sem chamar mais ninguém
             fala = self.s.fala_de_ave
             return FORA_SOBRE_AVE if fala is not None and fala(texto) else FORA_DE_ESCOPO
+        e.fora_de_escopo_seguidas = 0
         if e.pergunta is None and not ex.atributos.informados():
             # Descrição nova sem característica nenhuma: buscar com "ave" só gasta chamadas.
             e.local = ex.local or e.local

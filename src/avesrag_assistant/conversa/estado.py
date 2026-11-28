@@ -61,6 +61,7 @@ class EstadoConversa(_Base):
     pergunta_texto: str | None = None
     perguntas_feitas: list[str] = Field(default_factory=list)  # chaves, na conversa toda
     perguntas_na_rodada: int = 0
+    fora_de_escopo_seguidas: int = 0  # zera quando uma mensagem é do tema (GR4)
     sugeridas: list[str] = Field(default_factory=list)  # species_id do c04
     candidatas: list[CandidataApresentada] = Field(default_factory=list)
     buscas: list[list[str]] = Field(default_factory=list)  # as 10 primeiras de cada busca

@@ -6,9 +6,10 @@ from avesrag_builder.db.collections import SPECIES_RETRIEVAL_DOCS
 from avesrag_assistant.busca.modelos import validar_atributos
 from avesrag_assistant.busca.pontuacao import carregar_ranking
 from avesrag_assistant.conversa import estado as sessoes
-from avesrag_assistant.conversa.config import carregar_conversa
+from avesrag_assistant.conversa.config import ConfigEscopo, carregar_conversa
 from avesrag_assistant.conversa.orquestrador import (
     ENCERRADA,
+    ESCOPO_ENCERRADO,
     FORA_DE_ESCOPO,
     FORA_SOBRE_AVE,
     NADA_DESCRITO,
@@ -229,6 +230,7 @@ def test_fora_de_escopo_nao_muda_o_estado(vocab_regras, montar):
 
 def test_recusa_diz_se_a_mensagem_fala_de_ave(vocab_regras, montar):
     o = montar(extrator=ExtratorFalso(vocab_regras, fora=True))
+    o.s.conversa = o.s.conversa.model_copy(update={"escopo": ConfigEscopo(maximo_seguidas=0)})
     assert o.processar("me conta uma piada") == FORA_DE_ESCOPO  # sem detector: texto geral
     o.s.fala_de_ave = lambda texto: "tucano" in texto
     assert o.processar("quanto vive um tucano?") == FORA_SOBRE_AVE
@@ -263,6 +265,54 @@ def test_resposta_sem_informacao_a_uma_pergunta_nao_cai_no_pedido_para_lembrar(
     o.processar("uma ave pequena")  # a conversa já tem atributos e uma pergunta pendente
     assert o.estado.pergunta is not None
     assert o.processar("não sei") != NADA_DESCRITO
+
+
+class ExtratorPorTexto(ExtratorFalso):
+    """Como o falso, mas só marca fora do escopo as mensagens que começam com "fora:"."""
+
+    def extrair(self, mensagem, atributos=None, descricao=None, pergunta=None):
+        self.fora = mensagem.startswith("fora:")
+        return super().extrair(mensagem, atributos, descricao, pergunta)
+
+
+def test_tres_mensagens_fora_do_tema_seguidas_encerram_sem_chamar_o_llm(vocab_regras, montar):
+    extrator = ExtratorPorTexto(vocab_regras)
+    o = montar(extrator=extrator)
+    assert o.processar("fora: piada") == FORA_DE_ESCOPO
+    assert o.processar("fora: receita") == FORA_DE_ESCOPO
+    assert o.estado.fora_de_escopo_seguidas == 2 and o.estado.etapa == "coleta"
+    assert o.processar("fora: política") == ESCOPO_ENCERRADO
+    e = o.estado
+    assert (e.etapa, e.motivo_fim, e.pergunta) == ("fim", "fora_de_escopo", None)
+    chamadas = len(extrator.chamadas)
+    assert o.processar("uma ave pequena") == ENCERRADA  # a conversa acabou: nada mais é lido
+    assert len(extrator.chamadas) == chamadas  # nem o c01 foi chamado
+
+
+def test_mensagem_do_tema_zera_a_contagem(vocab_regras, montar):
+    o = montar(extrator=ExtratorPorTexto(vocab_regras))
+    o.processar("fora: piada")
+    o.processar("fora: receita")
+    o.processar("uma ave pequena")  # do tema: a pessoa só se enganou
+    assert o.estado.fora_de_escopo_seguidas == 0
+    o.processar("fora: piada")
+    assert o.processar("fora: receita") == FORA_DE_ESCOPO  # recomeçou: 2 seguidas, não 4
+    assert o.estado.etapa != "fim"
+
+
+def test_falha_do_extrator_nao_conta_como_fora_do_tema(vocab_regras, montar):
+    o = montar(extrator=ExtratorFalso(vocab_regras, falhar=True))
+    for _ in range(5):
+        assert o.processar("fora: piada") == NAO_ENTENDI
+    assert o.estado.fora_de_escopo_seguidas == 0 and o.estado.etapa == "coleta"
+
+
+def test_limite_zero_nunca_encerra(vocab_regras, montar):
+    o = montar(extrator=ExtratorPorTexto(vocab_regras))
+    o.s.conversa = o.s.conversa.model_copy(update={"escopo": ConfigEscopo(maximo_seguidas=0)})
+    for _ in range(6):
+        assert o.processar("fora: piada") == FORA_DE_ESCOPO
+    assert o.estado.etapa == "coleta"
 
 
 def test_falha_do_extrator(vocab_regras, montar):
